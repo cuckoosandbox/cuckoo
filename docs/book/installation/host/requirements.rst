@@ -91,12 +91,12 @@ before reaching out to us with questions on how to set Cuckoo up.
 Assuming you decide to go for VirtualBox, you can get the proper package for
 your distribution at the `official download page`_. Please find following the
 commands to install the latest version of VirtualBox on your Ubuntu LTS
-machine. Note that Cuckoo supports VirtualBox 4.3, 5.0, and 5.1::
+machine. Note that Cuckoo supports VirtualBox 4.3, 5.0, 5.1, and 5.2::
 
     $ echo deb http://download.virtualbox.org/virtualbox/debian xenial contrib | sudo tee -a /etc/apt/sources.list.d/virtualbox.list
     $ wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
     $ sudo apt-get update
-    $ sudo apt-get install virtualbox-5.1
+    $ sudo apt-get install virtualbox-5.2
 
 For more information on VirtualBox, please refer to the
 `official documentation`_.
@@ -132,6 +132,9 @@ command will suffice to install `tcpdump`_::
 Tcpdump requires root privileges, but since you don't want Cuckoo to run as
 root you'll have to set specific Linux capabilities to the binary::
 
+    $ sudo groupadd pcap
+    $ sudo usermod -a -G pcap cuckoo
+    $ sudo chgrp pcap /usr/sbin/tcpdump
     $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
 You can verify the results of the last command with::

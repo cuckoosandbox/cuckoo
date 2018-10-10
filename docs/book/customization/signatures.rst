@@ -240,19 +240,24 @@ An example signature using this technique is the following:
             # continue
             return None
 
+
 The inline comments are already self-explanatory.
 
 Another event is triggered when a signature matches.
 
 .. code-block:: python
     :linenos:
+	
+    required = ["creates_exe", "badmalware"]
 
     def on_signature(self, matched_sig):
-        required = ["creates_exe", "badmalware"]
-        for sig in required:
-            if not sig in self.list_signatures():
-                return
-        return True
+        if matched_sig in self.required:
+            self.required.remove(matched_sig)
+
+        if not self.required:
+            return True
+	
+        return False
 
 This kind of signature can be used to combine several signatures identifying
 anomalies into one signature classifying the sample (malware alert).

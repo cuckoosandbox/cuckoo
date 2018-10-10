@@ -99,6 +99,15 @@ class Configuration(object):
             elif value not in family["extra"][key]:
                 family["extra"][key].append(value)
 
+    def get(self, family, *keys):
+        r = self.families.get(family, {})
+        for key in keys:
+            r = r.get(key, {})
+        return r or None
+
+    def family(self, name):
+        return self.families.get(name) or {}
+
     def results(self):
         ret = []
         for family in self.order:
@@ -1330,6 +1339,10 @@ class Signature(object):
                     references=self.references,
                     marks=self.marks[:self.markcount],
                     markcount=len(self.marks))
+
+    @property
+    def cfgextr(self):
+        return self._caller.c
 
 class Report(object):
     """Base abstract class for reporting module."""

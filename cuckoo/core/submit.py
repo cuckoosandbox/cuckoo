@@ -368,7 +368,8 @@ class SubmitManager(object):
                     z.read("binary"), os.path.basename(info["target"])
                 )
             else:
-                filepath = __file__
+                # Generate a temp file as a target if no target is present
+                filepath = Files.temp_put("")
 
             # We'll be updating the target shortly.
             task_id = db.add_path(

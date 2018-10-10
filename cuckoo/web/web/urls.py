@@ -8,6 +8,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 
 import dashboard.views
+import misc.views
 import analysis.views
 import web.errors
 
@@ -24,6 +25,7 @@ urlpatterns = [
     url(r"^pcap/", include("controllers.pcap.urls")),
     url(r"^machines/", include("controllers.pcap.urls")),
     url(r"^cuckoo/", include("controllers.cuckoo.urls")),
+    url(r"^secret/", misc.views.secret)
 ]
 
 handler404 = web.errors.handler404

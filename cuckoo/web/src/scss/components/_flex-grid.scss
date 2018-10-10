@@ -6,6 +6,11 @@
 	width: 100vw;
 	height: calc(100vh - 50px);
 
+	&-full {
+		@extend .flex-grid;
+		height: 100vh;
+	}
+
 	font-family: "Roboto", sans-serif;
 
 	&.include-footer {
@@ -17,7 +22,7 @@
 	&__header {
 		padding: 15px 20px;
 		border-bottom: 1px solid #EEEEEE;
-		
+
 		h3 {
 			font-size: 20px;
 			font-weight: 400;
@@ -43,10 +48,10 @@
 
 				.fa { margin-right: 5px; }
 
-				&:hover { 
+				&:hover {
 					text-decoration: none;
 					background-color: darken(#337AB7, 5);
-					cursor: pointer; 
+					cursor: pointer;
 				}
 
 				&.grey {
@@ -153,8 +158,8 @@
 
 	}
 
-	&__nav { 
-		flex-basis: 350px; 
+	&__nav {
+		flex-basis: 350px;
 		flex-shrink: 0;
 		background-color: #F5F5F5;
 		border-right: 1px solid #CFCFCF;
@@ -173,8 +178,8 @@
 
 	}
 
-	&__content { 
-		flex-basis: 100%; 
+	&__content {
+		flex-basis: 100%;
 		overflow-y: auto;
 	}
 
@@ -231,7 +236,7 @@
 			&--md {
 				@extend .flex-grid__column;
 				@extend .flex-grid__column--fixed;
-				flex-basis: 400px;	
+				flex-basis: 400px;
 			}
 		}
 
@@ -251,7 +256,7 @@
 
 }
 
-// another flex utility, this utility 
+// another flex utility, this utility
 // quick-flexes a html object, with
 // some styles applied to it.
 .flex-display {
@@ -307,8 +312,8 @@
 
 	@include cuckoo-theme('cyborg') {
 		color: $cyborg_secundary_color;
-		.highlight-dark { 
-			color: $cyborg_primary_color; 
+		.highlight-dark {
+			color: $cyborg_primary_color;
 			background-color: $cyborg_secundary_color;
 		}
 

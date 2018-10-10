@@ -222,6 +222,12 @@ class Config(object):
                     exists=True, writable=True, readable=False,
                     allow_empty=True
                 ),
+                "api_token": String(
+                    allow_empty=True, sanitize=True, required=False
+                ),
+                "web_secret": String(
+                    allow_empty=True, sanitize=True, required=False
+                ),
                 "rooter": Path(
                     "/tmp/cuckoo-rooter",
                     exists=False, writable=False, readable=False
@@ -305,6 +311,18 @@ class Config(object):
                     "stuff/mitm.py",
                     exists=False, writable=False, readable=True
                 ),
+                "certificate": Path(
+                    "bin/cert.p12",
+                    exists=False, writable=False, readable=True
+                ),
+            },
+            "replay": {
+                "enabled": Boolean(True),
+                "mitmdump": Path(
+                    "/usr/local/bin/mitmdump",
+                    exists=False, writable=False, readable=True
+                ),
+                "port_base": Int(51000),
                 "certificate": Path(
                     "bin/cert.p12",
                     exists=False, writable=False, readable=True
@@ -635,6 +653,7 @@ class Config(object):
                 "scan": Boolean(False),
                 "force": Boolean(False),
                 "url": String(),
+                "probes": String(required=False),
             },
         },
         "qemu": {
@@ -792,6 +811,7 @@ class Config(object):
             "inetsim": {
                 "enabled": Boolean(False),
                 "server": String("192.168.56.1"),
+                "ports": String(),
             },
             "tor": {
                 "enabled": Boolean(False),

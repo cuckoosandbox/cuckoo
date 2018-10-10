@@ -1,5 +1,5 @@
 # Copyright (C) 2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -92,6 +92,10 @@ STATICFILES_DIRS = (
 # (in combination with X-Forwarded-Proto header in nginx configuration).
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# Use signed cookies (signed using the SECRET_KEY) for basic authentication.
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SESSION_COOKIE_HTTPONLY = True
+
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
@@ -104,10 +108,9 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.common.CommonMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    # Cuckoo headers.
-    "web.headers.CuckooHeaders",
+    # Cuckoo Authentication & headers.
+    "web.middle.CuckooAuthentication",
+    "web.middle.CuckooHeaders",
     # Our custom exception handler.
     "web.errors.ExceptionMiddleware"
 )
@@ -137,7 +140,6 @@ INSTALLED_APPS = (
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     # "django.contrib.sites",
-    # "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
     # Uncomment the next line to enable the admin:

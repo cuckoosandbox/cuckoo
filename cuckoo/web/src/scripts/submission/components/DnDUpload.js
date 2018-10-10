@@ -308,6 +308,7 @@ class Uploader {
         formdata["type"] = "files";
 
         xhr.open('POST', this.endpoint);
+        xhr.setRequestHeader('X-CSRFToken', CuckooWeb.csrf_token());
 
         // update progress bar when server response is received
         xhr.onload = function(){

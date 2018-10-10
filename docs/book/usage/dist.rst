@@ -445,7 +445,7 @@ SaltStack configuration and some manual SQL commands (and preferably the
 Distributed Cuckoo Worker is temporary disabled, i.e.,
 ``supervisorctl stop distributed``)::
 
-    $ psql -c "UPDATE SET status = 'pending' WHERE status = 'processing' AND node_id = 123"
+    $ psql -c "UPDATE task SET status = 'pending' WHERE status = 'processing' AND node_id = 123"
     $ salt cuckoo1 state.apply cuckoo.clean
     $ salt cuckoo1 state.apply cuckoo.start
 
