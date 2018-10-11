@@ -357,12 +357,12 @@ var RequestDisplay = function () {
 
             // this will later be replaced by the ajax call getting the content
 
-            $.post("/analysis/api/task/network_http_data/", JSON.stringify({
+            CuckooWeb.post("/analysis/api/task/network_http_data/", {
                 "task_id": window.task_id,
                 "protocol": _this.protocol,
                 "request_body": false,
                 "request_index": _this.index
-            }), function (data) {
+            }, function (data) {
                 _this.request_body = data.request;
                 _this.response_body = data.response;
                 _this.loadFinish(data, summaryElement);

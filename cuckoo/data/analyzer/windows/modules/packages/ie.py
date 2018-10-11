@@ -117,7 +117,7 @@ class IE(Package):
 
         # If it's a HTML file, force an extension, or otherwise Internet
         # Explorer will open it as a text file or something else non-html.
-        if os.path.exists(target) and not target.endswith((".htm", ".html", ".mht", ".mhtml")):
+        if os.path.exists(target) and not target.endswith((".htm", ".html", ".mht", ".mhtml", ".url", ".swf")):
             os.rename(target, target + ".html")
             target += ".html"
             log.info("Submitted file is missing extension, adding .html")

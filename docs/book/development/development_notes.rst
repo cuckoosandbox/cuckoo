@@ -21,10 +21,8 @@ Release Versioning
 
 At the moment we utilize three types of releases:
 * 1.2.3, an official release, preferably accompanied by a blogpost
-* 1.2.4a1, an alpha release that showcases functionality that will be present
-  in the upcoming release
-* 1.2.3.1, a hotfix release, meant to fix critical issues, usually found in
-  the latest official release
+* 1.2.4a1, an alpha release that showcases functionality that will be present in the upcoming release
+* 1.2.3.1, a hotfix release, meant to fix critical issues, usually found in the latest official release
 
 Ticketing system
 ================

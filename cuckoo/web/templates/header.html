@@ -14,21 +14,34 @@
         <link href="{% static "css/main.css"%}" rel="stylesheet" type="text/css" />
 
         {% if report.analysis.info.id %}
-            <script>
-                var task_id = '{{ report.analysis.info.id }}';
-            </script>
+          <script>
+            var task_id = '{{ report.analysis.info.id }}';
+          </script>
+        {% else %}
+          <script>
+            var task_id = undefined;
+          </script>
         {% endif %}
 
         <script src="{% static "js/vendor.js" %}"></script>
+
+        {% if request.extra_scripts %}
+          {% for script in request.extra_scripts %}
+            <script src="{% static "js/"|add:script %}"></script>
+          {% endfor %}
+        {% endif %}
+
         <script src="{% static "js/handlebars-templates.js" %}"></script>
         <script src="{% static "js/hexdump.js" %}"></script>
         <script src="{% static "js/cuckoo/loader.js" %}"></script>
         <script src="{% static "js/cuckoo/sticky.js" %}"></script>
         <script src="{% static "js/cuckoo/analysis_sidebar.js" %}"></script>
+        <script src="{% static "js/cuckoo/analysis_feedback.js" %}"></script>
         <script src="{% static "js/cuckoo/submission.js" %}"></script>
         <script src="{% static "js/cuckoo/process_tree.js" %}"></script>
         <script src="{% static "js/cuckoo/recent.js" %}"></script>
         <script src="{% static "js/cuckoo/analysis_network.js" %}"></script>
+        <script src="{% static "js/cuckoo/rdp.js" %}"></script>
         <script src="{% static "js/cuckoo/app.js" %}"></script>
 
     </head>
@@ -46,3 +59,5 @@
     >
 
     {% include "components/primary-nav.html" %}
+
+    <div class="hidden csrf_placeholder">{% csrf_token %}</div>

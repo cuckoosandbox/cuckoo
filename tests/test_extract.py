@@ -1,13 +1,16 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import mock
 import tempfile
 
 from cuckoo.common.abstracts import Extractor
+from cuckoo.common.objects import YaraMatch
 from cuckoo.common.scripting import Scripting
 from cuckoo.common.shellcode import shikata
 from cuckoo.core.extract import ExtractManager
+from cuckoo.core.plugins import RunSignatures
 from cuckoo.core.startup import init_yara
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import cwd, set_cwd, mkdir
@@ -132,3 +135,49 @@ rule Shellcode1 {
     assert "call 0x88" in buf
     assert "0x00c1: push 0xc69f8957" in buf
     assert ".db 'www.service.chrome-up.date',0" in buf
+
+def test_cfgextr():
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
+
+    class Trigger1(Extractor):
+        yara_rules = "Trigger1"
+
+        def handle_yara(self, filepath, match):
+            self.push_config({
+                "family": "barfoo",
+                "version": "baz",
+            })
+
+    ExtractManager.init_once()
+
+    mkdir(cwd(analysis=1))
+    em = ExtractManager(1)
+    em.handle_yara(None, YaraMatch({
+        "name": "Trigger1",
+        "meta": None,
+        "offsets": None,
+        "strings": [],
+    }))
+
+    assert len(em.items) == 1
+
+    results = {
+        "extracted": em.results(),
+        "metadata": {},
+        "info": {},
+    }
+    RunSignatures(results).run()
+    assert results == {
+        "info": {
+            "score": 10.0,
+        },
+        "metadata": {
+            "cfgextr": [{
+                "family": "barfoo",
+                "version": "baz",
+            }],
+        },
+        "extracted": mock.ANY,
+        "signatures": [],
+    }

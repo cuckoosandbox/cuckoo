@@ -1,0 +1,23 @@
+{% load staticfiles %}
+
+<nav class="rdp-toolbar">
+  <button data-hotkey="F" name="fullscreen"><i class="fa fa-expand"></i></button>
+  <div class="button-fill">
+    <!-- snapshot bars -->
+    <span class="ss-v-e-1"></span>
+    <span class="ss-v-e-2"></span>
+    <span class="ss-v-e-3"></span>
+    <!-- the actual button -->
+    <button data-hotkey="S" name="screenshot"><i class="fa fa-camera"></i></button>
+    <!-- the button badge (contains `n` snapshots made, refers to the snapshot library) -->
+    <span class="button-badge"></span>
+  </div>
+  <button data-hotkey="C" name="control"><i class="fa fa-hand-o-up"></i></button>
+  <!-- <button data-hotkey="R" name="reboot"><i class="fa fa-refresh"></i></button>
+  <button data-hotkey="Q" name="close"><i class="fa fa-power-off"></i></button> -->
+</nav>
+<div class="rdp-credits">
+  <a href="https://guacamole.apache.org/" target="_blank" title="Cuckoo Control is powered by the Guacamole project.">
+    <img src="{% static 'graphic/guacamole.png' %}" alt="Guacamole" />
+  </a>
+</div>

@@ -1,79 +1,52 @@
-{% load analysis_tags %}
+<div class="modal fade modal-cuckoo" id="feedback_form">
+  <form class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4><i class="fa fa-bug"></i> Feedback</h4>
+      </div>
+      <p class="modal-section arrow">Expecting different results? Share this analysis report with us and we’ll investigate it. Please include a brief message of what you had expected to see and what you got instead.</p>
 
-<script src="/static/js/cuckoo/analysis_export.js"></script>
-<script src="/static/js/cuckoo/analysis_feedback.js"></script>
-
-<style>
-    .modal p{
-        font-size: 14px;
-    }
-</style>
-
-<!-- Feedback Modal -->
-<div id="modal_feedback" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="panel-title" id="contactLabel"><span style="color:white" class="glyphicon glyphicon-info-sign"></span> Feedback Form</h4>
-            </div>
-
-            <div class="modal-body" style="padding: 18px;">
-                <p>
-                    Expecting different results? Share this analysis report with us and we will investigate it.
-                    Please include a brief message of what you had expected to see and what you got instead.
-
-                    <br><br><small><b>The Cuckoo Sandbox team</b></small>
-                </p>
-
-                <hr>
-
-                <form method="post">
-                    <div class="row">
-                        <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
-                            <input class="form-control" id="name" name="name" placeholder="Your name" type="text" value="{{ "cuckoo:feedback:name"|config }}" required autofocus />
-                        </div>
-                        <div class="col-lg-6 col-md-6 col-sm-6" style="padding-bottom: 10px;">
-                            <input class="form-control" id="company" name="company" placeholder="Company" type="text" value="{{ "cuckoo:feedback:company"|config }}" required />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12" style="padding-bottom: 10px;">
-                            <input class="form-control" id="email" name="email" placeholder="E-mail" type="text" value="{{ "cuckoo:feedback:email"|config }}" required />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-12 col-md-12 col-sm-12">
-                            <textarea style="resize:vertical;" id="message" class="form-control" placeholder="Message..." rows="6" name="comment" required></textarea>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="cuckoo-box" style="padding: 16px; padding-top: 10px; padding-bottom: 0px;">
-                            <div class="cuckoo-box-primary">
-                                <input type="checkbox" id="analysis" name="analysis" value="analysis">
-                                <label for="analysis">Include analysis</label>
-                            </div>
-                            <div class="cuckoo-box-primary">
-                                <input type="checkbox" id="memory" name="memory" value="memory">
-                                <label for="memory">Include memory dump</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <br>
-                        <small id="export_estimate_size" style="margin-left: 10px;color: #adadad;"></small>
-                    </div>
-
-                </form>
-            </div>
-
-            <div class="panel-footer clearfix">
-                <button type="button" class="btn btn-default btn-close" data-dismiss="modal">Close</button>
-                <input id="submit" disabled type="submit" class="btn btn-success" value="Send"/>
-                <span id="result"></span>
-            </div>
+      <div class="modal-section modal-form arrow">
+        <div class="form-col">
+          <fieldset>
+            <input type="text" name="name" id="feedback-name" required />
+            <label for="feedback-name">Your name</label>
+          </fieldset>
+          <fieldset>
+            <input type="text" name="email" id="feedback-email" required />
+            <label for="feedback-email">Your email</label>
+          </fieldset>
         </div>
+        <div class="form-col">
+          <fieldset>
+            <input type="text" name="company" id="feedback-company" required />
+            <label for="feedback-company">Your company</label>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="modal-section modal-form arrow">
+        <textarea name="message" id="feedback-message" placeholder="Describe to us what does not seem to work properly."></textarea>
+      </div>
+
+      <div class="modal-section modal-form arrow arrow-center" id="feedback-includes">
+        <div class="modal-form__checkbox">
+          <input type="checkbox" name="include_analysis" id="feedback-analysis" />
+          <label for="feedback-analysis"><span></span> Include analysis</label>
+        </div>
+        <div class="modal-form__checkbox">
+          <input type="checkbox" name="include_memdump" id="feedback-memdump" />
+          <label for="feedback-memdump"><span></span> Include memory dump</label>
+        </div>
+      </div>
+
+      <div class="modal-section modal-form no-flex center">
+        <p id="feedback-size">Estimated report size: <strong class="file-estimation">estimating...</strong></p>
+        <button class="modal-submit" type="submit" formnovalidate>Send feedback report</button>
+        <p>or <a href="modal:cancel">cancel</a></p>
+      </div>
+
+      <div class="modal-section modal-footer center"></div>
     </div>
+  </form>
 </div>

@@ -1,10 +1,11 @@
 # Copyright (C) 2011-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import logging
 import os
+import re
 import subprocess
 import time
 
@@ -118,6 +119,9 @@ class VirtualBox(Machinery):
         self.restore(label, machine)
 
         self._wait_status(label, self.SAVED)
+
+        if self.remote_control:
+            self.enable_vrde(label)
 
         try:
             args = [
@@ -379,3 +383,101 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to take a memory dump of the machine "
                 "with label %s: %s" % (label, e)
             )
+
+    def enable_remote_control(self, label):
+        self.remote_control = True
+
+    def enable_vrde(self, label):
+        try:
+            proc = self._set_flag(label, "vrde", "on")
+            if proc.returncode != 0:
+                log.error("VBoxManage returned non-zero value while enabling "
+                          "remote control: %d" % proc.returncode)
+                return False
+
+            proc = self._set_flag(label, "vrdemulticon", "on")
+            if proc.returncode != 0:
+                log.error("VBoxManage returned non-zero value while enabling "
+                          "remote control multicon: %d" % proc.returncode)
+                return False
+
+            self._set_vrde_ports(label, self.options.virtualbox.controlports)
+
+            log.info(
+                "Successfully enabled remote control for virtual machine "
+                "with label %s on port(s): %s",
+                label, self.vminfo(label, "vrdeports")
+            )
+        except OSError as e:
+            raise CuckooMachineError(
+                "VBoxManage failed to enable remote control: %s" % e
+            )
+
+    def disable_remote_control(self, label):
+        try:
+            proc = self._set_flag(label, "vrde", "off")
+            if proc.returncode != 0:
+                log.error(
+                    "VBoxManage returned non-zero value while "
+                    "disabling remote control: %d" % proc.returncode
+                )
+                return False
+
+            log.info(
+                "Successfully disabled remote control for virtual machine "
+                "with label %s" % label
+            )
+        except OSError as e:
+            raise CuckooMachineError(
+                "VBoxManage failed to disable remote control: %s" % e
+            )
+
+    def get_remote_control_params(self, label):
+        port = int(self.vminfo(label, "vrdeport"))
+        if port < 0:
+            log.error(
+                "The VirtualBox Extension Pack hasn't been installed or "
+                "VirtualBox hasn't been restarted since installation. "
+                "Without the Extension Pack, Remote Control is disabled!"
+            )
+
+        # TODO The Cuckoo Web Interface may be running at a different host
+        # than the actual Cuckoo daemon (and as such, the VMs).
+        return {
+            "protocol": "rdp",
+            "host": "127.0.0.1",
+            "port": port,
+        }
+
+    def _set_vrde_ports(self, label, ports):
+        if not re.match("^[0-9\\-]+$", ports):
+            log.error("Refusing to set illegal port range for VRDE")
+            return False
+
+        proc = self._set_flag(label, "vrdeport", ports)
+        if proc.returncode != 0:
+            log.error(
+                "VboxManage returned non-zero return status while "
+                "setting remote control ports: %d" % proc.returncode
+            )
+            return False
+
+        log.info(
+            "Successfully set remote control ports for virtual machine "
+            "with label %s: %s" % (label, ports)
+        )
+        return proc
+
+    # TODO Optimize this method away simply by invoking "vboxmanage modifyvm"
+    # once with all parameters (i.e., --vrde --vrdeport 1234 etc).
+    def _set_flag(self, label, key, val):
+        args = [
+            self.options.virtualbox.path, "modifyvm", label,
+            "--%s" % key, val
+        ]
+        proc = Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            close_fds=True
+        )
+        _, _ = proc.communicate()
+        return proc

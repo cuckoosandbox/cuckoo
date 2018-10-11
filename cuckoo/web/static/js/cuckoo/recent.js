@@ -5,8 +5,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /*
- * Copyright (C) 2010-2013 Claudio Guarnieri.
- * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * Copyright (C) 2016-2018 Cuckoo Foundation.
  * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
  * See the file 'docs/LICENSE' for copying permission.
  *
@@ -121,6 +120,10 @@ var Recent = function () {
                 this.empty_results = true;
             } else {
                 data.forEach(function (analysis, i) {
+
+                    // escape entities to ensure xss safety
+                    analysis.target = CuckooWeb.escapeHTML(analysis.target || "");
+
                     var html = "<tr><td>";
 
                     html += "<strong>" + analysis["id"] + "</strong></td><td>";

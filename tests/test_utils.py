@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -19,7 +19,7 @@ from cuckoo.common.files import Folders, Files, Storage, temppath
 from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.common import utils
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import set_cwd
+from cuckoo.misc import set_cwd, getuser
 
 class TestCreateFolders:
     def setup(self):
@@ -76,8 +76,8 @@ class TestCreateFolders:
 
     def test_create_temp(self):
         """Test creation of temporary directory."""
-        dirpath1 = Folders.create_temp("/tmp")
-        dirpath2 = Folders.create_temp("/tmp")
+        dirpath1 = Folders.create_temp()
+        dirpath2 = Folders.create_temp()
         assert os.path.exists(dirpath1)
         assert os.path.exists(dirpath2)
         assert dirpath1 != dirpath2
@@ -92,7 +92,7 @@ class TestCreateFolders:
             f.write("[cuckoo]\ntmppath = %s" % dirpath)
 
         dirpath2 = Folders.create_temp()
-        assert dirpath2.startswith(os.path.join(dirpath, "cuckoo-tmp"))
+        assert dirpath2.startswith(dirpath)
 
     @pytest.mark.skipif("sys.platform != 'linux2'")
     def test_create_invld_linux(self):
@@ -128,8 +128,8 @@ class TestCreateFolders:
 
 class TestCreateFile:
     def test_temp_file(self):
-        filepath1 = Files.temp_put("hello", "/tmp")
-        filepath2 = Files.temp_put("hello", "/tmp")
+        filepath1 = Files.temp_put("hello")
+        filepath2 = Files.temp_put("hello")
         assert open(filepath1, "rb").read() == "hello"
         assert open(filepath2, "rb").read() == "hello"
         assert filepath1 != filepath2
@@ -141,19 +141,17 @@ class TestCreateFile:
         shutil.rmtree(dirpath)
 
     def test_named_temp(self):
-        filepath = Files.temp_named_put("test", "hello.txt", "/tmp")
+        filepath = Files.temp_named_put("test", "hello.txt")
         assert open(filepath, "rb").read() == "test"
         assert os.path.basename(filepath) == "hello.txt"
 
     def test_named_temp_rel(self):
-        filepath = Files.temp_named_put("test", "../foobar/hello.txt", "/tmp")
+        filepath = Files.temp_named_put("test", "../foobar/hello.txt")
         assert open(filepath, "rb").read() == "test"
         assert "foobar" not in filepath
 
     def test_named_temp_abs(self):
-        filepath = Files.temp_named_put(
-            "test", "/tmp/foobar/hello.txt", "/tmp"
-        )
+        filepath = Files.temp_named_put("test", "/tmp/foobar/hello.txt")
         assert open(filepath, "rb").read() == "test"
         assert "foobar" not in filepath
 
@@ -166,14 +164,14 @@ class TestCreateFile:
             f.write("[cuckoo]\ntmppath = %s" % dirpath)
 
         filepath = Files.temp_put("foo")
-        assert filepath.startswith(os.path.join(dirpath, "cuckoo-tmp"))
+        assert filepath.startswith(dirpath)
 
     def test_stringio(self):
-        filepath = Files.temp_put(cStringIO.StringIO("foo"), "/tmp")
+        filepath = Files.temp_put(cStringIO.StringIO("foo"))
         assert open(filepath, "rb").read() == "foo"
 
     def test_bytesio(self):
-        filepath = Files.temp_put(io.BytesIO("foo"), "/tmp")
+        filepath = Files.temp_put(io.BytesIO("foo"))
         assert open(filepath, "rb").read() == "foo"
 
     def test_create_bytesio(self):
@@ -182,7 +180,7 @@ class TestCreateFile:
         assert open(filepath, "rb").read() == "A"*1024*1024
 
     def test_hash_file(self):
-        filepath = Files.temp_put("hehe", "/tmp")
+        filepath = Files.temp_put("hehe")
         assert Files.md5_file(filepath) == "529ca8050a00180790cf88b63468826a"
         assert Files.sha1_file(filepath) == "42525bb6d3b0dc06bb78ae548733e8fbb55446b3"
         assert Files.sha256_file(filepath) == "0ebe2eca800cf7bd9d9d9f9f4aafbc0c77ae155f43bbbeca69cb256a24c7f9bb"
@@ -303,6 +301,10 @@ def test_jsbeautify_packer(p, capsys):
     out, err = capsys.readouterr()
     assert not out and not err
 
+def test_jsbeautifier_exception():
+    buf = open("tests/files/jsbeautifier1.js", "rb").read()
+    assert utils.jsbeautify(buf) == buf
+
 def test_htmlprettify():
     html = {
         "<a href=google.com>wow</a>": '<a href="google.com">\n wow\n</a>',
@@ -314,7 +316,9 @@ def test_temppath():
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
 
-    assert temppath() == tempfile.gettempdir()
+    assert temppath() == os.path.join(
+        tempfile.gettempdir(), "cuckoo-tmp-%s" % getuser()
+    )
 
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -324,7 +328,9 @@ def test_temppath():
             },
         },
     })
-    assert temppath() == tempfile.gettempdir()
+    assert temppath() == os.path.join(
+        tempfile.gettempdir(), "cuckoo-tmp-%s" % getuser()
+    )
 
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={
@@ -334,7 +340,9 @@ def test_temppath():
             },
         },
     })
-    assert temppath() == tempfile.gettempdir()
+    assert temppath() == os.path.join(
+        tempfile.gettempdir(), "cuckoo-tmp-%s" % getuser()
+    )
 
     set_cwd(tempfile.mkdtemp())
     cuckoo_create(cfg={

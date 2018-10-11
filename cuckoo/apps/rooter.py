@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2015-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -12,12 +12,7 @@ import stat
 import subprocess
 import sys
 
-try:
-    import grp
-    HAVE_GRP = True
-except ImportError:
-    HAVE_GRP = False
-
+from cuckoo.common.colors import red
 from cuckoo.misc import version as __version__
 
 class s(object):
@@ -29,6 +24,7 @@ log = logging.getLogger(__name__)
 
 def run(*args):
     """Wrapper to Popen."""
+    log.debug("Running command: %s", " ".join(args))
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
@@ -152,20 +148,28 @@ def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
-    run(s.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT")
+    run(
+        s.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
+        "--source", ipaddr, "-j", "ACCEPT"
+    )
 
-    run(s.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT")
+    run(
+        s.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
+        "--destination", ipaddr, "-j", "ACCEPT"
+    )
 
 def forward_disable(src, dst, ipaddr):
     """Disable forwarding of a specific IP address from one interface into
     another."""
-    run(s.iptables, "-D", "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT")
+    run(
+        s.iptables, "-D", "FORWARD", "-i", src, "-o", dst,
+        "--source", ipaddr, "-j", "ACCEPT"
+    )
 
-    run(s.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT")
+    run(
+        s.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
+        "--destination", ipaddr, "-j", "ACCEPT"
+    )
 
 def srcroute_enable(rt_table, ipaddr):
     """Enable routing policy for specified source IP address."""
@@ -177,47 +181,91 @@ def srcroute_disable(rt_table, ipaddr):
     run(s.ip, "rule", "del", "from", ipaddr, "table", rt_table)
     run(s.ip, "route", "flush", "cache")
 
-def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
-    """Enable hijacking of all traffic and send it to InetSIM."""
-    run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+def inetsim_redirect_port(action, srcip, dstip, ports):
+    """Note that the parameters (probably) mean the opposite of what they
+    imply; this method adds or removes an iptables rule for redirect traffic
+    from (srcip, srcport) to (dstip, dstport).
+    E.g., if 192.168.56.101:80 -> 192.168.56.1:8080, then it redirects
+    outgoing traffic from 192.168.56.101 to port 80 to 192.168.56.1:8080.
+    """
+    for entry in ports.split():
+        if entry.count(":") != 1:
+            log.debug("Invalid inetsim ports entry: %s", entry)
+            continue
+        srcport, dstport = entry.split(":")
+        if not srcport.isdigit() or not dstport.isdigit():
+            log.debug("Invalid inetsim ports entry: %s", entry)
+            continue
+        run(
+            s.iptables, "-t", "nat", action, "PREROUTING", "--source", srcip,
+            "-p", "tcp", "--syn", "--dport", srcport,
+            "-j", "DNAT", "--to-destination", "%s:%s" % (dstip, dstport)
+        )
+
+def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
+                   ports):
+    """Enable hijacking of all traffic and send it to InetSim."""
+    inetsim_redirect_port("-A", ipaddr, inetsim_ip, ports)
+
+    run(
+        s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
         "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+    run(
+        s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
-        "INVALID", "-j", "DROP")
+    run(
+        s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
+        "INVALID", "-j", "DROP"
+    )
 
-    run(s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
-        "INVALID", "-j", "DROP")
+    run(
+        s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
+        "INVALID", "-j", "DROP"
+    )
 
     dns_forward("-A", ipaddr, inetsim_ip)
     forward_enable(machinery_iface, machinery_iface, ipaddr)
 
+    run(s.iptables, "-t", "nat", "-A", "POSTROUTING", "--source", ipaddr,
+        "-o", machinery_iface, "--destination", inetsim_ip, "-j", "MASQUERADE")
+
     run(s.iptables, "-A", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
+def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
+                    ports):
+    """Enable hijacking of all traffic and send it to InetSim."""
+    inetsim_redirect_port("-D", ipaddr, inetsim_ip, ports)
 
-def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
-    """Enable hijacking of all traffic and send it to InetSIM."""
-    run(s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
+    run(
+        s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
         "--to-destination", inetsim_ip
     )
-    run(s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
+    run(
+        s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
         "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
-        "INVALID", "-j", "DROP")
+    run(
+        s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
+        "INVALID", "-j", "DROP"
+    )
 
-    run(s.iptables, "-D", "OUTPUT", "-m", "state", "--state",
-        "INVALID", "-j", "DROP")
+    run(
+        s.iptables, "-D", "OUTPUT", "-m", "state", "--state",
+        "INVALID", "-j", "DROP"
+    )
 
     dns_forward("-D", ipaddr, inetsim_ip)
     forward_disable(machinery_iface, machinery_iface, ipaddr)
+
+    run(s.iptables, "-t", "nat", "-D", "POSTROUTING", "--source", ipaddr,
+        "-o", machinery_iface, "--destination", inetsim_ip, "-j", "MASQUERADE")
 
     run(s.iptables, "-D", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
@@ -266,6 +314,10 @@ def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
         s.iptables, action, "INPUT", "--source", vm_ip, "-j", "DROP"
     )
 
+    run(
+        s.iptables, action, "OUTPUT", "--source", vm_ip, "-j", "DROP"
+    )
+
 def drop_enable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     """Enable complete dropping of all non-Cuckoo traffic by default."""
     return drop_toggle(
@@ -305,32 +357,34 @@ handlers = {
 }
 
 def cuckoo_rooter(socket_path, group, service, iptables, ip):
-    if not HAVE_GRP:
-        sys.exit(
+    try:
+        import grp
+    except ImportError:
+        sys.exit(red(
             "Could not find the `grp` module, the Cuckoo Rooter is only "
             "supported under Linux operating systems."
-        )
+        ))
 
     if not service or not os.path.exists(service):
-        sys.exit(
+        sys.exit(red(
             "The service binary is not available, please configure it!\n"
             "Note that on CentOS you should provide --service /sbin/service, "
             "rather than using the Ubuntu/Debian default /usr/sbin/service."
-        )
+        ))
 
     if not iptables or not os.path.exists(iptables):
-        sys.exit("The `iptables` binary is not available, eh?!")
+        sys.exit(red("The `iptables` binary is not available, eh?!"))
 
     if not ip or not os.path.exists(ip):
-        sys.exit("The `ip` binary is not available, eh?!")
+        sys.exit(red("The `ip` binary is not available, eh?!"))
 
     if os.getuid():
-        sys.exit(
+        sys.exit(red(
             "This utility is supposed to be ran as root user. Please invoke "
             "it with the --sudo flag (e.g., 'cuckoo rooter --sudo') so it "
             "will automatically prompt for your password (this naturally only "
             "works for users with sudo capabilities)."
-        )
+        ))
 
     if os.path.exists(socket_path):
         os.remove(socket_path)
@@ -343,11 +397,11 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
     try:
         gr = grp.getgrnam(group)
     except KeyError:
-        sys.exit(
+        sys.exit(red(
             "The group ('%s') does not exist. Please define the group / user "
             "through which Cuckoo will connect to the rooter, e.g., "
-            "'cuckoo rooter -g myuser'" % group
-        )
+            "'cuckoo rooter -g myuser'." % group
+        ))
 
     os.chown(socket_path, 0, gr.gr_gid)
     os.chmod(socket_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IWGRP)
@@ -392,7 +446,7 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
                 log.info("Invalid argument detected: %r", arg)
                 break
         else:
-            log.debug(
+            log.info(
                 "Processing command: %s %s %s", command,
                 " ".join(args),
                 " ".join("%s=%s" % (k, v) for k, v in kwargs.items())

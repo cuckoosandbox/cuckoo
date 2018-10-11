@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -1125,7 +1125,61 @@ script = mitm.py
 """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.4", "2.0.5")
+
     assert cfg["auxiliary"]["mitm"]["script"] == "stuff/mitm.py"
+
+def test_migration_205_206():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+
+    Files.create(cwd("conf"), "auxiliary.conf", """
+[mitm]
+    """)
+    Files.create(cwd("conf"), "cuckoo.conf", """
+[database]
+    """)
+    Files.create(cwd("conf"), "virtualbox.conf", """
+[virtualbox]
+machines = vbox1
+[vbox1]
+mode = headless
+    """)
+    Files.create(cwd("conf"), "routing.conf", """
+[inetsim]
+enabled = yes
+    """)
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.5", "2.0.6")
+
+    assert cfg["auxiliary"]["replay"]["enabled"] is True
+    assert cfg["auxiliary"]["replay"]["mitmdump"] == "/usr/local/bin/mitmdump"
+    assert cfg["auxiliary"]["replay"]["port_base"] == 51000
+    assert cfg["cuckoo"]["remotecontrol"]["enabled"] is False
+    assert cfg["cuckoo"]["remotecontrol"]["guacd_host"] == "localhost"
+    assert cfg["cuckoo"]["remotecontrol"]["guacd_port"] == 4822
+    assert cfg["virtualbox"]["controlports"] == "5000-5050"
+    assert cfg["routing"]["inetsim"]["ports"] is None
+
+def test_migration_206_210():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+
+    Files.create(cwd("conf"), "cuckoo.conf", """
+[cuckoo]
+    """)
+    Files.create(cwd("conf"), "processing.conf", """
+[irma]
+    """)
+    Files.create(cwd("conf"), "auxiliary.conf", """
+[replay]
+    """)
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.6", "2.1.0")
+
+    assert cfg["auxiliary"]["replay"]["certificate"] == "bin/cert.p12"
+    assert cfg["cuckoo"]["cuckoo"]["api_token"] is None
+    assert cfg["cuckoo"]["cuckoo"]["web_secret"] is None
+    assert cfg["processing"]["irma"]["probes"] is None
 
 class FullMigration(object):
     DIRPATH = None

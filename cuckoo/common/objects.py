@@ -1,9 +1,8 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import androguard
 import base64
 import binascii
 import hashlib
@@ -12,12 +11,12 @@ import mmap
 import os
 import pefile
 import re
+import sflock
 import shutil
 import tempfile
 import zipfile
 
 from cuckoo.common.whitelist import is_whitelisted_domain
-from cuckoo.compat import magic
 
 try:
     import pydeep
@@ -108,9 +107,12 @@ class File(object):
         return file_name
 
     def valid(self):
-        return os.path.exists(self.file_path) and \
-            os.path.isfile(self.file_path) and \
+        return (
+            self.file_path and
+            os.path.exists(self.file_path) and
+            os.path.isfile(self.file_path) and
             os.path.getsize(self.file_path) != 0
+        )
 
     def get_data(self):
         """Read file contents.
@@ -222,13 +224,17 @@ class File(object):
         """Get MIME file type.
         @return: file type.
         """
-        return magic.from_file(self.file_path)
+        return sflock.magic.from_file(
+            os.path.realpath(self.file_path)
+        )
 
     def get_content_type(self):
         """Get MIME content file type (example: image/jpeg).
         @return: file content type.
         """
-        return magic.from_file(self.file_path, mime=True)
+        return sflock.magic.from_file(
+            os.path.realpath(self.file_path), mime=True
+        )
 
     def get_exported_functions(self):
         """Get the exported function names of this PE file."""
@@ -275,8 +281,10 @@ class File(object):
         if "Zip archive data" not in filetype and "Java archive data" not in filetype:
             return "", ""
 
+        from androguard.core.bytecodes.apk import APK
+
         try:
-            a = androguard.core.bytecodes.apk.APK(self.file_path)
+            a = APK(self.file_path)
             if not a.is_valid_APK():
                 return "", ""
 

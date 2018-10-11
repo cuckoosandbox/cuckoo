@@ -12,7 +12,8 @@ var default_analysis_options = {
 		'full-memory-dump': false,
 		'enable-injection': true,
 		'process-memory-dump': true,
-		'simulated-human-interaction': true
+		'simulated-human-interaction': true,
+		'remote-control': false
 	},
 	'package': null,
 	'priority': 1,
@@ -24,6 +25,11 @@ var default_analysis_options = {
 
 // default option set for the submission form
 var submission_options = [
+	{
+		name: 'remote-control',
+		label: 'Remote Control',
+		description: 'Enables Guacamole UI for VM'
+	},
 	{
 		name: 'enable-injection',
 		label: 'Enable Injection',
@@ -45,14 +51,22 @@ var submission_options = [
 	{
 		name: 'simulated-human-interaction',
 		label: 'Enable Simulated Human Interaction',
-		selected: true
+		selected: true,
+		description: 'disable this feature for a better experience when using Remote Control',
+		showWhen: {
+			'remote-control': true
+		}
 	}
 ];
 
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
-var default_package_selection_options = ['default','com','cpl','dll','doc','exe','generic','ie','ff','jar','js','hta','msi','pdf','ppt','ps1','pub','python','vbs','wsf','xls', 'zip'];
+var default_package_selection_options = [
+    'default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic',
+    'ie', 'ff', 'jar', 'js', 'jse', 'hta', 'hwp', 'msi', 'pdf',
+    'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'
+];
 var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes
@@ -586,11 +600,11 @@ $(function() {
 
 			e.preventDefault();
 
-			var json = analysis_ui.getData({
+			var data = JSON.parse(analysis_ui.getData({
 				'submit_id': window.submit_id
-			}, true);
+			}, true));
 
-			if(!JSON.parse(json).file_selection.length) {
+			if(!data.file_selection.length) {
 				alert('Please select some files first.');
 				return;
 			}
@@ -599,32 +613,23 @@ $(function() {
 			CuckooWeb.toggle_page_freeze(true,"We're processing your submission... This could take a few seconds.");
 
 			if(debugging) {
-				console.log(JSON.parse(json));
+				console.log(data);
 				return;
 			}
 
-			$.ajax({
-				url: '/submit/api/submit',
-				type: 'POST',
-				dataType: 'json',
-				contentType: "application/json; charset=utf-8",
-				data: json,
-				success: function(data) {
-					if(data.status === true){
-	                    // redirect to submission success page
-	                    window.location = `/submit/post/${data.submit_id}`;
-	                } else {
-	                    // alert("Submission failed: " + data.message);
-	                    CuckooWeb.error_page_freeze("Something went wrong! please try again.");
-	                }
-				},
-				error: function() {
-					console.log(arguments);
-					// alert('submission failed! see the console for details.');
+			CuckooWeb.api_post('/submit/api/submit', data, function(data) {
+				if(data.status === true){
+					// redirect to submission success page
+					window.location = `/submit/post/${data.submit_id}`;
+				} else {
+					// alert("Submission failed: " + data.message);
 					CuckooWeb.error_page_freeze("Something went wrong! please try again.");
 				}
+			}, function() {
+				console.log(arguments);
+				// alert('submission failed! see the console for details.');
+				CuckooWeb.error_page_freeze("Something went wrong! please try again.");
 			});
-
 		});
 
 		$("#reset-options").bind('click', function(e) {

@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,17 +6,13 @@ import logging
 import socket
 import sys
 
-try:
-    logging.getLogger("scapy.loading").setLevel(logging.ERROR)
-    from scapy.layers.dns import DNS, DNSQR, DNSRR
-    HAVE_SCAPY = True
-except ImportError:
-    HAVE_SCAPY = False
-
+logging.getLogger("scapy.loading").setLevel(logging.ERROR)
 log = logging.getLogger(__name__)
 
 def cuckoo_dnsserve(host, port, nxdomain, hardcode):
-    if not HAVE_SCAPY:
+    try:
+        from scapy.layers.dns import DNS, DNSQR, DNSRR
+    except ImportError:
         sys.exit(
             "Currently the DNS serve script is not available due to issues "
             "in upstream Scapy for Windows "
@@ -26,6 +22,7 @@ def cuckoo_dnsserve(host, port, nxdomain, hardcode):
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udps.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     udps.bind((host, port))
+    log.info("Listening for DNS queries at %s:%d", host, port)
 
     while True:
         data, addr = udps.recvfrom(1024)

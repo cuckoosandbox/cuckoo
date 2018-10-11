@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2017 Cuckoo Foundation.
+# Copyright (C) 2015-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -19,18 +19,16 @@ class MITM(Auxiliary):
         self.proc = None
 
     def start(self):
-        mitmdump = self.options.get("mitmdump", "/usr/local/bin/mitmdump")
-        port_base = int(self.options.get("port_base", 50000))
-        script = cwd(self.options.get("script", "stuff/mitm.py"))
-        certificate = self.options.get("certificate", "bin/cert.p12")
+        port_base = self.options["port_base"]
+        certificate = self.options["certificate"]
 
-        outpath = cwd("storage", "analyses", "%d" % self.task.id, "dump.mitm")
-
+        mitmdump = self.options["mitmdump"]
         if not os.path.exists(mitmdump):
             log.error("Mitmdump does not exist at path \"%s\", man in the "
                       "middle interception aborted.", mitmdump)
             return
 
+        script = cwd(self.options["script"])
         if not os.path.exists(script):
             log.error("Mitmdump script file does not exist at path \"%s\", "
                       "man in the middle interception aborted.", script)
@@ -56,17 +54,17 @@ class MITM(Auxiliary):
 
         args = [
             mitmdump, "-q",
-            "-s", "\"%s\" %s" % (script, self.task.options.get("mitm", "")),
+            "-s", '"{}" {}'.format(
+                script, self.task.options.get("mitm", "")
+            ).strip(),
             "-p", "%d" % self.port,
-            "-w", outpath
+            "-w", cwd("dump.mitm", analysis=self.task.id),
         ]
-
-        mitmlog = cwd("storage", "analyses", "%d" % self.task.id, "mitm.log")
-        mitmerr = cwd("storage", "analyses", "%d" % self.task.id, "mitm.err")
 
         self.proc = Popen(
             args, close_fds=True,
-            stdout=open(mitmlog, "wb"), stderr=open(mitmerr, "wb")
+            stdout=open(cwd("mitm.log", analysis=self.task.id), "wb"),
+            stderr=open(cwd("mitm.err", analysis=self.task.id), "wb")
         )
 
         if "cert" in self.task.options:
@@ -82,8 +80,9 @@ class MITM(Auxiliary):
 
         # We are using the resultserver IP address as address for the host
         # where our mitmdump instance is running. TODO Is this correct?
-        self.task.options["proxy"] = \
+        self.task.options["proxy"] = (
             "%s:%d" % (self.machine.resultserver_ip, port)
+        )
 
         log.info("Started mitm interception with PID %d (ip=%s, port=%d).",
                  self.proc.pid, self.machine.resultserver_ip, self.port)

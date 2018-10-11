@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -222,6 +222,12 @@ class Config(object):
                     exists=True, writable=True, readable=False,
                     allow_empty=True
                 ),
+                "api_token": String(
+                    allow_empty=True, sanitize=True, required=False
+                ),
+                "web_secret": String(
+                    allow_empty=True, sanitize=True, required=False
+                ),
                 "rooter": Path(
                     "/tmp/cuckoo-rooter",
                     exists=False, writable=False, readable=False
@@ -253,6 +259,11 @@ class Config(object):
                 "critical": Int(60),
                 "vm_state": Int(60),
             },
+            "remotecontrol": {
+                "enabled": Boolean(False),
+                "guacd_host": String("localhost"),
+                "guacd_port": Int(4822),
+            },
         },
         "virtualbox": {
             "virtualbox": {
@@ -263,6 +274,7 @@ class Config(object):
                 ),
                 "interface": String("vboxnet0"),
                 "machines": List(String, "cuckoo1"),
+                "controlports": String("5000-5050", required=False),
             },
             "*": {
                 "__section__": "cuckoo1",
@@ -299,6 +311,18 @@ class Config(object):
                     "stuff/mitm.py",
                     exists=False, writable=False, readable=True
                 ),
+                "certificate": Path(
+                    "bin/cert.p12",
+                    exists=False, writable=False, readable=True
+                ),
+            },
+            "replay": {
+                "enabled": Boolean(True),
+                "mitmdump": Path(
+                    "/usr/local/bin/mitmdump",
+                    exists=False, writable=False, readable=True
+                ),
+                "port_base": Int(51000),
                 "certificate": Path(
                     "bin/cert.p12",
                     exists=False, writable=False, readable=True
@@ -629,6 +653,7 @@ class Config(object):
                 "scan": Boolean(False),
                 "force": Boolean(False),
                 "url": String(),
+                "probes": String(required=False),
             },
         },
         "qemu": {
@@ -786,6 +811,7 @@ class Config(object):
             "inetsim": {
                 "enabled": Boolean(False),
                 "server": String("192.168.56.1"),
+                "ports": String(),
             },
             "tor": {
                 "enabled": Boolean(False),

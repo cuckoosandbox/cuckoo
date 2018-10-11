@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -110,7 +110,8 @@ def test_flush_rttable():
 
 def do_cuckoo_rooter():
     with pytest.raises(SystemExit) as e:
-        with mock.patch.dict(r.__dict__, {"HAVE_GRP": False}):
+        with mock.patch("__builtin__.__import__") as p:
+            p.side_effect = ImportError
             r.cuckoo_rooter(None, None, None, None, None)
     e.match("not find the `grp` module")
 

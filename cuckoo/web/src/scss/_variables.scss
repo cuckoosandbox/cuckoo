@@ -17,6 +17,7 @@ $cuckoo_border_color: #CECECE;
 // THEME COLORS
 $cyborg_background_color: #020e10;
 $cyborg_panel_color: #0d1b21;
+$cyborg_alt_blue: #152d3d;
 
 $cyborg_primary_color: #152D3B;
 $cyborg_secundary_color: #0ce3ac;
@@ -45,9 +46,6 @@ $night_link_color: #0ce3ac;
 $night_accent_color: #555;
 $night_darker_color: #131313;
 
-$night_table_even_color: #2d2d2d;
-$nigh_table_odd_color: #313131;
-
 // headstart on the dynamic cuckoo color library: badges
 $badge-colors: (
   'default': #777777,
@@ -64,6 +62,11 @@ $badge-colors: (
   'windows': #ffc5ee,
   'pdf': #ccddbb
 );
+
+// responsive hooks (utilized in _mixins.scss)
+$cuckoo_small_screen_limit: 960px;
+$cuckoo_tiny_screen_limit: 650px;
+$cuckoo_nav_collapse_limit: 850px;
 
 // mixin for creating badge swagger based on color
 @mixin badge($color-name, $useTint: false) {

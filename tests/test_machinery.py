@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -610,6 +610,75 @@ class TestVirtualbox(object):
             p.side_effect = p1, p2
             self.m.dump_memory("label", u"mem\u202eory.dmp")
         task_log_stop(1)
+
+    def test_enable_vrde(self):
+        self.m.enable_remote_control("label")
+        assert self.m.remote_control is True
+
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.return_value.communicate.return_value = "", ""
+            p.return_value.returncode = 0
+            self.m.enable_vrde("label")
+
+        p.assert_has_calls([
+            mock.call(
+                ["/usr/bin/VBoxManage", "modifyvm", "label", "--vrde", "on"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+            mock.call(
+                ["/usr/bin/VBoxManage", "modifyvm", "label", "--vrdemulticon", "on"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+            mock.call(
+                ["/usr/bin/VBoxManage", "modifyvm", "label", "--vrdeport", "5000-5050"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+            mock.call(
+                ["/usr/bin/VBoxManage", "showvminfo", "label", "--machinereadable"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+        ])
+
+    def test_disable_remotecontrol(self):
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.return_value.communicate.return_value = "", ""
+            p.return_value.returncode = 0
+            self.m.disable_remote_control("label")
+
+        p.assert_has_calls([
+            mock.call(
+                ["/usr/bin/VBoxManage", "modifyvm", "label", "--vrde", "off"],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+        ])
+
+    def test_get_remote_control_params(self):
+        with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            p.return_value.communicate.return_value = "vrdeport=5000", ""
+            p.return_value.returncode = 0
+            params = self.m.get_remote_control_params("label")
+
+        p.assert_has_calls([
+            mock.call(
+                [
+                    "/usr/bin/VBoxManage", "showvminfo",
+                    "label", "--machinereadable",
+                ],
+                close_fds=True, stderr=-1, stdout=-1
+            ),
+            mock.call().communicate(),
+        ])
+
+        assert params == {
+            "protocol": "rdp",
+            "host": "127.0.0.1",
+            "port": 5000,
+        }
 
 class TestBrokenMachine(object):
     def setup(self):

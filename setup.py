@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - https://cuckoosandbox.org/.
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,6 +8,12 @@ import os
 import setuptools
 import sys
 import traceback
+
+if sys.version[0] == "3":
+    sys.exit(
+        "Cuckoo is Python2-only at the moment! Please use Python 2 to "
+        "install it, i.e., `pip2 install -U cuckoo`."
+    )
 
 # Update the MANIFEST.in file to include the one monitor version that is
 # actively shipped for this distribution and exclude all the other monitors
@@ -104,37 +110,37 @@ if "setup.py" in sys.argv and "sdist" in sys.argv:
 
 def do_help(e, message):
     if isinstance(e, ValueError) and "jpeg is required" in e.message:
-        print "  This particular error may be resolved as follows:"
-        print "      sudo apt-get install libjpeg-dev"
+        print("  This particular error may be resolved as follows:")
+        print("      sudo apt-get install libjpeg-dev")
 
     if isinstance(e, ValueError) and "zlib is required" in e.message:
-        print "  This particular error may be resolved as follows:"
-        print "      sudo apt-get install zlib1g-dev"
+        print("  This particular error may be resolved as follows:")
+        print("      sudo apt-get install zlib1g-dev")
 
     if isinstance(e, SystemExit) and "x86_64-linux-gnu-gcc" in e.message:
-        print "  This particular error *may* be resolved as follows:"
-        print "      sudo apt-get install python-dev libffi-dev libssl-dev"
+        print("  This particular error *may* be resolved as follows:")
+        print("      sudo apt-get install python-dev libffi-dev libssl-dev")
 
-    print "  But don't forget to check out our documentation for full"
-    print "  installation steps. You might also want to check our FAQ."
+    print("  But don't forget to check out our documentation for full")
+    print("  installation steps. You might also want to check our FAQ.")
 
 def do_setup(**kwargs):
     try:
         setuptools.setup(**kwargs)
     except (SystemExit, Exception) as e:
-        print "\x1b[31m"
-        print "The following error has occurred while trying to install Cuckoo!"
-        print "\x1b[0m"
-        print traceback.format_exc(),
-        print "\x1b[31m"
-        print "Make sure that you've installed all requirements for Cuckoo "
-        print "to be installed properly! Please refer to our documentation: "
-        print "https://cuckoo.sh/docs/installation/host/requirements.html"
-        print "\x1b[33m"
-        print "Once you have triple checked that all dependencies have been "
-        print "installed but Cuckoo still fails, please feel free to reach "
-        print "out to us on IRC / email / Github!"
-        print "\x1b[0m"
+        print("\x1b[31m")
+        print("The following error has occurred while trying to install Cuckoo!")
+        print("\x1b[0m")
+        print(traceback.format_exc())
+        print("\x1b[31m")
+        print("Make sure that you've installed all requirements for Cuckoo ")
+        print("to be installed properly! Please refer to our documentation: ")
+        print("https://cuckoo.sh/docs/installation/host/requirements.html")
+        print("\x1b[33m")
+        print("Once you have triple checked that all dependencies have been ")
+        print("installed but Cuckoo still fails, please feel free to reach ")
+        print("out to us on IRC / email / Github!")
+        print("\x1b[0m")
 
         if hasattr(e, "message") and isinstance(e.message, basestring):
             do_help(e, e.message)
@@ -143,7 +149,7 @@ def do_setup(**kwargs):
 
 do_setup(
     name="Cuckoo",
-    version="2.0.5.2",
+    version="2.0.7a1",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[
@@ -187,24 +193,26 @@ do_setup(
         "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
-        "egghatch==0.2.1",
+        "egghatch>=0.2.3, <0.3",
         "elasticsearch==5.3.0",
         "flask==0.12.2",
         "flask-sqlalchemy==2.1",
-        "httpreplay>=0.2.1, <0.3",
+        "httpreplay>=0.2.4, <0.3",
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
         "oletools==0.51",
-        "peepdf==0.3.6",
+        "peepdf>=0.4.2, <0.5",
         "pefile2==1.2.11",
         "pillow==3.2",
         "pyelftools==0.24",
+        "pyguacamole==0.6",
         "pymisp==2.4.54",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
-        "remotevbox==0.1.2.4",
-        "sflock>=0.2.15, <0.3",
+        "remotevbox==0.2.0",
+        "roach>=0.1.2, <0.2",
+        "sflock>=0.3.6, <0.4",
         "sqlalchemy==1.0.8",
         "unicorn==1.0.1",
         "wakeonlan==0.2.2",
@@ -232,17 +240,4 @@ do_setup(
             "weasyprint==0.36",
         ],
     },
-    setup_requires=[
-        "pytest-runner",
-    ],
-    tests_require=[
-        "coveralls",
-        "flask-testing",
-        "mock==2.0.0",
-        "pytest",
-        "pytest-cov",
-        "pytest-django",
-        "pytest-pythonpath",
-        "responses==0.5.1",
-    ],
 )

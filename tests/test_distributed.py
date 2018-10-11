@@ -1,9 +1,10 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
 import flask_testing
+import io
 import json
 import mock
 import os
@@ -31,11 +32,11 @@ def test_cuckoo_api():
         get(rsps, "/machines/list", json={"machines": "foo"})
         assert api.list_machines("http://localhost") == "foo"
 
-        get(rsps, "/cuckoo/status", json={"a": "b"})
-        assert api.node_status("http://localhost") == {"a": "b"}
+        get(rsps, ":80/cuckoo/status", json={"a": "b"})
+        assert api.node_status("http://localhost:80") == {"a": "b"}
 
-        get(rsps, "/cuckoo/status", body="TIMEOUT", status=500)
-        assert api.node_status("http://localhost") is None
+        get(rsps, ":8080/cuckoo/status", body="TIMEOUT", status=500)
+        assert api.node_status("http://localhost:8080") is None
 
         get(rsps, "/cuckoo/status", body=requests.ConnectionError("foo"))
         assert api.node_status("http://localhost") is None
@@ -60,11 +61,14 @@ def test_cuckoo_api():
             "enforce_timeout": None,
         }
 
-        post(rsps, "/tasks/create/file", json={"task_id": 12345})
-        assert api.submit_task("http://localhost", d) == 12345
+        post(rsps, ":80/tasks/create/file", json={"task_id": 12345})
+        assert api.submit_task("http://localhost:80", d) == 12345
 
-        post(rsps, "/tasks/create/file", body=requests.ConnectionError("a"))
-        assert api.submit_task("http://localhost", d) is None
+        post(
+            rsps, ":8080/tasks/create/file",
+            body=requests.ConnectionError("a")
+        )
+        assert api.submit_task("http://localhost:8080", d) is None
 
         get(rsps, "/tasks/list/100", json={"tasks": ["foo"]})
         assert api.fetch_tasks("http://localhost", "finished", 100) == ["foo"]
@@ -144,7 +148,20 @@ class TestDatabase(flask_testing.TestCase):
         self.db.session.commit()
 
         # No file submitted.
-        assert self.client.post("/api/task").status_code == 404
+        r = self.client.post("/api/task")
+        assert r.status_code == 404
+        assert r.json == {
+            "success": False, "message": "No file has been provided",
+        }
+
+        # Empty file submission.
+        r = self.client.post("/api/task", data={
+            "file": (io.BytesIO(""), "1.filename"),
+        })
+        assert r.status_code == 404
+        assert r.json == {
+            "success": False, "message": "Provided file is empty",
+        }
 
         # Regular submission.
         r = self.client.post("/api/task", data={
@@ -165,6 +182,9 @@ class TestDatabase(flask_testing.TestCase):
             "node": "notanode",
         })
         assert r.status_code == 404
+        assert r.json == {
+            "success": False, "message": "Node not found",
+        }
 
         # Submit to a node.
         r = self.client.post("/api/task", data={
@@ -246,6 +266,33 @@ class TestDatabase(flask_testing.TestCase):
             "message": "Task already deleted",
         }
         assert not os.path.exists(filepath)
+
+    def test_tasks_delete(self):
+        filepath1 = Files.temp_put("foobar")
+        filepath2 = Files.temp_put("foobar")
+        assert os.path.exists(filepath1)
+        assert os.path.exists(filepath2)
+
+        self.db.session.add(db.Task(filepath1, status=db.Task.FINISHED))
+        self.db.session.add(db.Task(filepath2, status=db.Task.FINISHED))
+        data = {
+            "task_ids": "1 2",
+        }
+        assert self.client.delete("/api/tasks", data=data).json == {
+            "success": True,
+        }
+        assert not os.path.exists(filepath1)
+        assert not os.path.exists(filepath2)
+        assert self.client.delete("/api/task/1").json == {
+            "success": False,
+            "message": "Task already deleted",
+        }
+        assert self.client.delete("/api/task/2").json == {
+            "success": False,
+            "message": "Task already deleted",
+        }
+        assert not os.path.exists(filepath1)
+        assert not os.path.exists(filepath2)
 
 class TestAPIStats(flask_testing.TestCase):
     TESTING = True

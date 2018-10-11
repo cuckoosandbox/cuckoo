@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -16,9 +16,9 @@ from cuckoo.common.files import Files
 from cuckoo.common.structures import Structure
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import (
-    dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges,
-    HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd,
-    Pidfile
+    dispatch, cwd, set_cwd, getuser, mkdir, Popen, drop_privileges, make_list,
+    HAVE_PWD, is_linux, is_windows, is_macosx, decide_cwd, Pidfile,
+    format_command
 )
 
 def return_value(value):
@@ -287,6 +287,9 @@ def test_proc_exists():
     # Chances are possible, but slim.
     assert not Pidfile("hello").proc_exists(13337)
 
+    assert not Pidfile("hello)").proc_exists(None)
+    assert not Pidfile("hello)").proc_exists("")
+
 @mock.patch("cuckoo.misc.sys")
 def test_pid_exists_unsupported_platform(p):
     p.platform = "DogeOS"
@@ -300,3 +303,28 @@ def test_active_pids():
     assert Pidfile.get_active_pids() == {
         "test6": os.getpid(),
     }
+
+def test_make_list():
+    assert make_list("hello") == ["hello"]
+    assert make_list(1) == [1]
+    assert make_list((1, 2)) == [1, 2]
+    assert make_list([3, 4]) == [3, 4]
+
+def test_format_command():
+    set_cwd(tempfile.mkdtemp(), ".")
+    assert format_command("community") == "cuckoo community"
+
+    set_cwd(tempfile.mkdtemp(), "~/.cuckoo")
+    assert format_command("community") == "cuckoo community"
+
+    dirpath = tempfile.mkdtemp()
+    set_cwd(dirpath, dirpath)
+    assert format_command("community") == "cuckoo --cwd %s community" % cwd()
+
+    dirpath = tempfile.mkdtemp("foo bar")
+    set_cwd(dirpath, dirpath)
+    assert format_command("community") == 'cuckoo --cwd "%s" community' % cwd()
+
+    dirpath = tempfile.mkdtemp("foo ' bar")
+    set_cwd(dirpath, dirpath)
+    assert format_command("community") == 'cuckoo --cwd "%s" community' % cwd()

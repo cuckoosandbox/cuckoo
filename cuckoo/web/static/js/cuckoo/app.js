@@ -38,6 +38,54 @@ var CuckooWeb = function () {
             return bytes.toFixed(1) + ' ' + units[u];
         }
     }, {
+        key: 'csrf_token',
+        value: function csrf_token() {
+            var token = Cookies.get("csrftoken");
+            if (!token) {
+                // Fallback. Maybe there is a form on the page?
+                var field = $("input[name=csrfmiddlewaretoken]");
+                if (field && field.val()) {
+                    token = field.val();
+                }
+            }
+            return token;
+        }
+
+        // Wrapper that adds support for CSRF tokens
+
+    }, {
+        key: 'ajax',
+        value: function ajax(args) {
+            if (args.type !== "get") {
+                var token = CuckooWeb.csrf_token();
+                if (!token) {
+                    console.warn("Request to " + args.url + " on page without CSRF token");
+                }
+                var beforeSend = args.beforeSend;
+                args.beforeSend = function (request) {
+                    if (token) request.setRequestHeader("X-CSRFToken", token);
+                    if (beforeSend) beforeSend(request);
+                };
+            }
+            return $.ajax(args);
+        }
+
+        // Form
+
+    }, {
+        key: 'post',
+        value: function post(url, data, success) {
+            return CuckooWeb.ajax({
+                url: url,
+                type: "post",
+                data: data,
+                success: success
+            });
+        }
+
+        // JSON
+
+    }, {
         key: 'api_post',
         value: function api_post(url, params, callback, errback, beforesend) {
             var silent = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
@@ -45,7 +93,7 @@ var CuckooWeb = function () {
 
             var data = JSON.stringify(params);
 
-            $.ajax({
+            CuckooWeb.ajax({
                 type: "post",
                 contentType: "application/json",
                 url: url,
@@ -227,6 +275,97 @@ var CuckooWeb = function () {
             var t = document.createElement('textarea');
             t.innerHTML = string;
             return t.value;
+        }
+
+        /*
+          Below are a bunch of polyfilled helpers for the JS Fullscreen API. since
+          each are quite browser-specific
+         */
+
+        // able to use fullscreen (does the user allow it in the browser config)
+
+    }, {
+        key: 'enabledFullscreen',
+        value: function enabledFullscreen() {
+            if (document.fullscreenEnabled) {
+                return document.fullscreenEnabled;
+            } else if (document.webkitFullscreenEnabled) {
+                return document.webkitFullscreenEnabled;
+            } else if (document.mozFullscreenEnabled) {
+                return document.mozFullscreenEnabled;
+            } else {
+                // ...
+                return false;
+            }
+        }
+    }, {
+        key: 'isFullscreen',
+        value: function isFullscreen() {
+            if (document.fullscreen) {
+                return document.fullscreen;
+            } else if (document.webkitIsFullScreen) {
+                return document.webkitIsFullScreen;
+            } else if (document.mozIsFullScreen) {
+                return document.mozIsFullScreen;
+            } else if (document.msIsFullScreen) {
+                return document.msIsFullScreen;
+            } else {
+                // ...
+                return false;
+            }
+        }
+    }, {
+        key: 'exitFullscreen',
+        value: function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozExitFullscreen) {
+                document.mozExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            } else {
+                // the message has already been given in the request handler
+                return false;
+            }
+        }
+
+        // shortcuts requestFullscreen as cross-browser as possible
+
+    }, {
+        key: 'requestFullscreen',
+        value: function requestFullscreen(element) {
+            if (CuckooWeb.enabledFullscreen()) {
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.webkitRequestFullscreen) {
+                    element.webkitRequestFullscreen();
+                } else if (element.mozRequestFullscreen) {
+                    element.mozRequestFullscreen();
+                } else if (element.msRequestFullscreen) {
+                    element.msRequestFullscreen();
+                } else {
+                    console.log('Oh noes! you cannot go in fullscreen due to your browser.');
+                    return false;
+                }
+            } else {
+                console.log('You did not enable fullscreen in your browser config. you cannot use this feature.');
+                return false;
+            }
+        }
+
+        // shortcuts fullscreen event handling
+
+    }, {
+        key: 'onFullscreenChange',
+        value: function onFullscreenChange() {
+            var handler = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {};
+
+            document.addEventListener('webkitfullscreenchange', handler, false);
+            document.addEventListener('fullscreenchange', handler, false);
+            document.addEventListener('mozfullscreenchange', handler, false);
+            document.addEventListener('msfullscreenchange', handler, false);
         }
     }]);
 
@@ -581,33 +720,22 @@ var DashboardTable = function () {
             var _this = this;
             var limit = parseInt(this.options.limit);
 
-            $.ajax({
-                type: "POST",
-                url: "/analysis/api/tasks/recent/",
-                contentType: "application/json",
-                dataType: "json",
-                data: JSON.stringify({
-                    cats: [],
-                    limit: isNaN(limit) ? 3 : limit,
-                    offset: 0,
-                    packs: [],
-                    score: ""
-                }),
-                success: function success(response) {
-
-                    if (response.tasks && $.isArray(response.tasks)) {
-
-                        response = response.tasks.map(function (item) {
-                            if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
-                            return item;
-                        });
-                    } else {
-
-                        response = [];
-                    }
-
-                    _this.afterLoad(response);
+            CuckooWeb.api_post("/analysis/api/tasks/recent/", {
+                cats: [],
+                limit: isNaN(limit) ? 3 : limit,
+                offset: 0,
+                packs: [],
+                score: ""
+            }, function (response) {
+                if (response.tasks && $.isArray(response.tasks)) {
+                    response = response.tasks.map(function (item) {
+                        if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+                        return item;
+                    });
+                } else {
+                    response = [];
                 }
+                _this.afterLoad(response);
             });
         }
     }, {
@@ -940,7 +1068,7 @@ $(function () {
         CuckooWeb.submit_url(urls);
     });
 
-    if (hljs) {
+    if (window.hljs) {
         // initialise hljs
         hljs.configure({
             languages: ['js']
@@ -955,46 +1083,41 @@ $(function () {
 
     // retrieving powershell code and displaying it - if it hasn't been loaded yet.
     if ($(".extracted-switcher").length) {
-        var switcher;
+        var fetchPowerShell = function fetchPowerShell(el) {
 
-        (function () {
-            var fetchPowerShell = function fetchPowerShell(el) {
+            var url = el.find('[data-powershell-source]').attr('data-powershell-source');
 
-                var url = el.find('[data-powershell-source]').attr('data-powershell-source');
-
-                $.get(url).success(function (response) {
-                    // do make newlines from ; for good overview
-                    var code = S(response).replaceAll(';', ';\n');
-                    // render code block and inject
-                    var html = $(CuckooWeb.renderCode(code), {
-                        type: 'powershell'
-                    });
-
-                    // initialize hljs on that codeblock
-                    html.find('code').each(function (i, block) {
-                        hljs.highlightBlock(block);
-                    });
-
-                    // inject somewhere after 'el'
-                    el.find('.powershell-preview').html(html);
-                    el.addClass('powershell-loaded');
-                }).error(function () {
-
-                    el.find('.powershell-preview').html('<p class="alert alert-danger">Something went wrong loading the script. Please try again later.</p>');
+            $.get(url).success(function (response) {
+                // do make newlines from ; for good overview
+                var code = S(response).replaceAll(';', ';\n');
+                // render code block and inject
+                var html = $(CuckooWeb.renderCode(code), {
+                    type: 'powershell'
                 });
-            };
 
-            switcher = $(".extracted-switcher").data('pageSwitcher');
+                // initialize hljs on that codeblock
+                html.find('code').each(function (i, block) {
+                    hljs.highlightBlock(block);
+                });
 
+                // inject somewhere after 'el'
+                el.find('.powershell-preview').html(html);
+                el.addClass('powershell-loaded');
+            }).error(function () {
 
-            switcher.events.afterTransition = function (page) {
-                if (!page.el.hasClass('powershell-loaded')) {
-                    fetchPowerShell(page.el);
-                }
-            };
+                el.find('.powershell-preview').html('<p class="alert alert-danger">Something went wrong loading the script. Please try again later.</p>');
+            });
+        };
 
-            switcher.transition(0);
-        })();
+        var switcher = $(".extracted-switcher").data('pageSwitcher');
+
+        switcher.events.afterTransition = function (page) {
+            if (!page.el.hasClass('powershell-loaded')) {
+                fetchPowerShell(page.el);
+            }
+        };
+
+        switcher.transition(0);
     }
 });
 

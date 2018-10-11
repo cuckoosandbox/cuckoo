@@ -1,5 +1,4 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -8,55 +7,16 @@ import logging
 import os
 import pefile
 import re
-import struct
+import roach
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import File
+from cuckoo.core.extract import ExtractManager
 
 log = logging.getLogger(__name__)
 
-PAGE_READONLY = 0x00000002
-PAGE_READWRITE = 0x00000004
-PAGE_WRITECOPY = 0x00000008
-PAGE_EXECUTE = 0x00000010
-PAGE_EXECUTE_READ = 0x00000020
-PAGE_EXECUTE_READWRITE = 0x00000040
-PAGE_EXECUTE_WRITECOPY = 0x00000080
-
-page_access = {
-    PAGE_READONLY: "r",
-    PAGE_READWRITE: "rw",
-    PAGE_WRITECOPY: "rwc",
-    PAGE_EXECUTE: "rx",
-    PAGE_EXECUTE_READ: "rx",
-    PAGE_EXECUTE_READWRITE: "rwx",
-    PAGE_EXECUTE_WRITECOPY: "rwxc",
-}
-
 class ProcessMemory(Processing):
     """Analyze process memory dumps."""
-    def read_dump(self, filepath):
-        f = open(filepath, "rb")
-
-        while True:
-            buf = f.read(24)
-            if not buf:
-                break
-
-            row = struct.unpack("QIIII", buf)
-            addr, size, state, typ, protect = row
-
-            yield {
-                "addr": "0x%08x" % addr,
-                "end": "0x%08x" % (addr + size),
-                "size": size,
-                "type": typ,
-                "protect": page_access.get(protect),
-                "offset": f.tell(),
-            }
-
-            f.seek(size, 1)
-
     def create_idapy(self, process):
         i = open(process["file"], "rb")
         o = open(process["file"].replace(".dmp", ".py"), "wb")
@@ -110,8 +70,9 @@ class ProcessMemory(Processing):
 
         # Disable relocations as those have already been applied.
         reloc.VirtualAddress = reloc.Size = 0
-        pe.FILE_HEADER.Characteristics |= \
+        pe.FILE_HEADER.Characteristics |= (
             pefile.IMAGE_CHARACTERISTICS["IMAGE_FILE_RELOCS_STRIPPED"]
+        )
 
     def dump_images(self, process, drop_dlls=False):
         """Dump executable images from this process memory dump."""
@@ -196,12 +157,18 @@ class ProcessMemory(Processing):
 
                 pid, num = map(int, re.findall("(\\d+)", dmp))
 
+                regions = []
+                for region in roach.procmem(dump_path).regions:
+                    regions.append(region.to_json())
+
                 proc = dict(
                     file=dump_path, pid=pid, num=num,
                     yara=dump_file.get_yara("memory"),
                     urls=list(dump_file.get_urls()),
-                    regions=list(self.read_dump(dump_path)),
+                    regions=regions,
                 )
+
+                ExtractManager.for_task(self.task["id"]).peek_procmem(proc)
 
                 if self.options.get("idapro"):
                     self.create_idapy(proc)
@@ -215,7 +182,10 @@ class ProcessMemory(Processing):
                     try:
                         os.remove(dump_path)
                     except OSError:
-                        log.error("Unable to delete memory dump file at path \"%s\"", dump_path)
+                        log.error(
+                            "Unable to delete memory dump file at path \"%s\"",
+                            dump_path
+                        )
 
                 results.append(proc)
 

@@ -27,11 +27,52 @@ class CuckooWeb {
         return bytes.toFixed(1)+' '+units[u];
     }
 
+    static csrf_token() {
+        let token = Cookies.get("csrftoken");
+        if(!token) {
+            // Fallback. Maybe there is a form on the page?
+            let field = $("input[name=csrfmiddlewaretoken]");
+            if(field && field.val()) {
+                token = field.val();
+            }
+        }
+        return token;
+    }
+
+    // Wrapper that adds support for CSRF tokens
+    static ajax(args) {
+        if(args.type !== "get") {
+            const token = CuckooWeb.csrf_token();
+            if(!token) {
+                console.warn("Request to " + args.url + " on page without CSRF token");
+            }
+            const beforeSend = args.beforeSend;
+            args.beforeSend = function(request) {
+                if(token)
+                    request.setRequestHeader("X-CSRFToken", token);
+                if(beforeSend)
+                    beforeSend(request);
+            }
+        }
+        return $.ajax(args);
+    }
+
+    // Form
+    static post(url, data, success) {
+        return CuckooWeb.ajax({
+            url: url,
+            type: "post",
+            data: data,
+            success: success
+        });
+    }
+
+    // JSON
     static api_post(url, params, callback, errback, beforesend, silent = true){
 
         let data = JSON.stringify(params);
 
-        $.ajax({
+        CuckooWeb.ajax({
             type: "post",
             contentType: "application/json",
             url: url,
@@ -200,6 +241,84 @@ class CuckooWeb {
       t.innerHTML = string;
       return t.value;
 
+    }
+
+    /*
+      Below are a bunch of polyfilled helpers for the JS Fullscreen API. since
+      each are quite browser-specific
+     */
+
+    // able to use fullscreen (does the user allow it in the browser config)
+    static enabledFullscreen() {
+      if(document.fullscreenEnabled) {
+        return document.fullscreenEnabled;
+      } else if(document.webkitFullscreenEnabled) {
+        return document.webkitFullscreenEnabled;
+      } else if (document.mozFullscreenEnabled) {
+        return document.mozFullscreenEnabled;
+      } else {
+        // ...
+        return false;
+      }
+    }
+
+    static isFullscreen() {
+      if(document.fullscreen) {
+        return document.fullscreen;
+      } else if(document.webkitIsFullScreen) {
+        return document.webkitIsFullScreen;
+      } else if(document.mozIsFullScreen) {
+        return document.mozIsFullScreen;
+      } else if(document.msIsFullScreen) {
+        return document.msIsFullScreen;
+      } else {
+        // ...
+        return false;
+      }
+    }
+
+    static exitFullscreen() {
+      if(document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if(document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if(document.mozExitFullscreen) {
+        document.mozExitFullscreen();
+      } else if(document.msExitFullscreen) {
+        document.msExitFullscreen();
+      } else {
+        // the message has already been given in the request handler
+        return false;
+      }
+    }
+
+    // shortcuts requestFullscreen as cross-browser as possible
+    static requestFullscreen(element) {
+      if(CuckooWeb.enabledFullscreen()) {
+        if(element.requestFullscreen) {
+          element.requestFullscreen();
+        } else if(element.webkitRequestFullscreen) {
+          element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullscreen) {
+          element.mozRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+          element.msRequestFullscreen();
+        } else {
+          console.log('Oh noes! you cannot go in fullscreen due to your browser.');
+          return false;
+        }
+      } else {
+        console.log('You did not enable fullscreen in your browser config. you cannot use this feature.');
+        return false;
+      }
+    }
+
+    // shortcuts fullscreen event handling
+    static onFullscreenChange(handler = function(){}) {
+      document.addEventListener('webkitfullscreenchange', handler, false);
+      document.addEventListener('fullscreenchange', handler, false);
+      document.addEventListener('mozfullscreenchange', handler, false)
+      document.addEventListener('msfullscreenchange', handler, false);
     }
 
 }
@@ -527,37 +646,23 @@ class DashboardTable {
         var _this = this;
         var limit = parseInt(this.options.limit);
 
-        $.ajax({
-            type: "POST",
-            url: "/analysis/api/tasks/recent/",
-            contentType: "application/json",
-            dataType: "json",
-            data: JSON.stringify({
-                cats: [],
-                limit: isNaN(limit) ? 3 : limit,
-                offset: 0,
-                packs: [],
-                score: ""
-            }),
-            success: function(response) {
-
-            	if(response.tasks && $.isArray(response.tasks)) {
-
-            		response = response.tasks.map(function(item) {
-	                    if(item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
-	                    return item;
-	                });
-
-            	} else {
-
-            		response = [];
-
-            	}
-
-                _this.afterLoad(response);
+        CuckooWeb.api_post("/analysis/api/tasks/recent/", {
+            cats: [],
+            limit: isNaN(limit) ? 3 : limit,
+            offset: 0,
+            packs: [],
+            score: ""
+        }, function(response) {
+            if(response.tasks && $.isArray(response.tasks)) {
+                response = response.tasks.map(function(item) {
+                    if(item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+                        return item;
+                    });
+            } else {
+                response = [];
             }
+            _this.afterLoad(response);
         });
-
     }
 
     afterLoad(data) {
@@ -912,7 +1017,7 @@ $(function() {
     });
 
 
-    if(hljs) {
+    if(window.hljs) {
       // initialise hljs
       hljs.configure({
           languages: ['js']

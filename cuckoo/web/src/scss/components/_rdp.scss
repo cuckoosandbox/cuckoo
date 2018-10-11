@@ -1,0 +1,870 @@
+$RDP_APP_VIEWPORT_BGC: #000;
+$RDP_APP_HEADER_BGC: #2E3A4F;
+$RDP_APP_CONTROLS_BGC: #15272A;
+$RDP_APP_TOOLBAR_BUTTON_BGC: #6297F8;
+$RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC: #354A71;
+$RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC: #4C646A;
+$RDP_APP_TOOLBAR_BUTTON_DISABLED_ICON_COLOR: #3e5358;
+$RDP_APP_TOOLBAR_ICON_COLOR: #1E3C73;
+$RDP_APP_CREDIT_BGC: #383838;
+
+@keyframes SnapshotShutter {
+  0% {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+  }
+  25% {
+    background-color: #fff;
+    box-shadow: 0px 2px 0px rgba(0,0,0,.5);
+  }
+  100% {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+    box-shadow: 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_BGC, 30%);
+  }
+}
+
+// rdp toolbar button element style
+%rdp-toolbar-button {
+  -webkit-appearance: none;
+  padding: 7px 5px 5px;
+  border: 0;
+  border-radius: 5px;
+  background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+  box-shadow: 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_BGC, 30%);
+  font-size: 44px;
+  color: $RDP_APP_TOOLBAR_ICON_COLOR;
+  text-shadow: 0px 1px 0px rgba(255,255,255,.2);
+  text-decoration: none;
+
+  transition: background-color 100ms linear,
+              box-shadow 100ms linear,
+              color 150ms linear;
+
+  &:hover {
+    background-color: tint($RDP_APP_TOOLBAR_BUTTON_BGC, 10%);
+  }
+
+  &.active,
+  &:active {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC;
+    box-shadow: inset 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC, 70%),
+                0px 1px 0px tint($RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC, 10%);
+    color: #fff;
+    text-shadow: 0px 1px 0px shade($RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC, 70%);
+  }
+
+  &.disabled,
+  &[disabled] {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC;
+    color: $RDP_APP_TOOLBAR_BUTTON_DISABLED_ICON_COLOR;
+    text-shadow: none;
+    box-shadow: 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 40%);
+    pointer-events: none;
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+}
+
+%rdp-regular-button {
+  @extend %rdp-toolbar-button;
+  font-size: 16px;
+  text-shadow: 0px 1px 0px $RDP_APP_TOOLBAR_BUTTON_ACTIVE_BGC;
+  color: #fff;
+  font-weight: 500;
+  font-size: 700;
+  padding: 8px 15px;
+}
+
+%rdp-cancel-button {
+  @extend %rdp-regular-button;
+  background-color: tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 30%);
+  box-shadow: 0px 2px 0px shade($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 30%);
+  text-shadow: 0px 1px 0px shade($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 30%);
+  color: #fff;
+  font-weight: 500;
+
+  &:hover {
+    background-color: tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 40%);
+  }
+
+  &:active {
+    background-color: $RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC;
+    box-shadow: inset 0px 2px 0px shade(tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 40%), 70%),
+                0px 1px 0px tint($RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC, 10%);
+  }
+
+}
+
+.rdp {
+
+  // base app grid layout
+  &-app {
+    position: fixed;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    padding-top: 50px;
+
+    &.fullscreen {
+      padding-top: 0;
+    }
+
+    &__display {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+    }
+
+    &__controls {
+      display: flex;
+      flex-direction: column;
+      flex-basis: 128px;
+      background-color: $RDP_APP_CONTROLS_BGC;
+      flex-shrink: 0;
+      flex-grow: 0;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      flex-basis: 66px;
+      flex-shrink: 0;
+      flex-grow: 0;
+      padding: 0 30px;
+      background-color: $RDP_APP_HEADER_BGC;
+
+      &--right {
+        margin-left: auto;
+      }
+
+      &--left {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+
+        .top {
+          flex-basis: 38px;
+          padding-top: 6px;
+        }
+      }
+    }
+
+    &__viewport {
+      position: relative;
+      flex-basis: 100%;
+      background-color: $RDP_APP_VIEWPORT_BGC;
+
+      img {
+        position: absolute;
+        width: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: filter 1s ease-out;
+
+        .dialog-active & {
+          filter: blur(10px);
+        }
+      }
+    }
+
+  }
+
+  // toolbar styles
+  &-toolbar {
+    display: flex;
+    flex-basis: 100%;
+    flex-direction: column;
+    padding: 15px 20px 75px;
+    overflow-y: auto;
+
+    & > .button-fill,
+    & > button {
+      position: relative;
+      flex-shrink: 0;
+      flex-grow: 0;
+      margin: 25px 0;
+    }
+
+    & > .button-fill {
+
+      & > button {
+        width: 100%;
+        z-index: 2;
+      }
+
+      // visual/graphical support for the 'has-snapshots' state
+      span[class^="ss-v-e-"] {
+        position: absolute;
+        height: 3px;
+        top: 0;
+        opacity: 0;
+        width: 75px;
+        pointer-events: none;
+        transition: top 250ms linear,
+                    opacity 250ms linear;
+
+        &.in { opacity: 1; }
+
+        &.ss-v-e-1 {
+          left: 6px;
+          background-color: #D8D8D8;
+          z-index: 3;
+          &.in { top: -3px; }
+        }
+
+        &.ss-v-e-2 {
+          width: 67px;
+          left: 10px;
+          z-index: 2;
+          background-color: #A9A9A9;
+
+          &.in { top: -6px; }
+        }
+
+        &.ss-v-e-3 {
+          width: 60px;
+          left: 13px;
+          z-index: 1;
+          background-color: #616060;
+
+          &.in { top: -9px; }
+        }
+
+      }
+
+      .button-badge {
+        position: absolute;
+        z-index: 3;
+        top: -13px;
+        right: -5px;
+        text-align: center;
+        min-width: 20px;
+        height: 20px;
+        background-color: #D73A3A;
+        border: 1px solid #D9C7C7;
+        color: #fff;
+        text-align: center;
+        font-weight: 700;
+        font-size: 15px;
+        line-height: 18px;
+        border-radius: 50px;
+        padding: 0 5px;
+        box-shadow: 0px 2px 4px rgba(0,0,0,.75);
+
+        &:empty {
+          display: none;
+        }
+      }
+
+    }
+
+    button {
+
+      @extend %rdp-toolbar-button;
+
+      .fa {
+        position: relative;
+        top: 2px;
+      }
+
+      &:before {
+        content: attr(data-hotkey);
+        position: absolute;
+        width: 16px;
+        height: 20px;
+        bottom: -2px;
+        right: 0;
+        font-size: 12px;
+        font-weight: 900;
+        background-color: #ccc;
+        color: #444;
+        border-bottom: 2px solid #999;
+        border-radius: 5px 0 5px 0;
+        padding-top: 2px;
+      }
+
+      &:after {
+        content: attr(name);
+        pointer-events: none;
+        position: absolute;
+        bottom: -30px;
+        left: 0;
+        width: 100%;
+        font-size: 14px;
+        font-weight: 400;
+        text-transform: capitalize;
+        color: #fff;
+        text-shadow: none;
+      }
+
+      &:active:after,
+      &.active:after {
+        font-weight: 700;
+      }
+
+      &[disabled]:after,
+      &.disabled:after {
+        color: $RDP_APP_TOOLBAR_BUTTON_DISABLED_BGC;
+      }
+
+      &:first-child { margin-top: 0; }
+      &:last-child { margin-bottom: 0; }
+
+      // handle a shutter animation for nice-eys.
+      &.shutter-in {
+        animation: SnapshotShutter;
+        animation-duration: 1s;
+        animation-iteration-count: 1;
+        pointer-events: none;
+      }
+
+    }
+
+  }
+
+  // bottom toolbar credits to guacamole
+  &-credits {
+
+    position: relative;
+
+    a {
+      display: block;
+      text-align: center;
+      height: 58px;
+      padding-top: 14px;
+      background-color: $RDP_APP_CREDIT_BGC;
+      box-shadow: inset 0px 2px 4px rgba(shade($RDP_APP_CREDIT_BGC, 80%), .8);
+      transition: background-color 150ms ease-out,
+                  box-shadow 150ms ease-out;
+
+      &:hover {
+        background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+        box-shadow: inset 0px 2px 4px rgba(shade($RDP_APP_TOOLBAR_BUTTON_BGC, 60%), .8);
+      }
+    }
+
+    img {
+      height: 32px;
+    }
+
+    &:before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 25px;
+      top: -25px;
+      background: -moz-linear-gradient(top, rgba(21,39,42,0) 0%, rgb(21,39,42) 100%);
+      background: -webkit-linear-gradient(top, rgba(21,39,42,0) 0%,rgb(21,39,42) 100%);
+      background: linear-gradient(to bottom, rgba(21,39,42,0) 0%,rgb(21,39,42) 100%);
+      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0015272a', endColorstr='#8015272a',GradientType=0 );
+    }
+
+  }
+
+  &-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    flex-shrink: 0;
+    color: #fff;
+    font-weight: 500;
+
+    .rdp-status {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 10px;
+      background-color: #52E875;
+      border-radius: 10px;
+
+      &.done {
+        background-color: #D7586F;
+      }
+    }
+  }
+
+  &-snapshots {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    max-width: 500px;
+    overflow-x: auto;
+    padding-right: 10px;
+
+    & > li {
+      position: relative;
+
+      &:not(:last-child) {
+        margin-right: 15px;
+      }
+
+      figure {
+        height: 53px;
+        overflow: hidden;
+        border-radius: 6px;
+        border: 1px solid #88A1CB;
+
+        img {
+          height: 100%;
+          opacity: .4;
+          transition: opacity 100ms ease-out;
+        }
+
+        &:hover > img {
+          opacity: 1;
+        }
+      }
+
+    }
+
+    &--controls {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      right: -8px;
+      height: 100%;
+      top: 0;
+
+      a {
+        display: inline-block;
+        background-color: #000;
+        border: 1px solid #88A1CB;
+        color: #fff;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 12px;
+        text-align: center;
+        margin: 5px 0;
+
+        .fa {
+          position: relative;
+          top: -1px;
+        }
+      }
+
+    }
+
+  }
+
+  &-snapshot {
+
+    &-selection {
+      width: 100%;
+      margin: 0 auto;
+      padding: 0;
+      list-style: none;
+      white-space: nowrap;
+      overflow-x: auto;
+
+      *, *:before, *:after { transition: all 200ms linear; }
+
+      & > li {
+        display: inline-block;
+        margin: 0 15px 50px;
+      }
+
+      input[type="checkbox"] {
+        display: none;
+
+        &:checked + .snapshot-selection-image {
+
+          background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+          border: 2px solid shade($RDP_APP_TOOLBAR_BUTTON_BGC, 10%);
+
+          img {
+            opacity: 1;
+          }
+
+          &:before {
+            background-color: #fff;
+            border: 0;
+          }
+
+          &:after {
+            transform: scale(1);
+          }
+
+        }
+      }
+
+      .snapshot-selection-image {
+        position: relative;
+        display: block;
+        width: 350px;
+        border: 2px solid #fff;
+        border-radius: 16px;
+        padding: 5px;
+
+        img {
+          width: 100%;
+          border-radius: 8px;
+          opacity: .75;
+          border: 1px solid rgba(255,255,255,.2);
+        }
+
+        &:before {
+          content: "";
+          display: block;
+          position: absolute;
+          width: 32px;
+          height: 32px;
+          border: 2px solid #fff;
+          background-color: #000;
+          z-index: 2;
+          left: 50%;
+          margin-left: -16px;
+          border-radius: 50%;
+          bottom: -16px;
+        }
+
+        &:after {
+          content: "";
+          display: block;
+          position: absolute;
+          width: 22px;
+          height: 22px;
+          background-color: $RDP_APP_TOOLBAR_BUTTON_BGC;
+          left: 50%;
+          bottom: -11px;
+          margin-left: -11px;
+          border-radius: 50%;
+          z-index: 3;
+          transform: scale(0);
+        }
+
+        &:hover {
+          cursor: pointer;
+          background-color: rgba($RDP_APP_TOOLBAR_BUTTON_BGC, .2);
+
+        }
+
+      }
+
+    }
+
+  }
+
+  &__error,
+  &__connecting {
+
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    top: auto;
+    margin-top: auto;
+    align-items: center;
+    justify-content: center;
+    margin: 0px auto;
+
+    .combined-icon {
+      position: relative;
+      height: 134px;
+      width: 153px;
+      margin: 0 auto;
+
+      .fa,
+      .guac-icon {
+
+        position: absolute;
+
+        &-frown-o {
+          font-size: 43px;
+          left: 58px;
+          top: 25px;
+          color: #CC613C;
+        }
+
+        &-desktop {
+          font-size: 140px;
+          color: #542F21;
+        }
+
+      }
+
+    }
+
+    & > section {
+      position: relative;
+      z-index: 2;
+    }
+
+    section > p {
+      margin: 10px 0;
+      text-align: center;
+      font-size: 24px;
+      color: #A6A6A6;
+      font-weight: 300;
+    }
+
+    section > a {
+      @extend %rdp-regular-button;
+      top: 0;
+      display: block;
+      background-color: #6D6D6D;
+      text-shadow: 0px 1px 0px #3B3B3B;
+      box-shadow: 0px 2px 0px #484848;
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    &--resolutions {
+      position: relative;
+      top: -1px;
+      background-color: #293b5c;
+      border: 1px solid #405f97;
+      color: #fff;
+      padding: 20px;
+      width: 300px;
+      margin-top: 25px;
+      font-size: 16px;
+      border-radius: 8px;
+      box-shadow: 0px 2px 4px rgba(0,0,0,.2);
+
+      &:after,
+      &:before {
+        bottom: 100%;
+      	left: 50%;
+      	border: solid transparent;
+      	content: " ";
+      	height: 0;
+      	width: 0;
+      	position: absolute;
+      	pointer-events: none;
+      }
+
+      &:before {
+        border-color: rgba(64, 95, 151, 0);
+      	border-bottom-color: #405f97;
+        border-width: 21px;
+	      margin-left: -21px;
+      }
+
+      &:after {
+        border-color: rgba(41, 59, 92, 0);
+      	border-bottom-color: #293b5c;
+        border-width: 20px;
+	      margin-left: -20px;
+      }
+
+      ol {
+        padding: 0 17px;
+        margin: 0;
+      }
+
+    }
+
+    &--buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 0 0 0;
+      & > a {
+        @extend %rdp-regular-button;
+        font-size: 14px;
+      }
+    }
+
+    &:not(.rdp__connecting):after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background: url(../graphic/white-noise.gif);
+      background-size: cover;
+      opacity: .2;
+      z-index: 1;
+    }
+
+    // specific styles for rdp-connecting
+    &.rdp__connecting {
+      background-color: #030e10;
+
+      .combined-icon {
+
+        width: 190px;
+        height: 180px;
+
+        .guac-icon {
+          width: 55px;
+          left: 50%;
+          top: 50%;
+          margin-left: -27px;
+          margin-top: -29px;
+
+          & + .fa-desktop {
+            font-size: 180px;
+            color: #567E84;
+          }
+        }
+
+      }
+    }
+
+    .animated-ellipse {
+      display: inline-block;
+      & > li {
+        display: inline-block;
+        opacity: 0;
+        &.in {
+          opacity: 1;
+        }
+      }
+    }
+
+  }
+
+  // dialog styles
+  &-dialog {
+
+    width: 100%;
+    height: calc(100% - 66px);
+    background-color: rgba(0,0,0,.7);
+    padding: 0;
+    margin: 0;
+    border: 0;
+    top: 66px;
+    z-index: 10;
+
+    &__body {
+      position: absolute;
+      color: #fff;
+      text-align: center;
+      width: 90%;
+      left: 5%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    &__title {
+      font-size: 24px;
+      font-weight: 300;
+
+      strong {
+        font-weight: 500;
+      }
+    }
+
+    &__text {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 50px;
+    }
+
+    &__options {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      button {
+        margin: 0 12px;
+        &:not([value="cancel"]) { @extend %rdp-regular-button; }
+        &[value="cancel"] { @extend %rdp-cancel-button; }
+      }
+    }
+
+  }
+
+  &-details {
+
+    position: relative;
+    left: -12px;
+
+    &__menu {
+      position: absolute;
+      display: none;
+      z-index: 20;
+      top: 23px;
+      padding: 25px;
+      margin: 0;
+      list-style: none;
+      background-color: #fff;
+      border-radius: 0 0 2px 2px;
+      box-shadow: 0px 2px 4px rgba(0,0,0,.2);
+
+      & > li {
+        padding: 0;
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        color: #697993;
+
+        span,
+        strong {
+          display: inline-block;
+        }
+
+        span { width: 180px; }
+        strong { color: #2E3A4F; }
+
+      }
+    }
+
+    &__toggle {
+      height: 25px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      transition: background-color 75ms ease-out;
+
+      &:hover {
+        cursor: pointer;
+        text-decoration: none;
+        color: #2E3A4F;
+        background-color: rgba(#fff, .2);
+      }
+
+      &::selection {
+        background: transparent;
+      }
+
+      &.active {
+        background-color: #fff;
+        border-radius: 2px 2px 0 0;
+
+        & + .rdp-details__menu {
+          display: block;
+        }
+      }
+    }
+
+  }
+
+}
+
+/*
+  fix that will actually show the guac canvas
+  - I hope the guacamole frontend library will improve
+    so I can get rid of these nasty rules.
+ */
+#guacamole-display {
+
+  canvas {
+    z-index: 5;
+    &:hover {
+      cursor: none;
+    }
+  }
+
+  & > div > div { z-index: 5 !important; }
+
+  & > div:not([class^='rdp__']) {
+    margin: 0px auto;
+    top: 50%;
+    margin-top: -384px;
+  }
+
+  // this is the custom mouse guacamole is rendering (for whatever reason, why?)
+  & > div > div > div:nth-child(2) {
+    display: none;
+  }
+
+}

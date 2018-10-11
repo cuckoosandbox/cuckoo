@@ -1,11 +1,10 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 from __future__ import absolute_import
 
 import datetime
-import elasticsearch.helpers
 import json
 import logging
 import time
@@ -106,6 +105,7 @@ class ElasticSearch(Report):
 
     def do_bulk_index(self, bulk_reqs):
         try:
+            import elasticsearch.helpers
             elasticsearch.helpers.bulk(elastic.client, bulk_reqs)
         except Exception as e:
             raise CuckooReportError(

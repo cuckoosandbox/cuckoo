@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2010-2013 Claudio Guarnieri.
- * Copyright (C) 2014-2016 Cuckoo Foundation.
+ * Copyright (C) 2016-2018 Cuckoo Foundation.
  * This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
  * See the file 'docs/LICENSE' for copying permission.
  *
@@ -105,6 +104,10 @@ class Recent {
             this.empty_results = true;
         } else {
             data.forEach(function (analysis, i){
+
+                // escape entities to ensure xss safety
+                analysis.target = CuckooWeb.escapeHTML(analysis.target || "");
+
                 let html = "<tr><td>";
 
                 html += `<strong>${analysis["id"]}</strong></td><td>`;

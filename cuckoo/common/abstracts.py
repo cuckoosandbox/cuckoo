@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -19,7 +19,7 @@ from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.files import Folders
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
-from cuckoo.misc import cwd
+from cuckoo.misc import cwd, make_list
 
 try:
     import libvirt
@@ -28,6 +28,91 @@ except ImportError:
     HAVE_LIBVIRT = False
 
 log = logging.getLogger(__name__)
+
+class Configuration(object):
+    skip = (
+        "family", "extra",
+    )
+    # Single entry values.
+    keywords1 = (
+        "type", "version", "magic",
+    )
+    # Multiple entry values.
+    keywords2 = (
+        "cnc", "url", "mutex", "user_agent", "referrer",
+    )
+    # Encryption key values.
+    keywords3 = (
+        "des3key", "rc4key", "xorkey", "pubkey", "privkey", "iv",
+    )
+    # Normalize keys.
+    mapping = {
+        "cncs": "cnc",
+        "urls": "url",
+        "user-agent": "user_agent",
+    }
+
+    def __init__(self):
+        self.entries = []
+        self.order = []
+        self.families = {}
+
+    def add(self, entry):
+        self.entries.append(entry)
+
+        if entry["family"] not in self.families:
+            self.families[entry["family"]] = {
+                "family": entry["family"],
+            }
+            self.order.append(entry["family"])
+        family = self.families[entry["family"]]
+
+        for key, value in entry.items():
+            if key in self.skip or not value:
+                continue
+            key = self.mapping.get(key, key)
+            if key in self.keywords1:
+                if family.get(key) and family[key] != value:
+                    log.error(
+                        "Duplicate value for %s => %r vs %r",
+                        key, family[key], value
+                    )
+                    continue
+                family[key] = value
+            elif key in self.keywords2:
+                if key not in family:
+                    family[key] = []
+                for value in make_list(value):
+                    if value and value not in family[key]:
+                        family[key].append(value)
+            elif key in self.keywords3:
+                if "key" not in family:
+                    family["key"] = {}
+                if key not in family["key"]:
+                    family["key"][key] = []
+                if value not in family["key"][key]:
+                    family["key"][key].append(value)
+            elif key not in family.get("extra", {}):
+                if "extra" not in family:
+                    family["extra"] = {}
+                family["extra"][key] = [value]
+            elif value not in family["extra"][key]:
+                family["extra"][key].append(value)
+
+    def get(self, family, *keys):
+        r = self.families.get(family, {})
+        for key in keys:
+            r = r.get(key, {})
+        return r or None
+
+    def family(self, name):
+        return self.families.get(name) or {}
+
+    def results(self):
+        ret = []
+        for family in self.order:
+            ret.append(self.families[family])
+        return ret
 
 class Auxiliary(object):
     """Base abstract class for auxiliary modules."""
@@ -71,6 +156,7 @@ class Machinery(object):
     def __init__(self):
         self.options = None
         self.db = Database()
+        self.remote_control = False
 
         # Machine table is cleaned to be filled from configuration file
         # at each start.
@@ -262,6 +348,27 @@ class Machinery(object):
     def dump_memory(self, label, path):
         """Takes a memory dump of a machine.
         @param path: path to where to store the memory dump.
+        """
+        raise NotImplementedError
+
+    def enable_remote_control(self, label):
+        """Enable remote control interface (RDP/VNC/SSH).
+        @param label: machine name.
+        @return: None
+        """
+        raise NotImplementedError
+
+    def disable_remote_control(self, label):
+        """Disable remote control interface (RDP/VNC/SSH).
+        @param label: machine name.
+        @return: None
+        """
+        raise NotImplementedError
+
+    def get_remote_control_params(self, label):
+        """Return connection details for remote control.
+        @param label: machine name.
+        @return: dict with keys: protocol, host, port
         """
         raise NotImplementedError
 
@@ -596,6 +703,46 @@ class LibVirtMachinery(Machinery):
             self._disconnect(conn)
 
         return snapshot
+
+    def enable_remote_control(self, label):
+        # TODO: we can't dynamically enable/disable this right now
+        pass
+
+    def disable_remote_control(self, label):
+        pass
+
+    def get_remote_control_params(self, label):
+        conn = self._connect()
+
+        try:
+            vm = conn.lookupByName(label)
+            if not vm:
+                log.warning("No such VM: %s", label)
+                return {}
+
+            port = 0
+            desc = ET.fromstring(vm.XMLDesc())
+            for elem in desc.findall("./devices/graphics"):
+                if elem.attrib.get("type") == "vnc":
+                    # Future work: passwd, listen, socket (addr:port)
+                    port = elem.attrib.get("port")
+                    if port:
+                        port = int(port)
+                        break
+        finally:
+            self._disconnect(conn)
+
+        if port <= 0:
+            log.error("VM %s does not have a valid VNC port", label)
+            return {}
+
+        # TODO The Cuckoo Web Interface may be running at a different host
+        # than the actual Cuckoo daemon (and as such, the VMs).
+        return {
+            "protocol": "vnc",
+            "host": "127.0.0.1",
+            "port": port,
+        }
 
 class Processing(object):
     """Base abstract class for processing module."""
@@ -1110,26 +1257,12 @@ class Signature(object):
 
     def mark_config(self, config):
         """Mark configuration from this malware family."""
-        url = config.get("url", [])
-        if isinstance(url, basestring):
-            url = [url]
-
-        cnc = config.get("cnc", [])
-        if isinstance(cnc, basestring):
-            cnc = [cnc]
-
-        if "family" not in config:
+        if not isinstance(config, dict) or "family" not in config:
             raise CuckooCriticalError("Invalid call to mark_config().")
 
         self.marks.append({
             "type": "config",
-            "config": {
-                "family": config["family"],
-                "url": url,
-                "cnc": cnc,
-                "key": config.get("key"),
-                "type": config.get("type"),
-            },
+            "config": config,
         })
 
     def mark(self, **kwargs):
@@ -1206,6 +1339,10 @@ class Signature(object):
                     references=self.references,
                     marks=self.marks[:self.markcount],
                     markcount=len(self.marks))
+
+    @property
+    def cfgextr(self):
+        return self._caller.c
 
 class Report(object):
     """Base abstract class for reporting module."""
@@ -1332,6 +1469,9 @@ class Extractor(object):
 
     def push_blob_noyara(self, blob, category, info=None):
         self.parent.push_blob_noyara(blob, category, info)
+
+    def push_config(self, config):
+        self.parent.push_config(config)
 
     def enhance(self, filepath, key, value):
         self.parent.enhance(filepath, key, value)

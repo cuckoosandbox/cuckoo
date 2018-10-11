@@ -7,7 +7,7 @@
     </footer>
     <div id="footer-extra">
         <div class="container-fluid center">
-            <div>&copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a></div>
+            <div>&copy;2010-2018 <a href="https://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a></div>
         </div>
     </div>
 
@@ -34,146 +34,11 @@
         </div>
     </div>
 
-    <!-- FEEDBACK MODAL (_form.html) -->
-     <script>
-
-        // unless set elsewhere, define task_id as an empty variable of type String
-        if(!task_id)
-            var task_id = false;
-
-        var taken_files = [];
-        var taken_dirs = [];
-        var cb_analysis = true;
-
-        $(document).ready(function() {
-
-            var sel = $('#modal_feedback');
-
-            sel.on("shown.bs.modal", function() {
-                $("input:text:visible:first").focus()
-            });
-
-            function send_feedback_callback(data){
-                if(data['status'] == true){
-                    sel.find("span#result").html("Successfully sent feedback");
-
-                    setTimeout(function(){
-                        location.reload();
-                    }, 1000);
-                } else {
-                    sel.find("span#result").html("error: " + data["message"]);
-                }
-                feedbackFormSubmitted = false;
-                send_button_toggle();
-            }
-
-            function send_feedback(){
-
-                send_button_toggle();
-
-                var email = sel.find("input#email").val();
-                var company = sel.find("input#company").val();
-                var message = sel.find("textarea#message").val();
-                var name = sel.find("input#name").val();
-
-                var include_analysis = sel.find("input#analysis").is(":checked");
-                var include_memory = false;
-
-                if(include_analysis){
-                    if(sel.find("input#memory").is(":checked")) include_memory = true;
-                }
-
-                feedback_send(task_id, name, email, company, message, include_analysis, include_memory, send_feedback_callback)
-            }
-
-            function initFeedbackForm(data){
-
-                if(!data) {
-                    var data = {
-                        files: [],
-                        dirs: []
-                    }
-                }
-
-                taken_files = data['files'];
-
-                function estimate_size(){
-                    var dirs = [];
-                    var files = [];
-
-                    if(sel.find("input#analysis").is(":checked")){
-                        dirs = taken_dirs;
-                        files = taken_files;
-                    }
-
-                    var memory = sel.find("input#memory").is(":checked");
-
-                    export_estimate_size(task_id, dirs, files, "#modal_feedback small#export_estimate_size", "Estimated size: ");
-                }
-
-                sel.find("input#analysis").change("click", function() {
-
-                    if(!this.checked){
-                        cb_analysis = false;
-
-                        var memory = sel.find("input#memory");
-                        if(memory.is(":checked")) $(memory).removeAttr("checked");
-                    } else {
-                        cb_analysis = true;
-                    }
-
-                    estimate_size();
-                });
-
-                sel.find("input#memory").on("click", function(e) {
-                    if(!cb_analysis) {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        return;
-                    }
-
-                    if(this.checked) {
-                        taken_dirs.push("memory");
-                    } else {
-                        taken_dirs.pop();
-                    }
-
-                    estimate_size();
-                });
-
-                // Dont include the memory dump by default
-                data["dirs"].forEach(function(obj, i){
-                    if(obj[0] != "memory") taken_dirs.push(obj[0]);
-                });
-
-                sel.find("input#submit").prop("disabled", false);
-
-                sel.find("input#submit").click(function(){
-                    if(feedbackFormSubmitted) return false;
-                    feedbackFormSubmitted = true;
-                    send_feedback();
-                });
-
-                if(task_id) {
-                    sel.find('input#analysis').prop('checked','checked');
-                }
-
-                estimate_size();
-            }
-
-            if(task_id) {
-                export_get_files(task_id, initFeedbackForm);
-            } else {
-                initFeedbackForm();
-            }
-        });
-    </script>
-
     <!-- HIGHLIGHT (_office.html, _pdf.html) -->
     <script>
         $(document).ready(function() {
-            hljs.initHighlightingOnLoad();
+          if(!window.hljs) return;
+          hljs.initHighlightingOnLoad();
         });
     </script>
 

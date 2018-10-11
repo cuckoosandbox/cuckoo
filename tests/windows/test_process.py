@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,6 +6,8 @@ import logging
 import os
 import pytest
 import socket
+import subprocess
+import sys
 
 from lib.api.process import Process
 from lib.common.exceptions import CuckooError
@@ -62,3 +64,14 @@ def test_is32bit_process():
         with pytest.raises(CuckooError) as e:
             p.is32bit(pid=4)
         e.match("process access denied$")
+
+def test_exec_unicode():
+    # This isn't possible by default on Python 2.7, however, since we patch
+    # the subprocess internals, we make it work. Test that it actually works.
+    with open(u"uni\u1234.bat", "wb") as f:
+        f.write("echo test > uni-hello.txt")
+    assert not subprocess.call(["cmd.exe", "/c", u"uni\u1234.bat"])
+    assert open("uni-hello.txt", "rb").read().strip() == "test"
+
+def test_parent_pid():
+    assert Process(os.getpid()).get_parent_pid() is not None

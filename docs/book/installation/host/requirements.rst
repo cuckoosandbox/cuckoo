@@ -91,12 +91,12 @@ before reaching out to us with questions on how to set Cuckoo up.
 Assuming you decide to go for VirtualBox, you can get the proper package for
 your distribution at the `official download page`_. Please find following the
 commands to install the latest version of VirtualBox on your Ubuntu LTS
-machine. Note that Cuckoo supports VirtualBox 4.3, 5.0, and 5.1::
+machine. Note that Cuckoo supports VirtualBox 4.3, 5.0, 5.1, and 5.2::
 
     $ echo deb http://download.virtualbox.org/virtualbox/debian xenial contrib | sudo tee -a /etc/apt/sources.list.d/virtualbox.list
     $ wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
     $ sudo apt-get update
-    $ sudo apt-get install virtualbox-5.1
+    $ sudo apt-get install virtualbox-5.2
 
 For more information on VirtualBox, please refer to the
 `official documentation`_.
@@ -132,6 +132,9 @@ command will suffice to install `tcpdump`_::
 Tcpdump requires root privileges, but since you don't want Cuckoo to run as
 root you'll have to set specific Linux capabilities to the binary::
 
+    $ sudo groupadd pcap
+    $ sudo usermod -a -G pcap cuckoo
+    $ sudo chgrp pcap /usr/sbin/tcpdump
     $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
 You can verify the results of the last command with::
@@ -184,3 +187,40 @@ If ``SWIG`` is present on the system one may install ``M2Crypto`` as follows::
     $ sudo pip install m2crypto==0.24.0
 
 .. _SWIG: http://www.swig.org/
+
+Installing guacd
+================
+
+``guacd`` is an optional service that provides the translation layer for RDP,
+VNC, and SSH for the remote control functionality in the Cuckoo web interface.
+
+Without it, remote control won't work. Versions 0.9.9 and up will work, but we
+recommend installing the latest version. On an Ubuntu 17.04 machine the
+following command will install version ``0.9.9-2``::
+
+    $ sudo apt install libguac-client-rdp0 libguac-client-vnc0 libguac-client-ssh0 guacd
+
+If you only want RDP support you can skip the installation of the
+``libguac-client-vnc0`` and ``libguac-client-ssh0`` packages.
+
+If you are using an older distribution or you just want to use the latest
+version (our recommendation), the following will build the latest version
+(``0.9.14``) from source::
+
+    $ sudo apt -y install libcairo2-dev libjpeg-turbo8-dev libpng-dev libossp-uuid-dev libfreerdp-dev
+    $ mkdir /tmp/guac-build && cd /tmp/guac-build
+    $ wget https://www.apache.org/dist/guacamole/0.9.14/source/guacamole-server-0.9.14.tar.gz
+    $ tar xvf guacamole-server-0.9.14.tar.gz && cd guacamole-server-0.9.14
+    $ ./configure --with-init-dir=/etc/init.d
+    $ make && sudo make install && cd ..
+    $ sudo ldconfig
+    $ sudo /etc/init.d/guacd start
+
+When installing from source, make sure you don't have another version of any
+of the ``libguac-`` libraries installed from your package manager or you might
+experience issues due to incompatibilities which can crash guacd.
+
+Note that the `VirtualBox Extension Pack`_ must also be installed to take
+advantage of the Cuckoo Control functionality exposed by Guacamole.
+
+.. _VirtualBox Extension Pack: https://www.virtualbox.org/wiki/Downloads

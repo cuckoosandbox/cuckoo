@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2016 Cuckoo Foundation.
    This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
    see the file 'docs/LICENSE' for copying permission.
@@ -6,7 +6,7 @@
 
 // mixin to include on the varieties of cuckoo boxes
 // @param $color [ANY COLOR TYPE]
-// @param $background-color [ANY COLOR TYPE] 
+// @param $background-color [ANY COLOR TYPE]
 // @include cuckoo-input-label($color: #RRGGBB, $background-color: #RRGGBB)
 @mixin cuckoo-input-label($color, $background-color) {
 	input[type="radio"],
@@ -47,10 +47,141 @@
 
 }
 
-// mixin for helping theming pages and elements a bit easier! This works as follows, in this mixin you can define the styles 
+// mixin for helping theming pages and elements a bit easier! This works as follows, in this mixin you can define the styles
 // for the themes themselves. This requires a less lot searching and doing this scss thing a bit more efficient.
 @mixin cuckoo-theme($theme_name) {
 	body.#{$theme_name} & {
 		@content;
 	}
+}
+
+
+// two mixins for doing responsive screen stuff. This way, we can easily specify
+// target screens with variable properties.
+@mixin respond-to-max-width($max-width) {
+	@media screen and (max-width: $max-width) {
+		@content;
+	}
+}
+
+@mixin respond-to-min-width($min-width) {
+	@media screen and (min-width: $min-width) {
+		@content;
+	}
+}
+
+
+// mixin small-screen - these mock above two mixins in simple-to-understand
+// aliases
+@mixin unless-small-screen {
+	@include respond-to-max-width($cuckoo_small_screen_limit) {
+		@content;
+	}
+}
+
+@mixin small-screen-hidden {
+	@include respond-to-max-width($cuckoo_small_screen_limit) {
+		display: none;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+@mixin small-screen-shown {
+	@include respond-to-min-width($cuckoo_small_screen_limit) {
+		display: none;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+// mixin tiny-screen - these mock above two mixins in simple-to-understand
+// aliases
+@mixin unless-tiny-screen {
+	@include respond-to-max-width($cuckoo_tiny_screen_limit) {
+		@content;
+	}
+}
+
+@mixin tiny-screen-hidden {
+	@include respond-to-max-width($cuckoo_tiny_screen_limit) {
+		display: none;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+@mixin tiny-screen-shown {
+	@include respond-to-min-width($cuckoo_tiny_screen_limit) {
+		display: none;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+// mixin tiny-screen - these mock above two mixins in simple-to-understand
+// aliases
+@mixin unless-tiny-screen {
+	@include respond-to-min-width($cuckoo_tiny_screen_limit) {
+		@content;
+	}
+}
+
+@mixin tiny-screen-hidden {
+	@include respond-to-max-width($cuckoo_tiny_screen_limit) {
+		display: none;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+@mixin tiny-screen-shown {
+	@include respond-to-min-width($cuckoo_tiny_screen_limit) {
+		display: none;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+// these respond to the navigation collapse limit, which is a bit off from the other
+// components.
+@mixin unless-nav-collapsed {
+	@include respond-to-max-width($cuckoo_nav_collapse_limit) {
+		@content;
+	}
+}
+
+@mixin nav-expanded {
+	@include respond-to-max-width($cuckoo_nav_collapse_limit) {
+		display: none;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+@mixin nav-collapsed {
+	@include respond-to-min-width($cuckoo_nav_collapse_limit) {
+		display: none;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+// Create 'helper aliases' to reference the functionality of above mixins
+// into a single html class, so this logic can also be done in the html.
+*[data-responsive] {
+	&[data-responsive="small-screen-hidden"] { @include small-screen-hidden; }
+	&[data-responsive="small-screen-shown"] { @include small-screen-shown; }
+	&[data-responsive="tiny-screen-hidden"] { @include tiny-screen-hidden; }
+	&[data-responsive="tiny-screen-shown"] { @include tiny-screen-shown; }
+	&[data-responsive="nav-expanded"] { @include nav-expanded; }
+	&[data-responsive="nav-collapsed"] { @include nav-collapsed; }
 }

@@ -18,8 +18,8 @@
                 </div>
                 {% endif %}
             </header>
-            
-            <!-- snaps back to default bootstrap layout inside flex frame -->            
+
+            <!-- snaps back to default bootstrap layout inside flex frame -->
             <div class="container-fluid">
 
                 <!-- this row breaks into 2 sides -->
@@ -29,7 +29,7 @@
                         {% if report.analysis.debug.errors %}
                             {% include "analysis/pages/summary/_errors.html" %}
                         {% endif %}
-                        
+
                         {% if report.analysis.info.category == "file" and report.analysis.target %}
                             {% include "analysis/pages/summary/_file.html" %}
                         {% elif report.analysis.info.category == "archive" and report.analysis.target %}
@@ -108,8 +108,26 @@
                                 {% endif %}
                                 {% if cfgextr.key %}
                                 <li class="list-group-item">
-                                    <span class="item-label">Encryption key</span>
-                                    <p>{{ cfgextr.key }}</p>
+                                    {% for pubkey in cfgextr.key.pubkey %}
+                                        <span class="item-label">Public Key</span>
+                                        <p>{{ pubkey }}</p>
+                                    {% endfor %}
+                                    {% for privkey in cfgextr.key.privkey %}
+                                        <span class="item-label">Private Key</span>
+                                        <p>{{ privkey }}</p>
+                                    {% endfor %}
+                                    {% for des3key in cfgextr.key.des3key %}
+                                        <span class="item-label">Triple DES Key</span>
+                                        <p>{{ des3key }}</p>
+                                    {% endfor %}
+                                    {% for rc4key in cfgextr.key.rc4key %}
+                                        <span class="item-label">RC4 Key</span>
+                                        <p>{{ rc4key }}</p>
+                                    {% endfor %}
+                                    {% for xorkey in cfgextr.key.xorkey %}
+                                        <span class="item-label">XOR Key</span>
+                                        <p>{{ xorkey }}</p>
+                                    {% endfor %}
                                 </li>
                                 {% endif %}
                                 {% if cfgextr.type %}
@@ -132,7 +150,7 @@
                             {% if report.analysis.feedback %}
                                 Feedback sent on <b>{{ report.analysis.feedback.date }}</b> Thanks!
                             {% else %}
-                                Expecting different results? Send us this analysis and we will inspect it. <a data-toggle="modal" data-target="#modal_feedback" href="#">Click here</a>
+                                Expecting different results? Send us this analysis and we will inspect it. <a data-toggle="modal" data-target="#feedback_form" href="#">Click here</a>
                             {% endif %}
                         </p>
                     </div>
@@ -156,7 +174,7 @@
             <!-- footer replacement to avoid double scrollbars -->
             <footer class="flex-grid__footer spread-alignment">
                 <p class="footnote">
-                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                    &copy;2010-2018 <a href="https://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
                 </p>
                 <div class="logo">
                     <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />
@@ -167,5 +185,5 @@
         </section>
 
     </div>
-    
+
 {% endblock %}

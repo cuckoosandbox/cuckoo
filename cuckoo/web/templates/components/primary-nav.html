@@ -7,18 +7,24 @@
 	</a>
 
 	<ul class="app-nav__nav--primary">
-		<li {% if "/dashboard/" in request.path or request.path == "/" %}class="active"{% endif %}><a href="{% url "dashboard.views.index" %}"><i class="fa fa-tachometer"></i> Dashboard</a></li>
-		<li {% if request.path == "/analysis/" %}class="active"{% endif %}><a href="{% url "analysis/recent" %}"><i class="fa fa-th-list"></i> Recent</a></li>
-		<li {% if request.path == "/analysis/pending/" %}class="active"{% endif %}><a href="{% url "analysis.views.pending" %}"><i class="fa fa-cogs"></i> Pending</a></li>
-		<li {% if request.path == "/analysis/search/" %}class="active"{% endif %}><a href="{% url "analysis.views.search" %}"><i class="fa fa-search"></i> Search</a></li>
+		<li {% if "/dashboard/" in request.path or request.path == "/" %}class="active"{% endif %}><a title="Dashboard" href="{% url "dashboard.views.index" %}"><i class="fa fa-tachometer"></i> Dashboard</a></li>
+		<li {% if request.path == "/analysis/" %}class="active"{% endif %}><a href="{% url "analysis/recent" %}" title="Recent"><i class="fa fa-th-list"></i> Recent</a></li>
+		<li {% if request.path == "/analysis/pending/" %}class="active"{% endif %}><a href="{% url "analysis.views.pending" %}" title="Pending"><i class="fa fa-cogs"></i> Pending</a></li>
+		<li {% if request.path == "/analysis/search/" %}class="active"{% endif %}><a href="{% url "analysis.views.search" %}" title="Search"><i class="fa fa-search"></i> Search</a></li>
 	</ul>
 
 	<ul class="app-nav__nav--right">
 		<li>
-			<a href="{% url "submission/index" %}" class="button outline">Submit</a>
+			<a href="{% url "submission/index" %}" class="button outline">
+				<span data-responsive="nav-expanded">Submit</span>
+				<span data-responsive="nav-collapsed"><i class="fa fa-upload"></i></span>
+			</a>
 		</li>
 		<li>
-			<a href="{% url "analysis/import" %}" class="button outline">Import</a>
+			<a href="{% url "analysis/import" %}" class="button outline">
+				<span data-responsive="nav-expanded">Import</span>
+				<span data-responsive="nav-collapsed"><i class="fa fa-download"></i></span>
+			</a>
 		</li>
 		<li class="app-nav__dropdown--parent">
 			<a href="#" id="select-theme">

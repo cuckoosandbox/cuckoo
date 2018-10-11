@@ -20,7 +20,7 @@
 
 <script type="text/javascript">
 $("#form_search").on("input", function() {
-    $.post("{% url "analysis.views.search" %}", {
+    CuckooWeb.post("{% url "analysis.views.search" %}", {
         raw: true,
         search: $("#form_search").val(),
     }, function(data) {

@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,7 +6,6 @@ import json
 
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from cuckoo.common.config import config
@@ -37,17 +36,17 @@ def defaults():
             "vpns": vpns,
         },
         "options": {
+            "enable-injection": True,
             "enforce-timeout": False,
             "full-memory-dump": config("cuckoo:cuckoo:memory_dump"),
-            "enable-injection": True,
             "process-memory-dump": True,
+            "remote-control": False,
             "simulated-human-interaction": True,
         },
     }
 
 class SubmissionApi(object):
     @staticmethod
-    @csrf_exempt
     @require_http_methods(["POST"])
     def presubmit(request):
         files = request.FILES.getlist("files[]")

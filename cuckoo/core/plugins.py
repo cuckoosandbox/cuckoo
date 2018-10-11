@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -10,6 +10,7 @@ import logging
 
 import cuckoo
 
+from cuckoo.common.abstracts import Configuration
 from cuckoo.common.config import config2
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
@@ -519,26 +520,34 @@ class RunSignatures(object):
         # Iterate through all Extracted matches.
         self.process_extracted()
 
+        # TODO This logic should certainly be moved elsewhere.
+        self.c = Configuration()
+        for extracted in self.results.get("extracted", []):
+            if extracted["category"] == "config":
+                self.c.add(extracted["info"])
+
         # Yield completion events to each signature.
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
 
-        score, configuration = 0, []
+        score, configs = 0, []
         for signature in self.signatures:
-            if signature.matched:
-                log.debug(
-                    "Analysis matched signature: %s", signature.name, extra={
-                        "action": "signature.match", "status": "success",
-                        "signature": signature.name,
-                        "severity": signature.severity,
-                    }
-                )
-                self.matched.append(signature.results())
-                score += signature.severity
+            if not signature.matched:
+                continue
 
-                for mark in signature.marks:
-                    if mark["type"] == "config":
-                        configuration.append(mark["config"])
+            log.debug(
+                "Analysis matched signature: %s", signature.name, extra={
+                    "action": "signature.match", "status": "success",
+                    "signature": signature.name,
+                    "severity": signature.severity,
+                }
+            )
+            self.matched.append(signature.results())
+            score += signature.severity
+
+            for mark in signature.marks:
+                if mark["type"] == "config":
+                    self.c.add(mark["config"])
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
@@ -549,10 +558,10 @@ class RunSignatures(object):
 
         # If malware configuration has been extracted, simplify its
         # accessibility in the analysis report.
-        if configuration:
+        if self.c.results():
             # TODO Should this be included elsewhere?
             if "metadata" in self.results:
-                self.results["metadata"]["cfgextr"] = configuration
+                self.results["metadata"]["cfgextr"] = self.c.results()
             if "info" in self.results:
                 self.results["info"]["score"] = 10
 

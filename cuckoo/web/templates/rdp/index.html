@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+{% block content %}
+
+  <section class="rdp-app" id="rdp-client" allowfullscreen data-task-id="{{ task.id }}">
+    <div class="rdp-app__display">
+      {% include 'rdp/partials/rdp-header.html' %}
+      {% include 'rdp/partials/rdp-viewport.html' %}
+      {% include 'rdp/dialogs/rdp-dialog.html' %}
+    </div>
+    <aside class="rdp-app__controls">
+      {% include 'rdp/partials/rdp-toolbar.html' %}
+    </aside>
+  </section>
+
+{% endblock %}

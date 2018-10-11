@@ -1,12 +1,15 @@
 # Copyright (C) 2012-2014 The MITRE Corporation.
+# Copyright (C) 2015-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import bs4
 import logging
+import re
 import requests
 import socket
 import subprocess
+import time
 import wakeonlan.wol
 import xmlrpclib
 
@@ -110,6 +113,11 @@ class Physical(Machinery):
             # Deploy a clean image through FOG, assuming we're using FOG.
             self.fog_queue_task(label)
 
+            # Hold here until we are certain the physical guest is rebooting
+            while self._status(label) == self.RUNNING:
+                time.sleep(1)
+                continue
+
     def _list(self):
         """Lists physical machines installed.
         @return: physical machine names list.
@@ -173,6 +181,8 @@ class Physical(Machinery):
         data.update({
             "uname": self.options.fog.username,
             "upass": self.options.fog.password,
+            "ulang": "English",
+            "login": "Login",
         })
 
         return requests.post(url, data=data)
@@ -184,7 +194,7 @@ class Physical(Machinery):
             return
 
         # TODO Handle exceptions such as not being able to connect.
-        r = self.fog_query("node=tasks&sub=listhosts")
+        r = self.fog_query("node=task&sub=listhosts")
 
         # Parse the HTML.
         b = bs4.BeautifulSoup(r.content, "html.parser")
@@ -194,13 +204,29 @@ class Physical(Machinery):
                 "to login into FOG, please configure the correct credentials."
             )
 
+        # Pull out the FOG version from the header and raise a warning if it
+        # is not in our list of supported versions (i.e., 1.3.4 and 1.4.4).
+        version = re.match(
+            "Running Version\\s+(([0-9]+\\.)+[0-9]+)",
+            b.find("div", {"id": "version"}).text
+        ).group(1)
+
+        # This may be better suited to go in cuckoo.common.constants.
+        if version != "1.3.4" and version != "1.4.4":
+            log.warning(
+                "The current version of FOG was detected as %s. The "
+                "currently supported versions are: 1.3.4 and 1.4.4." % version
+            )
+
         # Mapping for physical machine hostnames to their mac address and uri
         # for "downloading" a safe image onto the host. Great piece of FOG API
         # usage here.
         for row in b.find_all("table")[0].find_all("tr")[1:]:
-            hostname, macaddr, download, upload, advanced = row.find_all("td")
-            self.fog_machines[hostname.text] = (
-                macaddr.text, next(download.children).attrs["href"][1:],
+            hostinfo, imagename, actions = row.find_all("td")
+
+            self.fog_machines[hostinfo.find("a").text] = (
+                hostinfo.find("small").text,
+                actions.find(title="Deploy").parent.attrs["href"][1:],
             )
 
         # Check whether all our machines are available on FOG.

@@ -1,28 +1,30 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
 import hashlib
 import io
+import logging
 import multiprocessing
 import os
 import socket
 import tarfile
 import zipfile
 
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, abort, json
 
 from cuckoo.common.config import config, parse_options
 from cuckoo.common.files import Files, Folders
-from cuckoo.common.utils import parse_bool
+from cuckoo.common.utils import parse_bool, constant_time_compare
 from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
 from cuckoo.core.submit import SubmitManager
 from cuckoo.misc import cwd, version, decide_cwd, Pidfile
 
+log = logging.getLogger(__name__)
 db = Database()
 sm = SubmitManager()
 
@@ -210,7 +212,9 @@ def tasks_create_submit():
 @app.route("/v1/tasks/list/<int:limit>")
 @app.route("/tasks/list/<int:limit>/<int:offset>")
 @app.route("/v1/tasks/list/<int:limit>/<int:offset>")
-def tasks_list(limit=None, offset=None):
+@app.route("/tasks/sample/<int:sample_id>")
+@app.route("/v1/tasks/sample/<int:sample_id>")
+def tasks_list(limit=None, offset=None, sample_id=None):
     response = {}
 
     response["tasks"] = []
@@ -227,7 +231,8 @@ def tasks_list(limit=None, offset=None):
     tasks = db.list_tasks(
         limit=limit, details=True, offset=offset,
         completed_after=completed_after, owner=owner,
-        status=status, order_by=Task.completed_on.asc()
+        status=status, sample_id=sample_id,
+        order_by=Task.completed_on.asc()
     )
 
     for row in tasks:
@@ -375,11 +380,25 @@ def tasks_report(task_id, report_format="json"):
     if not os.path.exists(report_path):
         return json_error(404, "Report not found")
 
-    if report_format == "json":
-        response = make_response(open(report_path, "rb").read())
+    elements = request.args.get("elements")
+    if report_format.lower() == "json":
+        report_content = open(report_path, "rb").read()
+        if elements is not None:
+            elements_content = json.loads(report_content).get(elements)
+            if elements_content is None:
+                return json_error(404, "'{0}' not found".format(elements))
+            else:
+                response = make_response(json.dumps(elements_content))
+                response.headers["Content-Type"] = "application/json"
+                return response
+
+        response = make_response(report_content)
         response.headers["Content-Type"] = "application/json"
         return response
     else:
+        if elements is not None:
+            return json_error(404, "Get specific field is not available in HTML format,"\
+                              " try again with JSON format")
         return open(report_path, "rb").read()
 
 @app.route("/tasks/screenshots/<int:task_id>")
@@ -643,7 +662,29 @@ def exit_api():
     else:
         return jsonify(message="Server stopped")
 
+@app.errorhandler(401)
+def api_auth_required(error):
+    return json_error(
+        401, "Authentication in the form of an "
+        "'Authorization: Bearer <TOKEN>' header is required"
+    )
+
+@app.before_request
+def check_authentication():
+    token = config("cuckoo:cuckoo:api_token")
+    if token:
+        expect = "Bearer " + token
+        auth = request.headers.get("Authorization")
+        if not constant_time_compare(auth, expect):
+            abort(401)
+
 def cuckoo_api(hostname, port, debug):
+    if not config("cuckoo:cuckoo:api_token"):
+        log.warning(
+            "It is strongly recommended to enable API authentication to "
+            "protect against unauthorized access and CSRF attacks."
+        )
+        log.warning("Please check the API documentation for more information.")
     app.run(host=hostname, port=port, debug=debug)
 
 if os.environ.get("CUCKOO_APP") == "api":

@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -9,8 +9,11 @@ import random
 import subprocess
 import tempfile
 
-from ctypes import byref, c_ulong, create_string_buffer, c_int, sizeof
-from ctypes import c_uint, c_wchar_p, create_unicode_buffer
+from ctypes import (
+    c_ulong, create_string_buffer, c_int, c_uint16, c_uint, c_wchar_p,
+    c_void_p, sizeof, byref, Structure, cast
+)
+from _subprocess import STARTF_USESTDHANDLES
 
 from lib.common.constants import SHUTDOWN_MUTEX
 from lib.common.defines import KERNEL32, NTDLL, SYSTEM_INFO, STILL_ACTIVE
@@ -20,6 +23,76 @@ from lib.common.results import upload_to_host
 from lib.core.ioctl import zer0m0n
 
 log = logging.getLogger(__name__)
+
+def spCreateProcessW(application_name, command_line, process_attributes,
+                     thread_attributes, inherit_handles, creation_flags,
+                     environment, current_directory, startup_info):
+    class STARTUPINFO(Structure):
+        _fields_ = [
+            ("cb", c_uint),
+            ("reserved1", c_void_p),
+            ("desktop", c_void_p),
+            ("title", c_void_p),
+            ("unused1", c_uint * 7),
+            ("flags", c_uint),
+            ("show_window", c_uint16),
+            ("reserved2", c_uint16),
+            ("reserved3", c_void_p),
+            ("std_input", c_void_p),
+            ("std_output", c_void_p),
+            ("std_error", c_void_p),
+        ]
+
+    class PROCESS_INFORMATION(Structure):
+        _fields_ = [
+            ("process_handle", c_void_p),
+            ("thread_handle", c_void_p),
+            ("process_identifier", c_uint),
+            ("thread_identifier", c_uint),
+        ]
+
+    class Handle(int):
+        def Close(self):
+            KERNEL32.CloseHandle(self)
+
+    if environment:
+        environment = "\x00".join(
+            "%s=%s" % (k, v) for k, v in environment.items()
+        ) + "\x00\x00"
+
+    si = STARTUPINFO()
+    si.cb = sizeof(STARTUPINFO)
+
+    if startup_info:
+        si.flags = startup_info.dwFlags
+        si.show_window = startup_info.wShowWindow
+
+    if si.flags & STARTF_USESTDHANDLES:
+        si.std_input = cast(int(startup_info.hStdInput), c_void_p)
+        si.std_output = cast(int(startup_info.hStdOutput), c_void_p)
+        si.std_error = cast(int(startup_info.hStdError), c_void_p)
+
+    pi = PROCESS_INFORMATION()
+
+    result = KERNEL32.CreateProcessW(
+        application_name, command_line, None, None, inherit_handles,
+        creation_flags, environment, current_directory, byref(si), byref(pi)
+    )
+    if not result:
+        # TODO We'll just assume this is correct for now.
+        raise WindowsError(KERNEL32.GetLastError())
+
+    return (
+        Handle(pi.process_handle), Handle(pi.thread_handle),
+        pi.process_identifier, pi.thread_identifier
+    )
+
+# We patch Python 2.7's native .CreateProcess method to be unicode-aware.
+subprocess._subprocess.CreateProcess = spCreateProcessW
+KERNEL32.CreateProcessW.argtypes = (
+    c_wchar_p, c_wchar_p, c_void_p, c_void_p, c_uint, c_uint, c_void_p,
+    c_wchar_p, c_void_p, c_void_p
+)
 
 def subprocess_checkcall(args, env=None):
     return subprocess.check_call(
@@ -122,42 +195,32 @@ class Process(object):
 
     def get_parent_pid(self):
         """Get the Parent Process ID."""
-        process_handle = self.open_process()
+        class PROCESS_BASIC_INFORMATION(Structure):
+            _fields_ = [
+                ("ExitStatus", c_void_p),
+                ("PebBaseAddress", c_void_p),
+                ("AffinityMask", c_void_p),
+                ("BasePriority", c_void_p),
+                ("UniqueProcessId", c_void_p),
+                ("InheritedFromUniqueProcessId", c_void_p),
+            ]
 
         NT_SUCCESS = lambda val: val >= 0
 
-        pbi = (c_int * 6)()
+        pbi = PROCESS_BASIC_INFORMATION()
         size = c_int()
 
         # Set return value to signed 32bit integer.
         NTDLL.NtQueryInformationProcess.restype = c_int
 
-        ret = NTDLL.NtQueryInformationProcess(process_handle,
-                                              0,
-                                              byref(pbi),
-                                              sizeof(pbi),
-                                              byref(size))
-
+        process_handle = self.open_process()
+        ret = NTDLL.NtQueryInformationProcess(
+            process_handle, 0, byref(pbi), sizeof(pbi), byref(size)
+        )
         KERNEL32.CloseHandle(process_handle)
 
         if NT_SUCCESS(ret) and size.value == sizeof(pbi):
-            return pbi[5]
-
-        return None
-
-    def shortpath(self, path):
-        """Returns the shortpath for a file.
-
-        As Python 2.7 does not support passing along unicode strings in
-        subprocess.Popen() and alike this will have to do. See also:
-        http://stackoverflow.com/questions/2595448/unicode-filename-to-python-subprocess-call
-        """
-        KERNEL32.GetShortPathNameW.restype = c_uint
-        KERNEL32.GetShortPathNameW.argtypes = c_wchar_p, c_wchar_p, c_uint
-
-        buf = create_unicode_buffer(0x8000)
-        KERNEL32.GetShortPathNameW(path, buf, len(buf))
-        return buf.value
+            return pbi.InheritedFromUniqueProcessId
 
     def _encode_args(self, args):
         """Convert a list of arguments to a string that can be passed along
@@ -203,7 +266,7 @@ class Process(object):
         elif not os.path.exists(path):
             raise CuckooError("File not found: %s" % path)
         else:
-            args = [is32bit_exe, "-f", self.shortpath(path)]
+            args = [is32bit_exe, "-f", path]
 
         try:
             bitsize = int(subprocess_checkoutput(args))
@@ -252,7 +315,7 @@ class Process(object):
 
         argv = [
             inject_exe,
-            "--app", self.shortpath(path),
+            "--app", path,
             "--only-start",
         ]
 
@@ -260,7 +323,7 @@ class Process(object):
             argv += ["--args", self._encode_args(args)]
 
         if curdir:
-            argv += ["--curdir", self.shortpath(curdir)]
+            argv += ["--curdir", curdir]
 
         if source:
             if isinstance(source, (int, long)) or source.isdigit():
@@ -443,14 +506,19 @@ class Process(object):
             "mode": mode or "",
             "disguise": self.config.options.get("disguise", "0"),
             "pipe-pid": "1",
-            "trigger": trigger or "",
+            "trigger": (trigger or "").encode("utf8"),
         }
 
         for key, value in lines.items():
             os.write(fd, "%s=%s\n" % (key, value))
 
         os.close(fd)
-        Process.first_process = False
+
+        # Only change the first_process attribute for processes that we
+        # "track", i.e., the lsass.exe injection doesn't count.
+        if track:
+            Process.first_process = False
+
         return config_path
 
     def dump_memory(self, addr=None, length=None):

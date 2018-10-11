@@ -43,7 +43,7 @@ INSTALLED_APPS = (
 
 MIDDLEWARE_CLASSES = (
     # Cuckoo headers.
-    "web.headers.CuckooHeaders",
+    "web.middle.CuckooHeaders",
     "web.errors.ExceptionMiddleware",
 )
 

@@ -17,7 +17,9 @@
             e.preventDefault();
             var $choice = $(this).find("input[name='hash']");
             if ($choice.length) {
-                window.location = $choice.val();
+                window.location = window.location.href + encodeURIComponent(
+                    $choice.val()
+                );
             }
         });
     })
@@ -61,7 +63,7 @@
              <!-- footer replacement to avoid double scrollbars -->
             <footer class="flex-grid__footer spread-alignment">
                 <p class="footnote">
-                    &copy;2010-2017 <a href="http://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
+                    &copy;2010-2018 <a href="https://www.cuckoosandbox.org" target="_blank">Cuckoo Sandbox</a>
                 </p>
                 <div class="logo">
                     <img src="{% static "graphic/cuckoo_inverse.png" %}" alt="Cuckoo Malware Analysis Sandbox" />

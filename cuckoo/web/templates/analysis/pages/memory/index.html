@@ -10,12 +10,12 @@
         <header class="cuckoo-analysis__header">
             <h1>VM Memory Dump</h1>
             <div class="header-right valign-bottom">
-                <a href="{% url "analysis.views.full_memory_dump_file" report.analysis.info.id %}" title="Download pcap file"><i class="fa fa-download"></i> Download Full Memory Dump</a>
+                <a href="{% url "analysis.views.full_memory_dump_file" report.analysis.info.id %}" title="Download full memory dump"><i class="fa fa-download"></i> Download Full Memory Dump</a>
             </div>
         </header>
 
         <div class="container-fluid">
-            <div class="row page-switcher">                
+            <div class="row page-switcher">
 
                 <div class="col-md-12 grouped-buttons__rows">
 
@@ -26,6 +26,7 @@
                         <a href="memory-device-tree" class="no-badge">Device Tree</a>
                         <a href="memory-code-injection" class="no-badge">Code Injection</a>
                         <a href="memory-timers" class="no-badge">Timers</a>
+                        <a href="memory-psxview" class="no-badge">Psxview</a>
                     </div>
 
                     <div class="grouped-buttons__bordered page-switcher__nav justify">
@@ -48,6 +49,7 @@
                     <div id="memory-device-tree">{% include "analysis/pages/memory/_devicetree.html" %}</div>
                     <div id="memory-code-injection">{% include "analysis/pages/memory/_malfind.html" %}</div>
                     <div id="memory-timers">{% include "analysis/pages/memory/_timers.html" %}</div>
+                    <div id="memory-psxview">{% include "analysis/pages/memory/_psxview.html" %}</div>
                     <div id="memory-messagehooks">{% include "analysis/pages/memory/_messagehooks.html" %}</div>
                     <div id="memory-apihooks">{% include "analysis/pages/memory/_apihooks.html" %}</div>
                     <div id="memory-callbacks">{% include "analysis/pages/memory/_callbacks.html" %}</div>

@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -30,11 +30,11 @@ from cuckoo.core.scheduler import Scheduler
 from cuckoo.core.startup import (
     check_configs, init_modules, check_version, init_logfile, init_logging,
     init_console_logging, init_tasks, init_yara, init_binaries, init_rooter,
-    init_routing
+    init_routing, ensure_tmpdir
 )
 from cuckoo.misc import (
     cwd, load_signatures, getuser, decide_cwd, drop_privileges, is_windows,
-    Pidfile, mkdir
+    Pidfile, mkdir, format_command
 )
 
 log = logging.getLogger("cuckoo")
@@ -45,6 +45,13 @@ def cuckoo_create(username=None, cfg=None, quiet=False):
         print jinja2.Environment().from_string(
             open(cwd("cwd", "init-pre.jinja2", private=True), "rb").read()
         ).render(cwd=cwd, yellow=yellow, red=red)
+
+    if not os.path.exists(cwd(".cwd", private=True)):
+        print red(
+            "The cuckoo/private/.cwd file is missing. Please run "
+            "'python setup.py sdist' before 'pip install ...'!"
+        )
+        return
 
     if not os.path.isdir(cwd()):
         os.mkdir(cwd())
@@ -129,6 +136,10 @@ def cuckoo_init(level, ctx, cfg=None):
         migrate_cwd()
         open(cwd(".cwd"), "wb").write(latest)
 
+    # Ensure the user is able to create and read temporary files.
+    if not ensure_tmpdir():
+        sys.exit(1)
+
     Database().connect()
 
     # Load additional Signatures.
@@ -159,15 +170,7 @@ def cuckoo_init(level, ctx, cfg=None):
             "You'll be able to fetch all the latest Cuckoo Signaturs, Yara "
             "rules, and more goodies by running the following command:"
         )
-        raw = cwd(raw=True)
-        if raw == "." or raw == "~/.cuckoo":
-            command = "cuckoo community"
-        elif " " in raw or "'" in raw:
-            command = 'cuckoo --cwd "%s" community' % raw
-        else:
-            command = "cuckoo --cwd %s community" % raw
-
-        log.info("$ %s", green(command))
+        log.info("$ %s", green(format_command("community")))
 
 def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
@@ -233,8 +236,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
         log.critical(red("{0}: {1}".format(e.__class__.__name__, e)))
         sys.exit(1)
     except SystemExit as e:
-        if e.code:
-            print e
+        pass
     except Exception as e:
         # Deal with an unhandled exception.
         sys.stderr.write(exception_message())
@@ -333,8 +335,9 @@ def submit(ctx, target, url, options, package, custom, owner, timeout,
 @click.argument("instance", required=False)
 @click.option("-r", "--report", help="Re-generate one or more reports")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
+@click.option("-t", "--timeout", default=0, help="Maximum timeout to process analyses (in seconds)")
 @click.pass_context
-def process(ctx, instance, report, maxcount):
+def process(ctx, instance, report, maxcount, timeout):
     """Process raw task data into reports."""
     init_console_logging(level=ctx.parent.level)
 
@@ -379,7 +382,7 @@ def process(ctx, instance, report, maxcount):
                 "Initialized instance=%s, ready to process some tasks",
                 instance
             )
-            process_tasks(instance, maxcount)
+            process_tasks(instance, maxcount, timeout)
     except KeyboardInterrupt:
         print(red("Aborting (re-)processing of your analyses.."))
 
@@ -416,6 +419,7 @@ def rooter(ctx, socket, group, service, iptables, ip, sudo):
             pass
     else:
         try:
+            log.info("Starting Cuckoo Rooter (group=%s)!", group)
             cuckoo_rooter(socket, group, service, iptables, ip)
         except KeyboardInterrupt:
             print(red("Aborting the Cuckoo Rooter.."))
@@ -625,6 +629,19 @@ def import_(ctx, mode, path):
     """Imports an older Cuckoo setup into a new CWD. The old setup should be
     identified by PATH and the new CWD may be specified with the --cwd
     parameter, e.g., "cuckoo --cwd /tmp/cwd import old-cuckoo"."""
+    if os.path.exists(os.path.join(path, ".cwd")):
+        print(yellow(
+            "The 'cuckoo import' feature is meant to import a legacy Cuckoo, "
+            "i.e., Cuckoo 1.2, 2.0-dev, 2.0-rc1, or 2.0-rc2 into a new Cuckoo "
+            "CWD."
+        ))
+        print(red(
+            "You're attempting to import an existing Cuckoo CWD. To upgrade "
+            "Cuckoo / your CWD, simply run 'pip install -U cuckoo' and re-run "
+            "the cuckoo commands!"
+        ))
+        sys.exit(1)
+
     if mode == "symlink" and is_windows():
         sys.exit(red(
             "You can only use the 'symlink' mode on non-Windows platforms."

@@ -1,6 +1,7 @@
 environment:
   matrix:
     - PYTHON: "C:/Python27"
+    - PYTHON: "C:/Python27-x64"
   global:
     MYSQL_PWD: Password12!
     POSTGRES_PORT: tcp://localhost:5432
@@ -48,6 +49,7 @@ before_test:
 test_script:
   - "cuckoo.exe -d"
   - "cuckoo.exe community"
+  - "cuckoo.exe -d || dir >NUL"
   - "pytest.exe --cov=cuckoo"
 
 after_test:

@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -696,6 +696,30 @@ def _204_205(c):
         c["auxiliary"]["mitm"]["script"] = "stuff/mitm.py"
     return c
 
+def _205_206(c):
+    c["auxiliary"]["replay"] = {
+        "enabled": True,
+        "mitmdump": "/usr/local/bin/mitmdump",
+        "port_base": 51000,
+    }
+    c["cuckoo"]["remotecontrol"] = {
+        "enabled": False,
+        "guacd_host": "localhost",
+        "guacd_port": 4822,
+    }
+    c["routing"]["inetsim"]["ports"] = None
+    c["virtualbox"]["controlports"] = "5000-5050"
+    return c
+
+def _206_210(c):
+    c["auxiliary"]["replay"]["certificate"] = "bin/cert.p12"
+    # We'd like to provide a secure default, but let's not inconvenience
+    # upgrading users. TODO Might need to revisited once we write back config.
+    c["cuckoo"]["cuckoo"]["api_token"] = None
+    c["cuckoo"]["cuckoo"]["web_secret"] = None
+    c["processing"]["irma"]["probes"] = None
+    return c
+
 migrations = {
     "0.4.0": ("0.4.1", None),
     "0.4.1": ("0.4.2", _041_042),
@@ -713,6 +737,8 @@ migrations = {
     "2.0.2": ("2.0.3", None),
     "2.0.3": ("2.0.4", _203_204),
     "2.0.4": ("2.0.5", _204_205),
+    "2.0.5": ("2.0.6", _205_206),
+    "2.0.6": ("2.1.0", _206_210),
 
     # We're also capable of migrating away from 2.0-dev which basically means
     # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.

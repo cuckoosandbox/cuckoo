@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,7 +7,6 @@ import bs4
 import ctypes
 import datetime
 import logging
-import olefile
 import oletools.olevba
 import oletools.oleobj
 import os
@@ -16,6 +15,7 @@ import peepdf.PDFCore
 import pefile
 import peutils
 import re
+import sflock
 import struct
 import zipfile
 import zlib
@@ -26,19 +26,10 @@ try:
 except ImportError:
     HAVE_MCRYPTO = False
 
-try:
-    import PyV8
-    HAVE_PYV8 = True
-
-    PyV8  # Fake usage.
-except:
-    HAVE_PYV8 = False
-
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
 from cuckoo.common.structures import LnkHeader, LnkEntry
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
-from cuckoo.compat import magic
 from cuckoo.core.extract import ExtractManager
 from cuckoo.misc import cwd, dispatch
 
@@ -76,7 +67,7 @@ class PortableExecutable(object):
         @param data: data to be analyzed.
         @return: file type or None.
         """
-        return magic.from_buffer(data)
+        return sflock.magic.from_buffer(data)
 
     def _get_peid_signatures(self):
         """Gets PEID signatures.
@@ -549,15 +540,28 @@ class PdfDocument(object):
         self.filepath = filepath
 
     def _parse_string(self, s):
-        # Big endian.
-        if s.startswith(u"\xfe\xff"):
-            return s[2:].encode("latin-1").decode("utf-16be")
+        if isinstance(s, unicode):
+            # Big endian.
+            if s.startswith(u"\xfe\xff"):
+                return s[2:].encode("latin-1").decode("utf-16be")
 
-        # Little endian.
-        if s.startswith(u"\xff\xfe"):
-            return s[2:].encode("latin-1").decode("utf-16le")
+            # Little endian.
+            if s.startswith(u"\xff\xfe"):
+                return s[2:].encode("latin-1").decode("utf-16le")
 
-        return s
+        if isinstance(s, str):
+            # Big endian.
+            if s.startswith("\xfe\xff"):
+                return s[2:].decode("utf-16be")
+
+            # Little endian.
+            if s.startswith("\xff\xfe"):
+                return s[2:].decode("utf-16le")
+
+        try:
+            return s.decode("latin-1")
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            return s
 
     def _sanitize(self, d, key):
         return self._parse_string(d.get(key, "").decode("latin-1"))
@@ -574,7 +578,7 @@ class PdfDocument(object):
             uri_obj = obj.elements.get("/URI")
             if uri_obj:
                 if isinstance(uri_obj, peepdf.PDFCore.PDFString):
-                    entry["urls"].append(uri_obj.value)
+                    entry["urls"].append(self._parse_string(uri_obj.value))
                 else:
                     log.warning(
                         "Identified a potential URL, but its associated "
@@ -601,8 +605,10 @@ class PdfDocument(object):
 
         if isinstance(ref, peepdf.PDFCore.PDFString):
             return {
-                "orig_code": "".join(ref.getJSCode()),
-                "beautified": jsbeautify("".join(ref.getJSCode())),
+                "orig_code": self._parse_string("".join(ref.getJSCode())),
+                "beautified": self._parse_string(
+                    jsbeautify("".join(ref.getJSCode()))
+                ),
                 "urls": []
             }
 
@@ -616,8 +622,10 @@ class PdfDocument(object):
 
         obj = f.body[version].objects[ref.id]
         return {
-            "orig_code": obj.object.decodedStream,
-            "beautified": jsbeautify(obj.object.decodedStream),
+            "orig_code": self._parse_string("".join(obj.object.getJSCode())),
+            "beautified": self._parse_string(
+                jsbeautify("".join(obj.object.getJSCode()))
+            ),
             "urls": []
         }
 

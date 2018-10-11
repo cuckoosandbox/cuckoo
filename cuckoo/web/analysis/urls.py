@@ -1,5 +1,5 @@
 # Copyright (C) 2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file "docs/LICENSE" for copying permission.
 
@@ -8,6 +8,8 @@ from django.conf.urls import url
 
 from cuckoo.web.controllers.analysis.api import AnalysisApi
 from cuckoo.web.controllers.analysis.compare.routes import AnalysisCompareRoutes
+from cuckoo.web.controllers.analysis.control.api import ControlApi
+from cuckoo.web.controllers.analysis.control.routes import AnalysisControlRoutes
 from cuckoo.web.controllers.analysis.export.api import ExportApi
 from cuckoo.web.controllers.analysis.network.api import AnalysisNetworkApi
 from cuckoo.web.controllers.analysis.routes import AnalysisRoutes
@@ -18,9 +20,12 @@ urlpatterns = [
     url(r"^(?P<task_id>\d+)/$", AnalysisRoutes.redirect_default, name="analysis/redirect_default"),
     url(r"^(?P<task_id>\d+)/export/$", AnalysisRoutes.export, name="analysis/export"),
     url(r"^(?P<task_id>\d+)/reboot/$", SubmissionRoutes.reboot, name="analysis/reboot"),
+    url(r"^(?P<task_id>\d+)/control/$", AnalysisControlRoutes.player, name="analysis/control/player"),
+    url(r"^(?P<task_id>\d+)/control/screenshots/$", ControlApi.store_screenshots, name="analysis/control/screenshots"),
+    url(r"^(?P<task_id>\d+)/control/tunnel/.*", ControlApi.tunnel, name="analysis/control/tunnel"),
     url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name="analysis/compare/left"),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_task_id>\d+)/$", AnalysisCompareRoutes.both, name="analysis/compare/both"),
-    url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>\w+)/$", AnalysisCompareRoutes.hash, name="analysis/compare/hash"),
+    url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>.*)/$", AnalysisCompareRoutes.hash, name="analysis/compare/hash"),
     # TODO Get rid of this magic routing again as it's only complicating the URL routing.
     url(r"^(?P<task_id>\d+)/(?P<page>summary)$", AnalysisRoutes.detail, name="analysis"),
     url(r"^(?P<task_id>\d+)/(?P<page>\w+)/$", AnalysisRoutes.detail, name="analysis"),

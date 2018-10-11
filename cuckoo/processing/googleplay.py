@@ -7,18 +7,12 @@ import logging
 import os
 import zipfile
 
-from androguard.core.bytecodes.apk import APK
-
 from cuckoo.common.objects import File
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
 
-try:
-    # TODO Fix with actual dependency from PyPI.
-    from lib.api.googleplay.googleplay import GooglePlayAPI
-    HAVE_GOOGLEPLAY = True
-except ImportError:
-    HAVE_GOOGLEPLAY = False
+# TODO Fix with actual dependency from PyPI.
+HAVE_GOOGLEPLAY = False
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +33,8 @@ class GooglePlay(Processing):
 
         if "file" not in self.task["category"]:
             return
+
+        from androguard.core.bytecodes.apk import APK
 
         f = File(self.task["target"])
         if f.get_name().endswith((".zip", ".apk")) or "zip" in f.get_type():

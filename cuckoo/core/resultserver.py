@@ -1,5 +1,5 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2012-2013 Claudio Guarnieri.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -71,7 +71,7 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                         "usually happens when you start Cuckoo without "
                         "bringing up the virtual interface associated with "
                         "the ResultServer IP address. Please refer to "
-                        "http://docs.cuckoosandbox.org/en/latest/faq/#troubles-problem"
+                        "https://cuckoo.sh/docs/faq/#troubles-problem"
                         " for more information." % (self.ip, self.port, e)
                     )
                 else:
@@ -87,6 +87,13 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                 self.servethread.setDaemon(True)
                 self.servethread.start()
                 break
+
+    def serve_forever(self, poll_interval=0.5):
+        try:
+            super(ResultServer, self).serve_forever(poll_interval)
+        except AttributeError as e:
+            if "NoneType" not in e.message or "select" not in e.message:
+                raise
 
     def add_task(self, task, machine):
         """Register a task/machine with the ResultServer."""
