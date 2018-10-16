@@ -336,6 +336,7 @@ def tasks_report(task_id, report_format="json"):
 
     bz_formats = {
         "all": {"type": "-", "files": ["memory.dmp"]},
+        "all_memory": {"type": "-", "files": []},
         "dropped": {"type": "+", "files": ["files"]},
         "package_files": {"type": "+", "files": ["package_files"]},
     }
