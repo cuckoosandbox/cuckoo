@@ -31,7 +31,9 @@ have to be installed as well::
     $ sudo apt-get install postgresql libpq-dev
 
 `Yara`_ and `Pydeep`_ are *optional* plugins but will have to be installed
-manually, so please refer to their websites.
+manually. Links are provided for convenience:
+* `Yara install`_
+* `pydeep install`_ - note: the ``libfuzzy-dev`` package is required for pydeep but at the time of writing, was not listed in the official documentation
 
 If you want to use KVM as machinery module you will have to install KVM::
 
@@ -43,11 +45,13 @@ If you want to use XenServer you'll have to install the *XenAPI* Python package:
 
 If you want to use the *mitm* auxiliary module (to intercept SSL/TLS generated
 traffic), you need to install `mitmproxy`_. Please refer to its website for
-installation instructions.
+installation instructions. Please note that the latest version of ``mitmproxy`` requires Python 3.6 or higher - we recommend that you install it within a separate ``virtualenv`` to isolate it and its requirements from Cuckoo's Python 2.7 environment.
 
 .. _Yara: https://github.com/plusvic/yara
 .. _Pydeep: https://github.com/kbandla/pydeep
 .. _mitmproxy: https://mitmproxy.org/
+.. _Yara install: https://yara.readthedocs.io/en/stable/gettingstarted.html
+.. _pydeep install: https://github.com/kbandla/pydeep/blob/master/INSTALL
 
 Installing Python libraries (on Mac OS X)
 =========================================
