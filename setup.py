@@ -211,7 +211,7 @@ do_setup(
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
         "roach>=0.1.2, <0.2",
-        "sflock>=0.3.6, <0.4",
+        "sflock>=0.3.8, <0.4",
         "sqlalchemy==1.0.8",
         "unicorn==1.0.1",
         "wakeonlan==0.2.2",
