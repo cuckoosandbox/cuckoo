@@ -35,7 +35,7 @@ class Configuration(object):
     )
     # Single entry values.
     keywords1 = (
-        "type", "version", "magic",
+        "type", "version", "magic", "campaign",
     )
     # Multiple entry values.
     keywords2 = (
