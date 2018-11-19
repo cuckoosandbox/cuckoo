@@ -73,6 +73,8 @@ class ProcessMemory(Processing):
         pe.FILE_HEADER.Characteristics |= (
             pefile.IMAGE_CHARACTERISTICS["IMAGE_FILE_RELOCS_STRIPPED"]
         )
+        if not pe.sections:
+            return
         return pe.sections[0].VirtualAddress
 
     def dump_images(self, process, drop_dlls=False):
@@ -119,6 +121,8 @@ class ProcessMemory(Processing):
                 continue
 
             hdrsz = self._fixup_pe_header(pe)
+            if not hdrsz:
+                continue
 
             img.append(str(pe.write())[:hdrsz])
             for idx, r in enumerate(regions):
