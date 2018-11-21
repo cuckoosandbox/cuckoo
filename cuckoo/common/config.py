@@ -318,6 +318,9 @@ class Config(object):
             "reboot": {
                 "enabled": Boolean(True),
             },
+            "sysmon": {
+                "enabled": Boolean(True),
+            },
         },
         "avd": {
             "avd": {
@@ -619,6 +622,9 @@ class Config(object):
                     exists=True, writable=False, readable=True,
                     allow_empty=True
                 ),
+            },
+            "sysmon": {
+                "enabled": Boolean(True),
             },
             "targetinfo": {
                 "enabled": Boolean(True),
