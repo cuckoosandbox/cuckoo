@@ -87,7 +87,7 @@ class MISP(Report):
 				mode = shlex.split(self.options.get("mode") or "")
 
 				uid=self.task["id"]
-				with open('.cuckoo/storage/analyses/' + str(uid) + '/reports/report.json', 'r') as json_file:
+				with open(CWD + '/storage/analyses/' + str(uid) + '/reports/report.json', 'r') as json_file:
 						data = json.load(json_file)
 						score = data['info']['score']
 						global score
