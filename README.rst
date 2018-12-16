@@ -44,4 +44,4 @@ You can find the full documentation of the latest stable release
    :target: https://codecov.io/gh/cuckoosandbox/cuckoo
 
 .. _`community guidelines`: https://cuckoo.sh/docs/introduction/community.html
-.. _`contribution requirements`: http://www.cuckoofoundation.org/contribute.html
+.. _`contribution requirements`: https://cuckoo.sh/docs/introduction/community.html#code-and-documentation-contributions
