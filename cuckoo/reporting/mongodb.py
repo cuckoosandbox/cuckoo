@@ -5,11 +5,13 @@
 
 import gridfs
 import os
-
+import logging
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import File
+
+log = logging.getLogger(__name__)
 
 try:
     from pymongo.errors import ConnectionFailure, InvalidDocument
