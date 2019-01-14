@@ -8,12 +8,18 @@ import logging
 import logging.handlers
 import thread
 import time
+from logging import FileHandler
 
-from cuckoo.common.colors import red, yellow, cyan
+from typing import Dict
+
+from cuckoo.common.colors import cyan, red, yellow
+from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.files import Folders
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
 
 _tasks = {}
+_tasks_log = {}  # type: Dict[int, FileHandler]
 _loggers = {}
 
 # Current GMT+x.
@@ -41,12 +47,9 @@ class TaskHandler(logging.Handler):
     """
 
     def emit(self, record):
-        task_id = _tasks.get(thread.get_ident())
-        if not task_id:
-            return
-
-        with open(cwd("cuckoo.log", analysis=task_id), "a+b") as f:
-            f.write("%s\n" % self.format(record))
+        log_handler = _tasks_log.get(thread.get_ident())
+        if log_handler:
+            log_handler.handle(record)
 
 class ConsoleHandler(logging.StreamHandler):
     """Logging to console handler."""
@@ -97,10 +100,21 @@ class JsonFormatter(logging.Formatter):
 def task_log_start(task_id):
     """Associate a thread with a task."""
     _tasks[thread.get_ident()] = task_id
+    if "task" in _loggers:
+        filename = cwd("cuckoo.log", analysis=task_id)
+        Folders.create(cwd(analysis=task_id))
+        formatter = logging.Formatter("%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+        log_handler = logging.FileHandler(filename=filename)
+        log_handler.setFormatter(formatter)
+        _tasks_log[thread.get_ident()] = log_handler
 
-def task_log_stop(task_id):
+def task_log_stop(_):
     """Disassociate a thread from a task."""
-    _tasks.pop(thread.get_ident(), None)
+    thread_id = thread.get_ident()
+    _tasks.pop(thread_id, None)
+
+    if thread_id in _tasks_log:
+        _tasks_log.pop(thread_id).close()
 
 def init_logger(name, level=None):
     formatter = logging.Formatter(
@@ -111,31 +125,29 @@ def init_logger(name, level=None):
         l = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.log"))
         l.setFormatter(formatter)
         l.setLevel(level)
-
-    if name == "cuckoo.json":
+    elif name == "cuckoo.json":
         j = JsonFormatter()
         l = logging.handlers.WatchedFileHandler(cwd("log", "cuckoo.json"))
         l.setFormatter(j)
         l.addFilter(j)
-
-    if name == "console":
+    elif name == "console":
         l = ConsoleHandler()
-        l.setFormatter(formatter)
+        l.setFormatter(logging.Formatter("[%(name)s] %(levelname)s: %(message)s"))
         l.setLevel(level)
-
-    if name == "database":
+    elif name == "database":
         l = DatabaseHandler()
         l.setLevel(logging.ERROR)
-
-    if name == "task":
+    elif name == "task":
         l = TaskHandler()
+        l.lock = None
         l.setFormatter(formatter)
-
-    if name.startswith("process-") and name.endswith(".json"):
+    elif name.startswith("process-") and name.endswith(".json"):
         j = JsonFormatter()
         l = logging.handlers.WatchedFileHandler(cwd("log", name))
         l.setFormatter(j)
         l.addFilter(j)
+    else:
+        raise CuckooCriticalError("Init logger type is not defined: {}".format(name))
 
     _loggers[name] = l
     logging.getLogger().addHandler(l)
