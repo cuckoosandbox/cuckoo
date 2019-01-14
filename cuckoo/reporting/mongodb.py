@@ -300,8 +300,8 @@ class MongoDB(Report):
             parent_key, psize = self.debug_dict_size(report)[0]
             if not self.options.get("fix_large_docs", False):
                 # Just log the error and problem keys
-                log.error(str(e))
-                log.error("Largest parent key: %s (%d MB)" % (parent_key, int(psize) / MEGABYTE))
+                log.info(str(e))
+                log.info("Largest parent key: %s (%d MB)" % (parent_key, int(psize) / MEGABYTE))
             else:
                 # Delete the problem keys and check for more
                 error_saved = True
@@ -326,8 +326,8 @@ class MongoDB(Report):
                             error_saved = False
                         except InvalidDocument as e:
                             parent_key, psize = self.debug_dict_size(report)[0]
-                            log.error(str(e))
-                            log.error("Largest parent key: %s (%d MB)" % (parent_key, int(psize) / MEGABYTE))
+                            log.info(str(e))
+                            log.info("Largest parent key: %s (%d MB)" % (parent_key, int(psize) / MEGABYTE))
                             size_filter = size_filter - MEGABYTE
                     except Exception as e:
                         log.error("Failed to delete child key: %s" % str(e))
