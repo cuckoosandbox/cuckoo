@@ -153,8 +153,8 @@ def test_elastic_init():
     e.init()
     assert e.enabled is True
     assert e.hosts == ["localhost"]
-    assert e.calls is True
-    assert e.index == "cuckoo"
+    assert e.calls_index is True
+    assert e.report_index == "cuckoo"
     assert e.index_time_pattern == "yearly"
     assert e.cuckoo_node is None
 

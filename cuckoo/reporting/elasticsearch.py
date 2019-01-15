@@ -20,6 +20,7 @@ logging.getLogger("elasticsearch.trace").setLevel(logging.WARNING)
 
 log = logging.getLogger(__name__)
 
+
 class ElasticSearch(Report):
     """Stores report in Elasticsearch."""
 
@@ -36,7 +37,15 @@ class ElasticSearch(Report):
         if not elastic.init():
             return
 
-        cls.template_name = "%s_template" % elastic.index
+        cuckoo_template_path = cwd("elasticsearch", "cuckoo_template.json")
+        calls_template_path = cwd("elasticsearch", "calls_template.json")
+        irma_template_path = cwd("elasticsearch", "irma_template.json")
+
+        elastic_templates = [
+            (cuckoo_template_path, elastic.report_index, "%s_template" % elastic.report_index),
+            (calls_template_path, elastic.calls_index, "%s_template" % elastic.calls_index),
+            (irma_template_path, elastic.irma_index, "%s_template" % elastic.irma_index)
+        ]
 
         try:
             elastic.connect()
@@ -46,16 +55,17 @@ class ElasticSearch(Report):
             )
 
         # check to see if the template exists apply it if it does not
-        if not elastic.client.indices.exists_template(cls.template_name):
-            if not cls.apply_template():
-                raise CuckooReportError("Cannot apply Elasticsearch template")
+        for template_path, index_name, template_name in elastic_templates:
+            if not elastic.client.indices.exists_template(template_name):
+                if not cls.apply_template(template_path, index_name, template_name):
+                    raise CuckooReportError("Cannot apply Elasticsearch template for %s" % template_name)
 
     @classmethod
-    def apply_template(cls):
-        template_path = cwd("elasticsearch", "template.json")
-        if not os.path.exists(template_path):
-            return False
+    def apply_template(cls, template_path, index_name, template_name):
 
+        if not os.path.exists(template_path):
+            logging.error('{} template is missing!'.format(template_path))
+            return False
         try:
             template = json.loads(open(template_path, "rb").read())
         except ValueError:
@@ -67,12 +77,12 @@ class ElasticSearch(Report):
         # Create an index wildcard based off of the index name specified
         # in the config file, this overwrites the settings in
         # template.json.
-        template["template"] = elastic.index + "-*"
+        template["template"] = index_name + "-*"
 
         # if the template does not already exist then create it
-        if not elastic.client.indices.exists_template(cls.template_name):
+        if not elastic.client.indices.exists_template(template_name):
             elastic.client.indices.put_template(
-                name=cls.template_name, body=json.dumps(template)
+                name=template_name, body=json.dumps(template)
             )
         return True
 
@@ -85,7 +95,7 @@ class ElasticSearch(Report):
         }
         return header
 
-    def do_index(self, obj):
+    def do_index(self, obj, index_name):
         base_document = self.get_base_document()
 
         # Append the base document to the object to index.
@@ -93,7 +103,7 @@ class ElasticSearch(Report):
 
         try:
             elastic.client.index(
-                index=self.dated_index,
+                index="%s-%s" % (index_name, self.date_pattern),
                 doc_type=self.report_type,
                 body=base_document
             )
@@ -157,7 +167,7 @@ class ElasticSearch(Report):
                 call_document.update(call)
                 call_document.update(base_document)
                 bulk_index.append({
-                    "_index": self.dated_index,
+                    "_index": "%s-%s" % (elastic.calls_index, self.date_pattern),
                     "_type": self.call_type,
                     "_source": call_document
                 })
@@ -183,7 +193,7 @@ class ElasticSearch(Report):
             "monthly": "%Y-%m",
             "daily": "%Y-%m-%d",
         }[elastic.index_time_pattern])
-        self.dated_index = "%s-%s" % (elastic.index, date_index)
+        self.date_pattern = "%s" % date_index
 
         # Index target information, the behavioral summary, and
         # VirusTotal results.
@@ -201,7 +211,7 @@ class ElasticSearch(Report):
 
         irma = results.get("irma")
         if irma:
-            doc["irma"] = irma
+            self.do_index(irma, elastic.irma_index)
 
         signatures = results.get("signatures")
         if signatures:
@@ -215,7 +225,7 @@ class ElasticSearch(Report):
         if procmemory:
             doc["procmemory"] = procmemory
 
-        self.do_index(doc)
+        self.do_index(doc, elastic.report_index)
 
         # Index the API calls.
         if elastic.calls:
