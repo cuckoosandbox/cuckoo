@@ -44,10 +44,10 @@
                 },
                 "procmemory": {
                     "type": "nested",
-                    "include_in_root": "True",
+                    "include_in_root": true,
                     "properties": {
                         "regions": {
-                           "include_in_root": "True",
+                           "include_in_root": true,
                            "type": "nested"
                         }
                     }
