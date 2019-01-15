@@ -14,8 +14,7 @@
                 {
                     "notanalyzed": {
                         "mapping": {
-                            "index": "not_analyzed",
-                            "type": "text",
+                            "type": "keyword",
                             "doc_values": "True"
                         },
                         "match_mapping_type": "string",

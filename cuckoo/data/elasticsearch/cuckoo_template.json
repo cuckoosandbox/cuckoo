@@ -15,8 +15,7 @@
                 {
                     "not_analyzed": {
                         "mapping": {
-                            "index": "not_analyzed",
-                            "type": "text",
+                            "type": "keyword",
                             "ignore_above": 32766
                         },
                         "match_mapping_type": "string",
@@ -26,8 +25,7 @@
                 {
                     "signatures": {
                         "mapping": {
-                            "index": "not_analyzed",
-                            "type": "text",
+                            "type": "keyword",
                             "ignore_above": 32766
                         },
                         "path_match": "signatures.marks.call.arguments.*",
