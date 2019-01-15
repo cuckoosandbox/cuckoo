@@ -13,7 +13,7 @@
             "date_detection": false,
             "dynamic_templates": [
                 {
-                    "not_analyzed": {
+                    "keyword": {
                         "mapping": {
                             "type": "keyword",
                             "ignore_above": 32766
