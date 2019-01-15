@@ -228,5 +228,5 @@ class ElasticSearch(Report):
         self.do_index(doc, elastic.report_index)
 
         # Index the API calls.
-        if elastic.calls:
+        if elastic.calls_index:
             self.process_behavior(results)
