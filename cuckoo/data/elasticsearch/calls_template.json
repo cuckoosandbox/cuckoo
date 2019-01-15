@@ -1,5 +1,5 @@
 {
-    "template": "cuckoo-*",
+    "template": "calls-*",
     "settings": {
         "index": {
             "mapping.coerce": true,
