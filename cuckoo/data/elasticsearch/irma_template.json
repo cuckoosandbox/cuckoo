@@ -18,7 +18,7 @@
                             "type": "text",
                             "doc_values": "True"
                         },
-                        "match_mapping_type": "text",
+                        "match_mapping_type": "string",
                         "match": "*"
                     }
                 }

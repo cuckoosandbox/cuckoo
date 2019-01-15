@@ -19,7 +19,7 @@
                             "type": "text",
                             "ignore_above": 32766
                         },
-                        "match_mapping_type": "text",
+                        "match_mapping_type": "string",
                         "match": "*"
                     }
                 },
