@@ -16,10 +16,10 @@
                     "not_analyzed": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string",
+                            "type": "text",
                             "ignore_above": 32766
                         },
-                        "match_mapping_type": "string",
+                        "match_mapping_type": "text",
                         "match": "*"
                     }
                 },
@@ -27,7 +27,7 @@
                     "signatures": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string",
+                            "type": "text",
                             "ignore_above": 32766
                         },
                         "path_match": "signatures.marks.call.arguments.*",

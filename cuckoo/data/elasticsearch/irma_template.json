@@ -15,10 +15,10 @@
                     "notanalyzed": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string",
+                            "type": "text",
                             "doc_values": "True"
                         },
-                        "match_mapping_type": "string",
+                        "match_mapping_type": "text",
                         "match": "*"
                     }
                 }

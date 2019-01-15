@@ -16,7 +16,7 @@
                     "not_analyzed": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string",
+                            "type": "text",
                             "ignore_above": 32766
                         },
                         "match_mapping_type": "string",
@@ -27,7 +27,7 @@
                     "call_arguments": {
                         "mapping": {
                             "index": "not_analyzed",
-                            "type": "string",
+                            "type": "text",
                             "ignore_above": 32766
                         },
                         "path_match": "arguments.*",
