@@ -11,12 +11,14 @@ class ApiScoutRunner(Processing):
     def run(self):
         self.key = "apiscout"
 
-        # self.options == dict of options from processing.conf/[apiscout] section
-        # self.pmemory_path - path to process memory dumps
-
+        # Processing the memory dumps can take a little while. Only proceed if
+        # the user has selected the 'procmemdump' option for this task
+        # I didn't expect memory dumps to be generated without this option, but for some reason they still are
+        if not self.task.get("options", {}).get("procmemdump"):
+            raise CuckooProcessingError("procmemdump not set for this task")
 
         # Get the path to the relevant apiscout DB and make sure it exists
-        self.apiscout_db_path = os.path.join(self.options.get("db_paths"), self.machine.name + ".json")
+        self.apiscout_db_path = os.path.join(self.options.get("db_paths"), self.machine.get("name","") + ".json")
 
         if not os.path.exists(self.apiscout_db_path):
             raise CuckooProcessingError("Can't find ApiScout DB file: %s" % self.apiscout_db_path)
@@ -33,6 +35,7 @@ class ApiScoutRunner(Processing):
                 dump_file = File(dump_path)
 
                 try:
+                    log.info("Working on %s" % dmp)
                     vector = self.extract_vector(open(dump_path, "rb").read(), self.apiscout_db_path)
                 except:
                     log.exception("Error getting apivector for %s. Traceback: %s" % (dmp, traceback.format_exc()))
@@ -49,6 +52,7 @@ class ApiScoutRunner(Processing):
     def extract_vector(self, memory_dump, apiscout_profile_path):
         # Make sure we can import apiscout
         try:
+            from apiscout.ApiScout import ApiScout
             import apiscout
         except ImportError as e:
             raise CuckooProcessingError("Unable to import apiscout module")
@@ -56,7 +60,7 @@ class ApiScoutRunner(Processing):
         module_path = os.path.dirname(os.path.realpath(apiscout.__file__))
         winapi1024_path = os.sep.join([module_path, "data", "winapi1024v1.txt"])
 
-        scout = apiscout.ApiScout()
+        scout = ApiScout()
         scout.loadDbFile(apiscout_profile_path)
         # TODO depends on setup that produces memory dumps
         scout.ignoreAslrOffsets(True)
