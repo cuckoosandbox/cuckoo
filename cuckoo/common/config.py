@@ -636,6 +636,10 @@ class Config(object):
                 "force": Boolean(False),
                 "url": String(),
             },
+            "apiscoutrunner": {
+                "enabled": Boolean(False),
+                "db_paths": String()
+            },
         },
         "qemu": {
             "qemu": {
