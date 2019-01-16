@@ -321,7 +321,7 @@ def search(request):
     match_value = ".*".join(re.split("[^a-zA-Z0-9]+", value.lower()))
 
     r = elastic.client.search(
-        index=elastic.index + "-*",
+        index=elastic.report_index + "-*",
         body={
             "query": {
                 "query_string": {
