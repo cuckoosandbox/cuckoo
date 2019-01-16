@@ -1,5 +1,5 @@
 {
-    "template": "cuckoo-*",
+    "template": "cuckoo-reports-*",
     "settings": {
         "index": {
             "mapping.coerce": true,

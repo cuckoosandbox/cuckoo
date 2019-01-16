@@ -58,7 +58,7 @@ class ElasticSearch(Report):
         for template_path, index_name, template_name in elastic_templates:
             logging.info('Applying template for %s' % template_name)
             if not elastic.client.indices.exists_template(template_name):
-                logging.info('Template does ot exist, applying %s' % template_name)
+                logging.info('Template does not exist, applying %s' % template_name)
                 if not cls.apply_template(template_path, index_name, template_name):
                     raise CuckooReportError("Cannot apply Elasticsearch template for %s" % template_name)
 

@@ -1,5 +1,5 @@
 {
-    "template": "irma-*",
+    "template": "cuckoo-irma-*",
     "settings": {
         "index": {
             "mapping.coerce": true,
