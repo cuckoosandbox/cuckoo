@@ -42,9 +42,9 @@ class ElasticSearch(Report):
         irma_template_path = cwd("elasticsearch", "irma_template.json")
 
         elastic_templates = [
-            (cuckoo_template_path, elastic.report_index, "%s_template" % elastic.report_index),
-            (calls_template_path, elastic.calls_index, "%s_template" % elastic.calls_index),
-            (irma_template_path, elastic.irma_index, "%s_template" % elastic.irma_index)
+            (cuckoo_template_path, elastic.report_index, "%s-template" % elastic.report_index),
+            (calls_template_path, elastic.calls_index, "%s-template" % elastic.calls_index),
+            (irma_template_path, elastic.irma_index, "%s-template" % elastic.irma_index)
         ]
 
         try:
