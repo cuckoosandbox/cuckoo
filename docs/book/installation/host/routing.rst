@@ -120,6 +120,11 @@ Rooter and choosing a network routing option for your analysis**.
 Documentation on starting the ``Cuckoo Rooter`` may be found in the
 :ref:`cuckoo_rooter_usage` document.
 
+Both global routing and per-analysis routing require ip forwarding to be enabled:
+
+    $ echo 1 | sudo tee -a /proc/sys/net/ipv4/ip_forward
+    $ sudo sysctl -w net.ipv4.ip_forward=1
+
 .. _routing_iproute2:
 
 Configuring iproute2
