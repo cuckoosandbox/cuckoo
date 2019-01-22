@@ -98,7 +98,9 @@ Following are all RESTful resources. Also make sure to check out the
 +-----------------------------------+---------------------------------------------------------------+
 | ``DELETE`` :ref:`task_delete`     | Delete all associated information of a task.                  |
 +-----------------------------------+---------------------------------------------------------------+
-| ``GET`` :ref:`report_get`         + Fetch an analysis report.                                     |
+| ``GET`` :ref:`report_get`         | Fetch an analysis report.                                     |
++-----------------------------------+---------------------------------------------------------------+
+| ``GET`` :ref:`pcap_get`           | Fetches the PCAP of an analysis.                              |
 +-----------------------------------+---------------------------------------------------------------+
 
 .. _node_root_get:
@@ -316,6 +318,16 @@ Fetch a report for the given task in the specified format::
     # Defaults to the JSON report.
     $ curl http://localhost:9003/api/report/2
     ...
+
+.. _pcap_get:
+
+GET /api/pcap/<id>
+------------------
+
+Fetches the PCAP for the given task::
+
+   $ curl http://localhost:9003/api/pcap/2
+   ...
 
 Proposed setup
 ==============
