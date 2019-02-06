@@ -717,6 +717,7 @@ def _206_210(c):
     # upgrading users. TODO Might need to revisited once we write back config.
     c["cuckoo"]["cuckoo"]["api_token"] = None
     c["cuckoo"]["cuckoo"]["web_secret"] = None
+    c["kvm"]["kvm"]["dsn"] = "qemu:///system"
     c["processing"]["irma"]["probes"] = None
     return c
 
