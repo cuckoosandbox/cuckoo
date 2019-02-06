@@ -292,7 +292,9 @@ c8492c74db400e6300194c1bafd3088a102bdc8e analyzer/windows/modules/auxiliary/huma
 e86627abeb5ecc0112438ad179e9d0487870785a analyzer/windows/modules/packages/ie.py
 
 # TBD
+b327de7ae427d9e39f43d11f15b4754fc99ed98b agent/agent.py
 cb3a77d8dd7edf46de54545ca7b0c5b201f85917 analyzer/windows/bin/execsc.exe
 93727e778dadc13d83cea61a9ea88bf6b5906686 analyzer/windows/modules/auxiliary/human.py
+24cbd18428df8dbc6b9ccd7896d066c492f6d381 analyzer/windows/modules/packages/ps1.py
 6e6680e26bf1cf41909a4efcbd86917cf4b14603 analyzer/windows/modules/packages/pub.py
 d8fce614d615f6bdb3117e92bfa6e4ae2b48ea52 analyzer/windows/modules/packages/vbs.py
