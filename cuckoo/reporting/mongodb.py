@@ -5,11 +5,23 @@
 
 import gridfs
 import os
+import logging
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import File
+
+log = logging.getLogger(__name__)
+
+try:
+    from pymongo.errors import ConnectionFailure, InvalidDocument
+    HAVE_MONGO = True
+except ImportError:
+    HAVE_MONGO = False
+
+MONGOSIZELIMIT = 0x1000000
+MEGABYTE = 0x100000
 
 class MongoDB(Report):
     """Stores report in MongoDB."""
@@ -75,6 +87,54 @@ class MongoDB(Report):
         except gridfs.errors.FileExists:
             to_find = {"sha256": file_obj.get_sha256()}
             return self.db.fs.files.find_one(to_find)["_id"]
+
+    def debug_dict_size(self, dct):
+        if type(dct) == list:
+            dct = dct[0]
+
+        totals = dict((k, 0) for k in dct)
+        def walk(root, key, val):
+            if isinstance(val, dict):
+                for k, v in val.iteritems():
+                    walk(root, k, v)
+
+            elif isinstance(val, (list, tuple, set)):
+                for el in val:
+                    walk(root, None, el)
+
+            elif isinstance(val, basestring):
+                totals[root] += len(val)
+
+        for key, val in dct.iteritems():
+            walk(key, key, val)
+
+        return sorted(totals.items(), key=lambda item: item[1], reverse=True)
+
+    def convertdict2unicode(self, mydict):
+        newDict = {}
+        for k, v in mydict.iteritems():
+            if isinstance(v, str):
+                newDict[k] = unicode(v, errors = 'replace')
+            elif isinstance(v, list):
+                newDict[k] = self.convert2unicode(v)
+            elif isinstance(v, dict):
+                newDict[k] = self.convertdict2unicode(v)
+            else:
+                newDict[k] = v
+        return newDict;
+
+    def convert2unicode(self, mylist):
+        newList = []
+        for v in mylist:
+            if isinstance(v, str):
+                newList.append( unicode(v, errors = 'replace') )
+            elif isinstance(v, list):
+                newList.append(self.convert2unicode(v))
+            elif isinstance(v, dict):
+                newList.append(self.convertdict2unicode(v))
+            else:
+                newList.append(v)
+        return newList
 
     def run(self, results):
         """Writes report.
@@ -221,7 +281,7 @@ class MongoDB(Report):
                     # If the chunk size is paginate or if the loop is
                     # completed then store the chunk in MongoDB.
                     if len(chunk) == paginate:
-                        to_insert = {"pid": process["pid"], "calls": chunk}
+                        to_insert = {"pid": process["pid"], "calls": self.convert2unicode(chunk)}
                         chunk_id = self.db.calls.insert(to_insert)
                         chunks_ids.append(chunk_id)
                         # Reset the chunk.
@@ -232,7 +292,7 @@ class MongoDB(Report):
 
                 # Store leftovers.
                 if chunk:
-                    to_insert = {"pid": process["pid"], "calls": chunk}
+                    to_insert = {"pid": process["pid"], "calls": self.convert2unicode(chunk)}
                     chunk_id = self.db.calls.insert(to_insert)
                     chunks_ids.append(chunk_id)
 
@@ -259,5 +319,42 @@ class MongoDB(Report):
 
             report["procmon"] = procmon
 
-        # Store the report and retrieve its object id.
-        self.db.analysis.save(report)
+        try:
+            # Store the report and retrieve its object id.
+            self.db.analysis.save(report)
+        except InvalidDocument as e:
+            parent_key, psize = self.debug_dict_size(report)[0]
+            if not self.options.get("fix_large_docs", False):
+                # Just log the error and problem keys
+                log.info(str(e))
+                log.info("Largest parent key: %s (%d MB)" % (parent_key, int(psize) / MEGABYTE))
+            else:
+                # Delete the problem keys and check for more
+                error_saved = True
+                size_filter = MONGOSIZELIMIT
+                while error_saved:
+                    if type(report) == list:
+                        report = report[0]
+                    try:
+                        if type(report[parent_key]) == list:
+                            for j, parent_dict in enumerate(report[parent_key]):
+                                child_key, csize = self.debug_dict_size(parent_dict)[0]
+                                if csize > size_filter:
+                                    log.warn("results['%s']['%s'] deleted due to size: %s" % (parent_key, child_key, csize))
+                                    del report[parent_key][j][child_key]
+                        else:
+                            child_key, csize = self.debug_dict_size(report[parent_key])[0]
+                            if csize > size_filter:
+                                log.warn("results['%s']['%s'] deleted due to size: %s" % (parent_key, child_key, csize))
+                                del report[parent_key][child_key]
+                        try:
+                            self.db.analysis.save(report)
+                            error_saved = False
+                        except InvalidDocument as e:
+                            parent_key, psize = self.debug_dict_size(report)[0]
+                            log.info(str(e))
+                            log.info("Largest parent key: %s (%d MB)" % (parent_key, int(psize) / MEGABYTE))
+                            size_filter = size_filter - MEGABYTE
+                    except Exception as e:
+                        log.error("Failed to delete child key: %s" % str(e))
+                        error_saved = False
