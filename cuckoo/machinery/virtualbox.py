@@ -358,7 +358,7 @@ class VirtualBox(Machinery):
             )
 
         # VirtualBox version 4, 5, and 6.
-        if output.startswith("5") output.startswith("6"):
+        if output.startswith("5") or output.startswith("6"):
             dumpcmd = "dumpvmcore"
         else:
             dumpcmd = "dumpguestcore"
