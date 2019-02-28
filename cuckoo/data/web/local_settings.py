@@ -6,7 +6,7 @@
 import web.errors
 
 # Maximum upload size (10GB, so there's basically no limit).
-MAX_UPLOAD_SIZE = 10*1024*1024*1024
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024 * 1024
 
 # Override default secret key stored in $CWD/web/.secret_key
 # Make this unique, and don't share it with anybody.
@@ -37,3 +37,10 @@ ALLOWED_HOSTS = ["*"]
 
 handler404 = web.errors.handler404
 handler500 = web.errors.handler500
+
+#A list of strings representing the subnets or ipaddresses that can download 
+#samples and dropped files 
+#Values in this list can be ipv4 or ipv6 separated by "," 
+#(e.g. '127.0.0.0/8,10.0.0.0/8,fd00::/8').
+ALLOWED_FILEDOWNLOAD_SUBNETS = '127.0.0.0/8,10.0.0.0/8,fd00::/8'
+
