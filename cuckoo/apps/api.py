@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -401,6 +401,28 @@ def tasks_report(task_id, report_format="json"):
                               " try again with JSON format")
         return open(report_path, "rb").read()
 
+@app.route("/tasks/summary/<int:task_id>")
+def tasks_summary(task_id):
+    report_path = cwd("reports", "report.json", analysis=task_id)
+    if not os.path.exists(report_path):
+        return json_error(404, "Report not found")
+
+    with open(report_path, "rb") as report_file:
+        report = json.load(report_file)
+
+    try:
+        del report["procmemory"]
+        del report["behavior"]["generic"]
+        del report["behavior"]["apistats"]
+        del report["behavior"]["processes"]
+        del report["debug"]
+        del report["screenshots"]
+        del report["metadata"]
+    except KeyError:
+        pass
+
+    return jsonify(report)
+
 @app.route("/tasks/screenshots/<int:task_id>")
 @app.route("/v1/tasks/screenshots/<int:task_id>")
 @app.route("/tasks/screenshots/<int:task_id>/<screenshot>")
@@ -473,7 +495,11 @@ def files_view(md5=None, sha256=None, sample_id=None):
     if not sample:
         return json_error(404, "File not found")
 
+    tasks = sorted(
+        list(map(lambda t: t.id, db.list_tasks(sample_id=sample.id)))
+    )
     response["sample"] = sample.to_dict()
+    response["sample"]["tasks"] = tasks
     return jsonify(response)
 
 @app.route("/files/get/<sha256>")
