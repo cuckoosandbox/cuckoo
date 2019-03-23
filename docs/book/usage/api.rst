@@ -159,6 +159,8 @@ each one. For details click on the resource name.
 | ``GET`` :ref:`tasks_report`         | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
 |                                     | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_summary`        | Returns a condensed report in JSON format.                                                                       |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_shots`          | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_rereport`       | Re-run reporting for task associated with a given analysis task ID.                                              |
@@ -679,6 +681,30 @@ Returns the report associated with the specified task ID.
 
 * ``200`` - no error
 * ``400`` - invalid report format
+* ``404`` - report not found
+
+.. _tasks_summary:
+
+/tasks/summary
+--------------
+
+**GET /tasks/summary/** *(int: id)*
+
+Returns a condensed report associated with the specified task ID in JSON format.
+
+**Example request**.
+
+.. code-block:: bash
+
+    curl http://localhost:8090/tasks/summary/1
+
+**Parameters**:
+
+* ``id`` *(required)* *(int)* - ID of the task to get the report for
+
+**Status codes**:
+
+* ``200`` - no error
 * ``404`` - report not found
 
 .. _tasks_shots:
