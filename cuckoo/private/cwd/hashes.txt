@@ -298,3 +298,4 @@ cb3a77d8dd7edf46de54545ca7b0c5b201f85917 analyzer/windows/bin/execsc.exe
 24cbd18428df8dbc6b9ccd7896d066c492f6d381 analyzer/windows/modules/packages/ps1.py
 6e6680e26bf1cf41909a4efcbd86917cf4b14603 analyzer/windows/modules/packages/pub.py
 d8fce614d615f6bdb3117e92bfa6e4ae2b48ea52 analyzer/windows/modules/packages/vbs.py
+f81e71f788149039f31c9b0b5e2891733e51b5d7 whitelist/ip.txt
