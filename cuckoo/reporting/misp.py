@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2018 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -13,9 +13,6 @@ class MISP(Report):
     """Enrich MISP with Cuckoo results."""
 
     def sample_hashes(self, results, event):
-        """For now only reports hash of the analyzed file, not of the dropped
-        files, as we may have hundreds or even thousands of dropped files, and
-        the misp.add_hashes() method doesn't accept multiple arguments yet."""
         if results.get("target", {}).get("file", {}):
             f = results["target"]["file"]
             self.misp.add_hashes(
@@ -28,26 +25,8 @@ class MISP(Report):
                 comment="File submitted to Cuckoo",
             )
 
-    def maldoc_network(self, results, event):
-        """Specific reporting functionality for malicious documents. Most of
-        this functionality should be integrated more properly in the Cuckoo
-        Core rather than being abused at this point."""
-        urls = set()
-        for signature in results.get("signatures", []):
-            if signature["name"] != "malicious_document_urls":
-                continue
-
-            for mark in signature["marks"]:
-                if mark["category"] == "url":
-                    urls.add(mark["ioc"])
-
-        self.misp.add_url(event, sorted(list(urls)))
-
     def all_urls(self, results, event):
-        """All of the accessed URLS as per the PCAP. *Might* have duplicates
-        when compared to the 'maldoc' mode, but e.g., in offline mode, when no
-        outgoing traffic is allowed, 'maldoc' reports URLs that are not present
-        in the PCAP (as the PCAP is basically empty)."""
+        """All of the accessed URLS as per the PCAP."""
         urls = set()
         for protocol in ("http_ex", "https_ex"):
             for entry in results.get("network", {}).get(protocol, []):
@@ -76,6 +55,20 @@ class MISP(Report):
 
         self.misp.add_domains_ips(event, domains)
         self.misp.add_ipdst(event, sorted(list(ipaddrs)))
+
+    def family(self, results, event):
+        for config in results.get("metadata", {}).get("cfgextr"):
+            self.misp.add_detection_name(
+                event, config["family"], "Sandbox detection"
+            )
+            for cnc in config.get("cnc", []):
+                self.misp.add_url(event, cnc)
+            for url in config.get("url", []):
+                self.misp.add_url(event, cnc)
+            for mutex in config.get("mutex", []):
+                self.misp.add_mutex(event, mutex)
+            for user_agent in config.get("user_agent", []):
+                self.misp.add_useragent(event, user_agent)
 
     def run(self, results):
         """Submits results to MISP.
@@ -114,11 +107,10 @@ class MISP(Report):
         if "hashes" in mode:
             self.sample_hashes(results, event)
 
-        if "maldoc" in mode:
-            self.maldoc_network(results, event)
-
         if "url" in mode:
             self.all_urls(results, event)
 
         if "ipaddr" in mode:
             self.domain_ipaddr(results, event)
+
+        self.family(results, event)

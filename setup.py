@@ -206,7 +206,7 @@ do_setup(
         "pillow==3.2",
         "pyelftools==0.24",
         "pyguacamole==0.6",
-        "pymisp==2.4.54",
+        "pymisp==2.4.103",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
