@@ -35,7 +35,7 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     if os.path.isfile(dirpath):
         dirpath = os.path.dirname(dirpath)
 
-    for _, module_name, _ in pkgutil.iter_modules(dirpath, module_prefix):
+    for _, module_name, _ in pkgutil.iter_modules([dirpath], module_prefix+"."):
         try:
             importlib.import_module(module_name)
         except ImportError as e:
@@ -70,7 +70,7 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     if as_dict:
         ret = {}
         for plugin in plugins:
-            plugin_module = plugin.__module__.split(".")[len(module_prefix) + 1:]
+            plugin_module = plugin.__module__[len(module_prefix) + 1:]
             ret[plugin_module] = plugin
         return ret
 
