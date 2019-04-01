@@ -27,6 +27,12 @@
                                 <div class="tab-pane fade in active" id="static_analysis_tab">
                                     {% if "PE32" in report.analysis.target.file.type %}
                                         {% include "analysis/pages/static/_pe32.html" %}
+                                    {% elif "MS-DOS executable" in report.analysis.target.file.type %}
+                    			{% for sig in report.analysis.static.peid_signatures %}
+                        			{% if forloop.first and "FSG" in sig %}
+                                                	{% include "analysis/pages/static/_pe32.html" %}
+                        			{% endif %}
+                    			{% endfor %}
                                     {% elif "ELF" in report.analysis.target.file.type %}
                                         {% include "analysis/pages/static/_elf.html" %}
                                     {% elif "office" in report.analysis.static %}
