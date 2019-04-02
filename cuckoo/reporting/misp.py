@@ -57,7 +57,7 @@ class MISP(Report):
         self.misp.add_ipdst(event, sorted(list(ipaddrs)))
 
     def family(self, results, event):
-        for config in results.get("metadata", {}).get("cfgextr"):
+        for config in results.get("metadata", {}).get("cfgextr", []):
             self.misp.add_detection_name(
                 event, config["family"], "Sandbox detection"
             )
@@ -90,16 +90,16 @@ class MISP(Report):
         self.misp = pymisp.PyMISP(url, apikey, False, "json")
 
         event = self.misp.new_event(
-            distribution=self.misp.distributions.all_communities,
-            threat_level_id=self.misp.threat_level.undefined,
-            analysis=self.misp.analysis.completed,
+            distribution=pymisp.Distribution.all_communities.value,
+            threat_level_id=pymisp.ThreatLevel.undefined.value,
+            analysis=pymisp.Analysis.completed.value,
             info="Cuckoo Sandbox analysis #%d" % self.task["id"],
         )
 
         if results.get("target", {}).get("category") == "file":
             self.misp.upload_sample(
                 filename=os.path.basename(self.task["target"]),
-                filepath=self.task["target"],
+                filepath_or_bytes=self.task["target"],
                 event_id=event["Event"]["id"],
                 category="External analysis",
             )
