@@ -38,8 +38,10 @@ class MISP(Report):
 
     def domain_ipaddr(self, results, event):
         whitelist = [
-            "www.msftncsi.com", "dns.msftncsi.com",
-            "teredo.ipv6.microsoft.com", "time.windows.com",
+            "www.msftncsi.com", "dns.msftncsi.com", "teredo.ipv6.microsoft.com", "time.windows.com",
+            "www.msftconnecttest.com", "v10.vortex-win.data.microsoft.com","settings-win.data.microsoft.com", 
+            "win10.ipv6.microsoft.com", "sls.update.microsoft.com", "13.74.179.117", "40.81.120.221",
+            "40.77.226.249", "8.8.8.8", "fs.microsoft.com", "ctldl.windowsupdate.com"
         ]
 
         domains, ips = {}, set()
