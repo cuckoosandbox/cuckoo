@@ -36,7 +36,7 @@ class Driver(object):
                 "bin", "%s-x64.sys" % self.driver_name
             )
             install_dir = os.path.expandvars(
-                "%SystemRoot%\\sysnative\\drivers"
+                "%SystemRoot%\\system32\\drivers"
             )
         else:
             self.driver_path = os.path.join(
