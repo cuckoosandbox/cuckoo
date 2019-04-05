@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import pkg_resources
 import base64
 import bs4
 import chardet
@@ -262,7 +263,7 @@ def exception_message():
 
     msg += "Modules: %s\n\n" % " ".join(sorted(
         "%s:%s" % (package.key, package.version)
-        for package in pip.get_installed_distributions()
+        for package in pkg_resources.working_set
     ))
     return msg
 
