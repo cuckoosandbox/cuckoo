@@ -5,9 +5,12 @@
 import os.path
 import shlex
 import warnings
+import logging
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooProcessingError
+
+log = logging.getLogger(__name__)
 
 class MISP(Report):
     """Enrich MISP with Cuckoo results."""
@@ -72,6 +75,10 @@ class MISP(Report):
             for user_agent in config.get("user_agent", []):
                 self.misp.add_useragent(event, user_agent)
 
+    def signature(self, results, event):
+        for sig in results["signatures"]:
+            self.misp.add_internal_comment(event, sig["description"])
+
     def run(self, results):
         """Submits results to MISP.
         @param results: Cuckoo results dict.
@@ -105,6 +112,8 @@ class MISP(Report):
                 event_id=event["Event"]["id"],
                 category="External analysis",
             )
+
+        self.signature(results, event)
 
         if "hashes" in mode:
             self.sample_hashes(results, event)

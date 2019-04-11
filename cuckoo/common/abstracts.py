@@ -833,6 +833,7 @@ class Signature(object):
     enabled = True
     minimum = None
     maximum = None
+    ttp = []
 
     # Maximum amount of marks to record.
     markcount = 50
@@ -1333,6 +1334,7 @@ class Signature(object):
     def results(self):
         """Turn this signature into actionable results."""
         return dict(name=self.name,
+                    ttp=self.ttp,
                     description=self.description,
                     severity=self.severity,
                     families=self.families,
