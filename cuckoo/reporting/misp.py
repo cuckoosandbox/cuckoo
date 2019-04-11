@@ -77,7 +77,8 @@ class MISP(Report):
 
     def signature(self, results, event):
         for sig in results["signatures"]:
-            self.misp.add_internal_comment(event, sig["description"])
+            data = "%s - TTP: %s" % (sig["description"], ",".join(sig["ttp"]))
+            self.misp.add_internal_comment(event, data)
 
     def run(self, results):
         """Submits results to MISP.
