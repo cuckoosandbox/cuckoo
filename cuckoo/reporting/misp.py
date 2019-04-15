@@ -6,9 +6,7 @@ import os.path
 import shlex
 import warnings
 import logging
-import json
 
-from cuckoo.misc import cwd
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooProcessingError
 
