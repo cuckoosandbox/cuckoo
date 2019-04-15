@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import time
+import json
 
 import xml.etree.ElementTree as ET
 
@@ -863,7 +864,8 @@ class Signature(object):
 
     @classmethod
     def init_once(cls):
-        pass
+        with open(cwd("stuff/attack.json")) as f: 
+            cls.attack = json.load(f)
 
     def _check_value(self, pattern, subject, regex=False, all=False):
         """Checks a pattern against a given subject.
@@ -1331,10 +1333,16 @@ class Signature(object):
     def on_complete(self):
         """Signature is notified when all API calls have been processed."""
 
+    def extend_ttp(self):
+        d = {}
+        for t in self.ttp:
+            d[t] = self.attack.get(t)    
+        return d
+
     def results(self):
         """Turn this signature into actionable results."""
         return dict(name=self.name,
-                    ttp=self.ttp,
+                    ttp=self.extend_ttp(),
                     description=self.description,
                     severity=self.severity,
                     families=self.families,

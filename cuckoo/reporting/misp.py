@@ -85,9 +85,8 @@ class MISP(Report):
         for sig in results["signatures"]:
             data = "%s - (%s)" % (sig["description"], ",".join(sig["ttp"]))
             self.misp.add_internal_comment(event, data)
-            for att in sig["ttp"]:
-                description = self.attack.get(att)
-                if not description:
+            for att, description in sig["ttp"].items():
+                if description is None:
                     log.warning("Description for %s is not found" % (att))
                     continue
 
