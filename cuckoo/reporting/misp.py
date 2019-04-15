@@ -6,7 +6,9 @@ import os.path
 import shlex
 import warnings
 import logging
+import json
 
+from cuckoo.misc import cwd
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooProcessingError
 
@@ -14,6 +16,10 @@ log = logging.getLogger(__name__)
 
 class MISP(Report):
     """Enrich MISP with Cuckoo results."""
+    def __init__(self):
+        log.warning(cwd("stuff/attack.json"))
+        with open(cwd("stuff/attack.json")) as f: 
+            self.attack = json.load(f)
 
     def sample_hashes(self, results, event):
         if results.get("target", {}).get("file", {}):
@@ -77,8 +83,15 @@ class MISP(Report):
 
     def signature(self, results, event):
         for sig in results["signatures"]:
-            data = "%s - TTP: %s" % (sig["description"], ",".join(sig["ttp"]))
+            data = "%s - (%s)" % (sig["description"], ",".join(sig["ttp"]))
             self.misp.add_internal_comment(event, data)
+            for att in sig["ttp"]:
+                description = self.attack.get(att)
+                if not description:
+                    log.warning("Description for %s is not found" % (att))
+                    continue
+
+                self.misp.add_internal_comment(event, "TTP: %s, short: %s" % (att, description["short"]))
 
     def run(self, results):
         """Submits results to MISP.
