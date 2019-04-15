@@ -16,10 +16,6 @@ log = logging.getLogger(__name__)
 
 class MISP(Report):
     """Enrich MISP with Cuckoo results."""
-    def __init__(self):
-        log.warning(cwd("stuff/attack.json"))
-        with open(cwd("stuff/attack.json")) as f: 
-            self.attack = json.load(f)
 
     def sample_hashes(self, results, event):
         if results.get("target", {}).get("file", {}):
