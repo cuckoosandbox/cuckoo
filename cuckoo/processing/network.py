@@ -27,7 +27,7 @@ from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
 from cuckoo.common.whitelist import is_whitelisted_domain, is_whitelisted_ip
-from cuckoo.misc import mkdir
+from cuckoo.misc import cwd,mkdir
 
 # Be less verbose about httpreplay logging messages.
 logging.getLogger("httpreplay").setLevel(logging.CRITICAL)
