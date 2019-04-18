@@ -16,7 +16,7 @@ from cuckoo.common.objects import File
 from cuckoo.core.database import Database
 from cuckoo.reporting.mongodb import MongoDB
 from cuckoo.misc import cwd
-from cuckoo.web.utils import csrf_exempt, json_error_response, api_post
+from cuckoo.web.utils import json_error_response, api_post
 
 # TODO Yes, this is far from optimal. In the future we should find a better
 # way to get results from the Cuckoo Web Interface to the analysis report (or
@@ -35,7 +35,6 @@ pending_read_request = threading.Event()
 
 class ControlApi(object):
     @staticmethod
-    @csrf_exempt
     def tunnel(request, task_id):
         task = db.view_task(int(task_id))
         if not task:

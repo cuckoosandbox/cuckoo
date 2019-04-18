@@ -191,7 +191,12 @@ class ExtractManager(object):
     def handle_yara(self, filepath, match):
         for plugin in self.extractors:
             if match.name in plugin.yara_rules:
-                plugin(self).handle_yara(filepath, match)
+                try:
+                    plugin(self).handle_yara(filepath, match)
+                except Exception as e:
+                    log.exception(
+                        "Exception in an Extractor's handle_yara: %s", e
+                    )
 
     def results(self):
         # TODO Apply some sort of sorting here.

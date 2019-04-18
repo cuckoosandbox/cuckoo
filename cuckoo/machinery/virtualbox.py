@@ -357,8 +357,8 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to return its version: %s" % e
             )
 
-        # VirtualBox version 4 and 5.
-        if output.startswith("5"):
+        # VirtualBox version 4, 5 and 6
+        if output.startswith(("5", "6")):
             dumpcmd = "dumpvmcore"
         else:
             dumpcmd = "dumpguestcore"

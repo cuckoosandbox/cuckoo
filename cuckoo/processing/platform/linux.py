@@ -194,7 +194,7 @@ class StapParser(object):
         return parsed
 
     def parse_string(self, argstr):
-        return argstr.strip("\"").decode("string_escape")
+        return argstr.strip("\"").decode("string_escape").decode("latin-1")
 
     def is_array(self, arg):
         return arg.startswith("[") and not arg.startswith("[/*")

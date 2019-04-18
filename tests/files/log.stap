@@ -12,6 +12,7 @@ Tue Jun 20 15:39:30 2017.141870 busybox-i686@80dbdde[704] write(2, "BusyBox v1.1
 Thu Jun 22 10:22:06 2017.766807 busybox-i686@80dbdde[668] write(2, "Copyright \x28C\x29 1998-2009 Erik Andersen\x2c Rob La", 480) = 480
 Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve("/usr/bin/sh", ["sh", "-c", "/tmp/comma\x2csh"], ["COMMA_IN_ARRAY=it\x2cworks", "HOME=/root"]) = -2 (ENOENT)
 Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve("/usr/bin/sh", ["sh", "-c", "/tmp/bracket\x5dsh"], ["LANGUAGE=en_US:en", "HOME=/root"]) = -2 (ENOENT)
+Mon Jun 19 16:58:31 2017.445170 python@b774dcf9[680] execve("/usr/bin/sh", ["sh", "-c", "/tmp/utf8\xc4invld"], ["LANGUAGE=en_US:en", "HOME=/root"]) = -2 (ENOENT)
 Thu Jul 27 09:51:08 2017.595142 sh@b77b5a21[818] set_thread_area({entry_number=4294967295, base_addr=3078293568, limit=1048575, seg_32bit=1, contents=0, read_exec_only=0, limit_in_pages=1, seg_not_present=0, useable=1}) = 0
 Tue Aug  8 13:05:42 2017.464622 sh@7f30ca2448ee[900] rt_sigaction(SIGCHLD, {0x55644b6bf5a0, SA_RESTORER, 0x7f30ca2447f0, [SIGHUP|SIGINT|SIGQUIT|SIGILL|SIGTRAP|SIGABRT|SIGBUS|SIGFPE|SIGKILL|SIGUSR1|SIGSEGV|SIGPIPE|SIGUSR2|SIGALRM|SIGTERM|SIGCHLD|SIGCONT|SIGSTOP|SIGTSTP|SIGTTIN|SIGTTOU|SIGURG|SIGXCPU|SIGXFSZ|SIGVTALRM|SIGPROF|SIGWINCH|SIGIO/SIGPOLL|SIGPWR|SIGSYS]}, 0x0, 8) = 0
 Mon Aug 28 14:29:32 2017.619873 bash@b7728cf9[821] sysinfo({uptime=-1217188199, loads=[0, 3077892816, 3212869720], totalram=3212869792, freeram=3077782043, sharedram=134535000, bufferram=3212869720, totalswap=3077892724, freeswap=3, procs=20776}) = 0

@@ -7,6 +7,7 @@ import os
 import importlib
 import inspect
 import logging
+import pkgutil
 
 import cuckoo
 
@@ -34,18 +35,14 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     if os.path.isfile(dirpath):
         dirpath = os.path.dirname(dirpath)
 
-    for fname in os.listdir(dirpath):
-        if fname.endswith(".py") and not fname.startswith("__init__"):
-            module_name, _ = os.path.splitext(fname)
-            try:
-                importlib.import_module(
-                    "%s.%s" % (module_prefix, module_name)
-                )
-            except ImportError as e:
-                raise CuckooOperationalError(
-                    "Unable to load the Cuckoo plugin at %s: %s. Please "
-                    "review its contents and/or validity!" % (fname, e)
-                )
+    for _, module_name, _ in pkgutil.iter_modules([dirpath], module_prefix+"."):
+        try:
+            importlib.import_module(module_name)
+        except ImportError as e:
+            raise CuckooOperationalError(
+                "Unable to load the Cuckoo plugin at %s: %s. Please "
+                "review its contents and/or validity!" % (module_name, e)
+            )
 
     subclasses = class_.__subclasses__()[:]
 
@@ -59,9 +56,9 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
         subclasses.extend(subclass.__subclasses__())
 
         # Check whether this subclass belongs to the module namespace that
-        # we're currently importing. It should be noted that parent and child
+        # we're currently importing. It should be noted that parent
         # namespaces should fail the following if-statement.
-        if module_prefix != ".".join(subclass.__module__.split(".")[:-1]):
+        if not subclass.__module__.startswith(module_prefix):
             continue
 
         namespace[subclass.__name__] = subclass
@@ -73,7 +70,8 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     if as_dict:
         ret = {}
         for plugin in plugins:
-            ret[plugin.__module__.split(".")[-1]] = plugin
+            plugin_module = plugin.__module__[len(module_prefix) + 1:]
+            ret[plugin_module] = plugin
         return ret
 
     return sorted(plugins, key=lambda x: x.__name__.lower())
@@ -520,15 +518,15 @@ class RunSignatures(object):
         # Iterate through all Extracted matches.
         self.process_extracted()
 
+        # TODO This logic should certainly be moved elsewhere.
+        self.c = Configuration()
+        for extracted in self.results.get("extracted", []):
+            if extracted["category"] == "config":
+                self.c.add(extracted["info"])
+
         # Yield completion events to each signature.
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
-
-        # TODO This logic should certainly be moved elsewhere.
-        c = Configuration()
-        for extracted in self.results.get("extracted", []):
-            if extracted["category"] == "config":
-                c.add(extracted["info"])
 
         score, configs = 0, []
         for signature in self.signatures:
@@ -547,7 +545,7 @@ class RunSignatures(object):
 
             for mark in signature.marks:
                 if mark["type"] == "config":
-                    c.add(mark["config"])
+                    self.c.add(mark["config"])
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
@@ -558,10 +556,10 @@ class RunSignatures(object):
 
         # If malware configuration has been extracted, simplify its
         # accessibility in the analysis report.
-        if c.results():
+        if self.c.results():
             # TODO Should this be included elsewhere?
             if "metadata" in self.results:
-                self.results["metadata"]["cfgextr"] = c.results()
+                self.results["metadata"]["cfgextr"] = self.c.results()
             if "info" in self.results:
                 self.results["info"]["score"] = 10
 

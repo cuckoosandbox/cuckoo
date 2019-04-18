@@ -21,7 +21,7 @@ import zipfile
 import SimpleHTTPServer
 import SocketServer
 
-AGENT_VERSION = "0.8"
+AGENT_VERSION = "0.9"
 AGENT_FEATURES = [
     "execpy", "pinning", "logs", "largefile", "unicodepath",
 ]
@@ -50,6 +50,7 @@ class MiniHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                                 headers=self.headers,
                                 environ=environ)
 
+        request.client_ip, request.client_port = self.client_address
         request.form = {}
         request.files = {}
 

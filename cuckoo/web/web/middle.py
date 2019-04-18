@@ -1,9 +1,22 @@
-# Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2013 Claudio Guarnieri.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+from django.shortcuts import redirect
+
+from cuckoo.common.config import config
 from cuckoo.misc import version
+
+class CuckooAuthentication(object):
+    def process_request(self, request):
+        if request.path.startswith(("/secret/", "/static/")):
+            return
+        # If no web_secret has been initialized, ignore this functionality.
+        if not config("cuckoo:cuckoo:web_secret"):
+            return
+        if not request.session.get("auth"):
+            return redirect("/secret/")
 
 class CuckooHeaders(object):
     """Set Cuckoo custom response headers."""

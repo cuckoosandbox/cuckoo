@@ -636,6 +636,9 @@ class Analyzer(object):
                           module.__name__)
                 aux_enabled.append(aux)
 
+        # Inform zer0m0n of the ResultServer address.
+        zer0m0n.resultserver(self.config.ip, self.config.port)
+
         # Forward the command pipe and logpipe names on to zer0m0n.
         zer0m0n.cmdpipe(self.config.pipe)
         zer0m0n.channel(self.config.logpipe)
@@ -646,6 +649,9 @@ class Analyzer(object):
 
         # Initialize zer0m0n with our compiled Yara rules.
         zer0m0n.yarald("bin/rules.yarac")
+
+        # Propagate the requested dump interval, if set.
+        zer0m0n.dumpint(int(self.config.options.get("dumpint", "0")))
 
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.

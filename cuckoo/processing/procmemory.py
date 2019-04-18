@@ -73,6 +73,9 @@ class ProcessMemory(Processing):
         pe.FILE_HEADER.Characteristics |= (
             pefile.IMAGE_CHARACTERISTICS["IMAGE_FILE_RELOCS_STRIPPED"]
         )
+        if not pe.sections:
+            return
+        return pe.sections[0].VirtualAddress
 
     def dump_images(self, process, drop_dlls=False):
         """Dump executable images from this process memory dump."""
@@ -117,11 +120,16 @@ class ProcessMemory(Processing):
             if pe.is_dll() and not drop_dlls:
                 continue
 
-            self._fixup_pe_header(pe)
+            hdrsz = self._fixup_pe_header(pe)
+            if not hdrsz:
+                continue
 
-            img.append(str(pe.write()))
-            for r in regions:
-                img.append(buf[r["offset"]:r["offset"]+r["size"]])
+            img.append(str(pe.write())[:hdrsz])
+            for idx, r in enumerate(regions):
+                offset = r["offset"]
+                if not idx:
+                    offset += hdrsz
+                img.append(buf[offset:r["offset"]+r["size"]])
 
             sha1 = hashlib.sha1("".join(img)).hexdigest()
 

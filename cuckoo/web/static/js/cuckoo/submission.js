@@ -442,6 +442,7 @@ var Uploader = function () {
             formdata["type"] = "files";
 
             xhr.open('POST', this.endpoint);
+            xhr.setRequestHeader('X-CSRFToken', CuckooWeb.csrf_token());
 
             // update progress bar when server response is received
             xhr.onload = function () {
@@ -2270,22 +2271,14 @@ var SubmissionTaskTable = function () {
 
 			this.setStatusText('Getting status...');
 
-			$.ajax({
-				url: '/analysis/api/tasks/info/',
-				type: 'POST',
-				dataType: 'json',
-				contentType: "application/json; charset=utf-8",
-				data: JSON.stringify({
-					"task_ids": self.task_ids
-				}),
-				success: function success(response) {
-					self._data(response);
-					self.request_pending = false;
-				},
-				error: function error(err) {
-					self._clear();
-					self.setStatusText('There was an error!');
-				}
+			CuckooWeb.api_post('/analysis/api/tasks/info/', {
+				"task_ids": self.task_ids
+			}, function (response) {
+				self._data(response);
+				self.request_pending = false;
+			}, function (err) {
+				self._clear();
+				self.setStatusText('There was an error!');
 			});
 		}
 
@@ -2913,11 +2906,11 @@ $(function () {
 
 			e.preventDefault();
 
-			var json = analysis_ui.getData({
+			var data = JSON.parse(analysis_ui.getData({
 				'submit_id': window.submit_id
-			}, true);
+			}, true));
 
-			if (!JSON.parse(json).file_selection.length) {
+			if (!data.file_selection.length) {
 				alert('Please select some files first.');
 				return;
 			}
@@ -2926,30 +2919,22 @@ $(function () {
 			CuckooWeb.toggle_page_freeze(true, "We're processing your submission... This could take a few seconds.");
 
 			if (debugging) {
-				console.log(JSON.parse(json));
+				console.log(data);
 				return;
 			}
 
-			$.ajax({
-				url: '/submit/api/submit',
-				type: 'POST',
-				dataType: 'json',
-				contentType: "application/json; charset=utf-8",
-				data: json,
-				success: function success(data) {
-					if (data.status === true) {
-						// redirect to submission success page
-						window.location = '/submit/post/' + data.submit_id;
-					} else {
-						// alert("Submission failed: " + data.message);
-						CuckooWeb.error_page_freeze("Something went wrong! please try again.");
-					}
-				},
-				error: function error() {
-					console.log(arguments);
-					// alert('submission failed! see the console for details.');
+			CuckooWeb.api_post('/submit/api/submit', data, function (data) {
+				if (data.status === true) {
+					// redirect to submission success page
+					window.location = '/submit/post/' + data.submit_id;
+				} else {
+					// alert("Submission failed: " + data.message);
 					CuckooWeb.error_page_freeze("Something went wrong! please try again.");
 				}
+			}, function () {
+				console.log(arguments);
+				// alert('submission failed! see the console for details.');
+				CuckooWeb.error_page_freeze("Something went wrong! please try again.");
 			});
 		});
 

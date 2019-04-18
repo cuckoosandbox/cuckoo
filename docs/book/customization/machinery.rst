@@ -106,6 +106,13 @@ this base class and specify your connection string, as in the example below:
         # Set connection string.
         dsn = "my:///connection"
 
+
+Starting with Cuckoo 2.0.7a1 you can use a custom dsn by setting it in the kvm.conf file.
+Example:
+
+    dsn = qemu+ssh://192.168.56.1/system
+
+
 This works for all the virtualization technologies supported by LibVirt. Just
 remember to check if your LibVirt package (if you are using one, for example
 from your Linux distribution) is compiled with the support for the technology

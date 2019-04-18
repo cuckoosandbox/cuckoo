@@ -2,11 +2,22 @@
 Upgrading from a previous release
 =================================
 
-.. versionadded:: 2.0.0
-   Automatically upgrade from an older Cuckoo setup into a new one by
-   importing the old setup.
+Upgrading post version 2.0.0
+============================
 
-This document describes the process of *importing* an older Cuckoo setup in
+When updating your Cuckoo from a ``>=2.0.0`` version, Cuckoo will automatically
+try to upgrade your :ref:`CWD` (CWD). If any actions are required, such as running automatically
+database migrations or backing up an edited file in your CWD, Cuckoo will notify you.
+
+To start an upgrade after updating Cuckoo, simply start Cuckoo as you normally would.
+
+Upgrading to Cuckoo from legacy Cuckoo
+======================================
+
+Legacy Cuckoo is any Cuckoo version older than 2.0.0. These versions use a working directory
+inside of the Cuckoo installation path. Newer Cuckoo versions use a :ref:`CWD`.
+
+This document describes the process of *importing* an **older legacy Cuckoo setup** in
 order to upgrade your Cuckoo to the latest and greatest version. This
 importing process is possible for **Cuckoo 0.6 and upwards**. Naturally it
 doesn't re-apply any **custom code changes** that you applied to your old
@@ -28,6 +39,9 @@ The cuckoo import command
 The ``cuckoo import`` App performs a number of steps in order to import an
 older setup. Previously we had manual steps for performing a database
 migration, these have been integrated in the import process as well.
+
+
+.. note:: Only use the import command if you are upgrading from a Cuckoo version pre 2.0.0.
 
 The usage of ``cuckoo import`` is as follows::
 

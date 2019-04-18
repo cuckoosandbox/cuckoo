@@ -24,6 +24,7 @@ log = logging.getLogger(__name__)
 
 def run(*args):
     """Wrapper to Popen."""
+    log.debug("Running command: %s", " ".join(args))
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
@@ -147,6 +148,12 @@ def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
+    # Delete libvirt's default FORWARD REJECT rules. e.g.:
+    # -A FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
+    # -A FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
+    run(s.iptables, "-D", "FORWARD", "-i", src, "-j", "REJECT")
+    run(s.iptables, "-D", "FORWARD", "-o", src, "-j", "REJECT")
+
     run(
         s.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
         "--source", ipaddr, "-j", "ACCEPT"
@@ -180,8 +187,32 @@ def srcroute_disable(rt_table, ipaddr):
     run(s.ip, "rule", "del", "from", ipaddr, "table", rt_table)
     run(s.ip, "route", "flush", "cache")
 
-def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
+def inetsim_redirect_port(action, srcip, dstip, ports):
+    """Note that the parameters (probably) mean the opposite of what they
+    imply; this method adds or removes an iptables rule for redirect traffic
+    from (srcip, srcport) to (dstip, dstport).
+    E.g., if 192.168.56.101:80 -> 192.168.56.1:8080, then it redirects
+    outgoing traffic from 192.168.56.101 to port 80 to 192.168.56.1:8080.
+    """
+    for entry in ports.split():
+        if entry.count(":") != 1:
+            log.debug("Invalid inetsim ports entry: %s", entry)
+            continue
+        srcport, dstport = entry.split(":")
+        if not srcport.isdigit() or not dstport.isdigit():
+            log.debug("Invalid inetsim ports entry: %s", entry)
+            continue
+        run(
+            s.iptables, "-t", "nat", action, "PREROUTING", "--source", srcip,
+            "-p", "tcp", "--syn", "--dport", srcport,
+            "-j", "DNAT", "--to-destination", "%s:%s" % (dstip, dstport)
+        )
+
+def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
+                   ports):
     """Enable hijacking of all traffic and send it to InetSim."""
+    inetsim_redirect_port("-A", ipaddr, inetsim_ip, ports)
+
     run(
         s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
@@ -206,10 +237,16 @@ def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
     dns_forward("-A", ipaddr, inetsim_ip)
     forward_enable(machinery_iface, machinery_iface, ipaddr)
 
+    run(s.iptables, "-t", "nat", "-A", "POSTROUTING", "--source", ipaddr,
+        "-o", machinery_iface, "--destination", inetsim_ip, "-j", "MASQUERADE")
+
     run(s.iptables, "-A", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
-def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
+def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
+                    ports):
     """Enable hijacking of all traffic and send it to InetSim."""
+    inetsim_redirect_port("-D", ipaddr, inetsim_ip, ports)
+
     run(
         s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
@@ -232,6 +269,9 @@ def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port):
 
     dns_forward("-D", ipaddr, inetsim_ip)
     forward_disable(machinery_iface, machinery_iface, ipaddr)
+
+    run(s.iptables, "-t", "nat", "-D", "POSTROUTING", "--source", ipaddr,
+        "-o", machinery_iface, "--destination", inetsim_ip, "-j", "MASQUERADE")
 
     run(s.iptables, "-D", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
@@ -412,7 +452,7 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
                 log.info("Invalid argument detected: %r", arg)
                 break
         else:
-            log.debug(
+            log.info(
                 "Processing command: %s %s %s", command,
                 " ".join(args),
                 " ".join("%s=%s" % (k, v) for k, v in kwargs.items())

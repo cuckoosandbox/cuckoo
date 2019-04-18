@@ -3,10 +3,10 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import base64
 import bs4
 import chardet
 import datetime
-import inspect
 import io
 import jsbeautifier
 import json
@@ -58,6 +58,20 @@ def convert_to_printable(s):
     if is_printable(s):
         return s
     return "".join(convert_char(c) for c in s)
+
+def random_token():
+    """Generate a random token that can be used as a secret/password."""
+    token = base64.urlsafe_b64encode(os.urandom(16))
+    return token.rstrip(b"=").decode("utf8")
+
+def constant_time_compare(a, b):
+    """Compare two secret strings in constant time."""
+    if not a or not b or len(a) != len(b):
+        return False
+    result = 0
+    for x, y in zip(a, b):
+        result |= ord(x) ^ ord(y)
+    return result == 0
 
 def validate_hash(h):
     """Validates a hash by length and contents."""
@@ -189,26 +203,15 @@ def classlock(f):
     Used to put a lock to avoid sqlite errors.
     """
     def inner(self, *args, **kwargs):
-        curframe = inspect.currentframe()
-        calframe = inspect.getouterframes(curframe, 2)
-
-        if calframe[1][1].endswith("database.py"):
+        if not self._lock:
             return f(self, *args, **kwargs)
-
-        with self._lock:
+        self._lock.acquire()
+        try:
             return f(self, *args, **kwargs)
+        finally:
+            self._lock.release()
 
     return inner
-
-class SuperLock(object):
-    def __init__(self):
-        self.tlock = threading.Lock()
-
-    def __enter__(self):
-        self.tlock.acquire()
-
-    def __exit__(self, type, value, traceback):
-        self.tlock.release()
 
 GUIDS = {}
 

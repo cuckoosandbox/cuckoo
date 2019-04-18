@@ -26,7 +26,7 @@ from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
-from cuckoo.common.whitelist import is_whitelisted_domain
+from cuckoo.common.whitelist import is_whitelisted_domain, is_whitelisted_ip
 from cuckoo.misc import mkdir
 
 # Be less verbose about httpreplay logging messages.
@@ -635,6 +635,9 @@ class Pcap(object):
                     offset = file.tell()
                     continue
 
+                if is_whitelisted_ip(connection["dst"]):
+                    continue
+
                 self._add_hosts(connection)
 
                 if ip.p == dpkt.ip.IP_PROTO_TCP:
@@ -764,6 +767,9 @@ class Pcap2(object):
         l = sorted(r.process(), key=lambda x: x[1])
         for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
+
+            if is_whitelisted_ip(dstip):
+                continue
 
             if protocol == "smtp":
                 results["smtp_ex"].append({

@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -85,8 +85,8 @@ class Debug(Processing):
             # Ignore the first line which identifies the machine.
             f.readline()
             for line in f:
-                idx, time, message = line.split(None, 2)
-                debug["dbgview"].append(message)
+                idx, time, message = line.split("\t", 2)
+                debug["dbgview"].append(message.strip())
 
         debug["errors"] = []
         for error in Database().view_errors(self.task["id"]):

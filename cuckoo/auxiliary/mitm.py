@@ -19,16 +19,16 @@ class MITM(Auxiliary):
         self.proc = None
 
     def start(self):
-        mitmdump = self.options.get("mitmdump", "/usr/local/bin/mitmdump")
-        port_base = int(self.options.get("port_base", 50000))
-        script = cwd(self.options.get("script", "stuff/mitm.py"))
-        certificate = self.options.get("certificate", "bin/cert.p12")
+        port_base = self.options["port_base"]
+        certificate = self.options["certificate"]
 
+        mitmdump = self.options["mitmdump"]
         if not os.path.exists(mitmdump):
             log.error("Mitmdump does not exist at path \"%s\", man in the "
                       "middle interception aborted.", mitmdump)
             return
 
+        script = cwd(self.options["script"])
         if not os.path.exists(script):
             log.error("Mitmdump script file does not exist at path \"%s\", "
                       "man in the middle interception aborted.", script)

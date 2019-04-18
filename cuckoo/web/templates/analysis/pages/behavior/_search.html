@@ -4,7 +4,7 @@ $(function () {
 		action = $('form#search').attr('action');
 		data = $('form#search').serialize();
 		
-		$.post(action, data, function (data) {
+		CuckooWeb.post(action, data, function (data) {
 			$('#search-results').html(data);
 		});
 

@@ -52,7 +52,8 @@ def choose_package(file_type, file_name, exports):
             "Microsoft Excel" in file_type or \
             file_name.endswith((".xls", ".xlsx", ".xlt", ".xlsm", ".iqy", ".slk")):
         return "xls"
-    elif "Microsoft PowerPoint" in file_type or \
+    elif "Microsoft Office PowerPoint" in file_type or \
+            "Microsoft PowerPoint" in file_type or \
             file_name.endswith((".ppt", ".pptx", ".pps", ".ppsx", ".pptm", ".potm", ".potx", ".ppsm")):
         return "ppt"
     elif file_name.endswith(".jar"):

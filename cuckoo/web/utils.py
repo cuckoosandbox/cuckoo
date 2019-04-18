@@ -12,7 +12,6 @@ import StringIO
 from django.core.servers.basehttp import FileWrapper
 from django.http import StreamingHttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from cuckoo.common.mongo import mongo
@@ -47,7 +46,7 @@ def _api_post(func):
         return func(request, *args, **kwargs)
     return inner
 
-api_post = lambda func: staticmethod(_api_post(csrf_exempt(require_http_methods(["POST"])(func))))
+api_post = lambda func: staticmethod(_api_post(require_http_methods(["POST"])(func)))
 
 def _api_get(func):
     @functools.wraps(func)

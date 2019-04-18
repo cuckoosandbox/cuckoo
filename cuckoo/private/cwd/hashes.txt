@@ -261,7 +261,7 @@ da39a3ee5e6b4b0d3255bfef95601890afd80709 pidfiles/.gitignore
 554151cf678d3304e5c083ecf1a15631e0271bc7 stuff/mitm.py
 da39a3ee5e6b4b0d3255bfef95601890afd80709 yara/office/.gitignore
 
-# TBD
+# 2.0.6 release
 cde76689871c88ef2d4a8fe0c3166eb61611eecf analyzer/darwin/analyzer.py
 12be07bcede77c7b505a1999ffcdd1128bf2446f analyzer/darwin/lib/api/__init__.py
 f47c2c7c0b1dddee583e81b95af5a8bd91b0dfec analyzer/darwin/lib/api/screenshot.py
@@ -280,3 +280,22 @@ d9036d462ecf16c73dd4a3ab8fab5c4453b3b8ec monitor/e071e63a66e831163a40abc45109fdf
 f76a7295cdfb78f9353225536af1e3d0f3ac1672 monitor/e071e63a66e831163a40abc45109fdf71fee829e/monitor-x86.dll
 b3c28c2d5bb316072d0590fb73b221e7191c155b monitor/latest
 7830f083a2e0b1aca6bff14c27918022e315c230 yara/dumpmem/readme_first.txt
+
+# 2.0.6.2 release
+9d17b524c7f7c62473485e672a1b91a0120629b6 analyzer/windows/lib/api/process.py
+
+# 2.0.7a1 release
+39749134a553668f8630232d944b35362c5f0066 analyzer/windows/analyzer.py
+d881a1cbd6d9066f0446b24b6abc0c906db23284 analyzer/windows/lib/core/ioctl.py
+ab9af787dd901cf5b4ffb1192da7d096ee1de9ad analyzer/windows/lib/core/packages.py
+c8492c74db400e6300194c1bafd3088a102bdc8e analyzer/windows/modules/auxiliary/human.py
+e86627abeb5ecc0112438ad179e9d0487870785a analyzer/windows/modules/packages/ie.py
+
+# TBD
+b327de7ae427d9e39f43d11f15b4754fc99ed98b agent/agent.py
+cb3a77d8dd7edf46de54545ca7b0c5b201f85917 analyzer/windows/bin/execsc.exe
+93727e778dadc13d83cea61a9ea88bf6b5906686 analyzer/windows/modules/auxiliary/human.py
+24cbd18428df8dbc6b9ccd7896d066c492f6d381 analyzer/windows/modules/packages/ps1.py
+6e6680e26bf1cf41909a4efcbd86917cf4b14603 analyzer/windows/modules/packages/pub.py
+d8fce614d615f6bdb3117e92bfa6e4ae2b48ea52 analyzer/windows/modules/packages/vbs.py
+f81e71f788149039f31c9b0b5e2891733e51b5d7 whitelist/ip.txt

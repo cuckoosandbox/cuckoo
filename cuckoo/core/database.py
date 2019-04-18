@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import sys
+import threading
 
 from cuckoo.common.colors import green
 from cuckoo.common.config import config, parse_options, emit_options
@@ -15,8 +16,7 @@ from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.objects import File, URL, Dictionary
-from cuckoo.common.utils import Singleton, classlock
-from cuckoo.common.utils import SuperLock, json_encode
+from cuckoo.common.utils import Singleton, classlock, json_encode
 from cuckoo.misc import cwd, format_command
 
 from sqlalchemy import create_engine, Column, not_, func
@@ -431,7 +431,7 @@ class Database(object):
         @param schema_check: disable or enable the db schema version check.
         @param echo: echo sql queries.
         """
-        self._lock = SuperLock()
+        self._lock = None
         self.schema_check = schema_check
         self.echo = echo
 
@@ -444,6 +444,11 @@ class Database(object):
             dsn = config("cuckoo:database:connection")
         if not dsn:
             dsn = "sqlite:///%s" % cwd("cuckoo.db")
+
+        database_flavor = dsn.split(":", 1)[0].lower()
+        if database_flavor == "sqlite":
+            log.debug("Using database-wide lock for sqlite")
+            self._lock = threading.RLock()
 
         self._connect_database(dsn)
 
