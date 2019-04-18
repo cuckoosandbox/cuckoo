@@ -335,7 +335,9 @@ class RequestDisplay {
 
     	// this will later be replaced by the ajax call getting the content
 
-        CuckooWeb.post("/analysis/api/task/network_http_data/", {
+    if(!task_id) return;
+
+        CuckooWeb.api_post("/analysis/api/task/network_http_data/", {
             "task_id": window.task_id,
             "protocol": _this.protocol,
             "request_body": false,
