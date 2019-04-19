@@ -207,7 +207,7 @@ do_setup(
         "pyelftools==0.24",
         "pyguacamole==0.6",
         "pymisp==2.4.54",
-        "pymongo==3.0.3",
+        "pymongo==3.7.0",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
         "roach>=0.1.2, <0.2",
