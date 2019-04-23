@@ -255,12 +255,6 @@ def exception_message():
     msg += "Python version: %s\n" % platform.python_version()
     msg += "Python implementation: %s\n" % platform.python_implementation()
     msg += "Machine arch: %s\n" % platform.machine()
-
-    try:
-        import pip._internal as pip
-    except ImportError:
-        import pip
-
     msg += "Modules: %s\n\n" % " ".join(sorted(
         "%s:%s" % (package.key, package.version)
         for package in pkg_resources.working_set
