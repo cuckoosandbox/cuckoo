@@ -299,3 +299,4 @@ cb3a77d8dd7edf46de54545ca7b0c5b201f85917 analyzer/windows/bin/execsc.exe
 6e6680e26bf1cf41909a4efcbd86917cf4b14603 analyzer/windows/modules/packages/pub.py
 d8fce614d615f6bdb3117e92bfa6e4ae2b48ea52 analyzer/windows/modules/packages/vbs.py
 f81e71f788149039f31c9b0b5e2891733e51b5d7 whitelist/ip.txt
+4575c7d09b316cad3a71059a27b78cbcb9c1f6b4 stuff/ttp_descriptions.json

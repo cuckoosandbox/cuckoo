@@ -1,12 +1,13 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import importlib
 import inspect
+import json
 import logging
+import os
 import pkgutil
 
 import cuckoo
@@ -324,6 +325,7 @@ class RunSignatures(object):
     """Run Signatures."""
     available_signatures = []
     version = cuckoo_version
+    ttp_descriptions = {}
 
     def __init__(self, results):
         self.results = results
@@ -349,6 +351,16 @@ class RunSignatures(object):
 
         # Sort Signatures by their order.
         cls.available_signatures.sort(key=lambda sig: sig.order)
+
+        cwd_ttps = cwd("stuff", "ttp_descriptions.json")
+        if os.path.exists(cwd_ttps):
+            with open(cwd_ttps, "rb") as fp:
+                cls.ttp_descriptions = json.load(fp)
+        else:
+            log.warning(
+                "Missing TTP descriptions file. No TTP descriptions will be "
+                "added to matched Cuckoo signatures."
+            )
 
     @classmethod
     def should_load_signature(cls, signature):

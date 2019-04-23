@@ -55,7 +55,6 @@ class JsonDump(Report):
             self.calls = self.options.get("calls", True)
 
         self.erase_calls(results)
-
         try:
             filepath = os.path.join(self.reports_path, "report.json")
             with open(filepath, "wb", buffering=1024*1024) as report:
