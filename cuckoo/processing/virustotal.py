@@ -14,6 +14,7 @@ from cuckoo.common.exceptions import (
 from cuckoo.common.virustotal import (
     VirusTotalAPI, VirusTotalResourceNotScanned
 )
+from cuckoo.common.utils import get_vt_consensus
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +60,12 @@ class VirusTotal(Processing):
                 continue
 
             row["virustotal"] = self.scan_file(row["path"], summary=True)
+            namelist = [scan["result"] for engine, scan in results["scans"].iteritems()]
+            row["vt_malfamily"] = get_vt_consensus(namelist)
 
+        namelist = [scan["result"] for engine, scan in results["scans"].iteritems()]
+        results["vt_malfamily"] = get_vt_consensus(namelist)
+                
         return results
 
     def scan_file(self, filepath, summary=False):
