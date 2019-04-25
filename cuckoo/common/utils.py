@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -11,7 +11,9 @@ import io
 import jsbeautifier
 import json
 import logging
+import operator
 import os
+import pkg_resources
 import platform
 import re
 import string
@@ -20,7 +22,7 @@ import threading
 import warnings
 import xmlrpclib
 
-from distutils.version import StrictVersion
+from distutils.version import StrictVersion, LooseVersion
 
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 from cuckoo.misc import cwd, version
@@ -262,7 +264,7 @@ def exception_message():
 
     msg += "Modules: %s\n\n" % " ".join(sorted(
         "%s:%s" % (package.key, package.version)
-        for package in pip.get_installed_distributions()
+        for package in pkg_resources.working_set
     ))
     return msg
 
@@ -356,3 +358,16 @@ def list_of_ints(l):
 
 def list_of_strings(l):
     return list_of(l, basestring)
+
+def cmp_version(first, second, op):
+    op_lookup = {
+        ">": operator.gt,
+        "<": operator.lt,
+        ">=": operator.ge,
+        "<=": operator.le,
+        "!=": operator.ne,
+        "==": operator.eq
+    }
+    op = op_lookup.get(op)
+
+    return op(LooseVersion(first), LooseVersion(second))

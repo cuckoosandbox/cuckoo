@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -207,6 +207,7 @@ class Config(object):
         "cuckoo": {
             "cuckoo": {
                 "version_check": Boolean(True),
+                "ignore_vulnerabilities": Boolean(False, required=False),
                 "delete_original": Boolean(False),
                 "delete_bin_copy": Boolean(False),
                 "machinery": String("virtualbox"),
