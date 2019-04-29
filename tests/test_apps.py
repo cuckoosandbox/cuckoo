@@ -407,7 +407,7 @@ class TestProcessingTasks(object):
             ("--cwd", cwd(), "process", "instance"),
             standalone_mode=False
         )
-        p.assert_called_once_with("instance", 0)
+        p.assert_called_once_with("instance", 0, 0)
         q.assert_called_once()
 
     @mock.patch("cuckoo.apps.apps.Database")

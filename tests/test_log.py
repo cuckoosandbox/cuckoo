@@ -76,7 +76,7 @@ def test_process_json_logging():
     init_yara()
     init_logfile("process-p0.json")
 
-    def process_tasks(instance, maxcount):
+    def process_tasks(instance, maxcount, timeout):
         logger("foo bar", action="hello.world", status="success")
 
     with mock.patch("cuckoo.main.Database"):
