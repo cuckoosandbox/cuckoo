@@ -212,7 +212,7 @@ do_setup(
         "python-magic==0.4.12",
         "roach>=0.1.2, <0.2",
         "sflock>=0.3.8, <0.4",
-        "sqlalchemy==1.0.8",
+        "sqlalchemy==1.3.3",
         "unicorn==1.0.1",
         "wakeonlan==0.2.2",
         "yara-python==3.6.3",
