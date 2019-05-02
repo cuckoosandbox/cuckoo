@@ -185,7 +185,7 @@ do_setup(
         ],
     },
     install_requires=[
-        "alembic==0.8.8",
+        "alembic==1.0.10",
         "androguard==3.0.1",
         "beautifulsoup4==4.5.3",
         "chardet==2.3.0",
@@ -196,7 +196,7 @@ do_setup(
         "egghatch>=0.2.3, <0.3",
         "elasticsearch==5.3.0",
         "flask==0.12.2",
-        "flask-sqlalchemy==2.1",
+        "flask-sqlalchemy==2.4.0",
         "httpreplay>=0.2.4, <0.3",
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
