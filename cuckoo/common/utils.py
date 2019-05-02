@@ -3,7 +3,6 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import pkg_resources
 import base64
 import bs4
 import chardet
@@ -239,6 +238,8 @@ def exception_message():
             return "%s %s" % (platform.mac_ver()[0], platform.mac_ver()[2])
         else:
             return "Unknown"
+
+    import pkg_resources
 
     msg = (
         "Oops! Cuckoo failed in an unhandled exception!\nSometimes bugs are "

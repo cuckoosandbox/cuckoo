@@ -41,10 +41,12 @@ class MISP(Report):
 
     def domain_ipaddr(self, results, event):
         whitelist = [
-            "www.msftncsi.com", "dns.msftncsi.com", "teredo.ipv6.microsoft.com", "time.windows.com",
-            "www.msftconnecttest.com", "v10.vortex-win.data.microsoft.com","settings-win.data.microsoft.com", 
-            "win10.ipv6.microsoft.com", "sls.update.microsoft.com", "13.74.179.117", "40.81.120.221",
-            "40.77.226.249", "8.8.8.8", "fs.microsoft.com", "ctldl.windowsupdate.com"
+            "www.msftncsi.com", "dns.msftncsi.com", "8.8.8.8", "40.77.226.249",
+            "teredo.ipv6.microsoft.com", "time.windows.com",
+            "www.msftconnecttest.com", "v10.vortex-win.data.microsoft.com",
+            "settings-win.data.microsoft.com", "win10.ipv6.microsoft.com",
+            "sls.update.microsoft.com", "13.74.179.117", "40.81.120.221",
+            "fs.microsoft.com", "ctldl.windowsupdate.com"
         ]
 
         domains, ips = {}, set()
@@ -55,7 +57,7 @@ class MISP(Report):
 
         ipaddrs = set()
         for ipaddr in results.get("network", {}).get("hosts", []):
-            if ipaddr not in ips:
+            if ipaddr not in whitelist and ipaddr not in ips:
                 ipaddrs.add(ipaddr)
 
         self.misp.add_domains_ips(event, domains)
@@ -69,7 +71,7 @@ class MISP(Report):
             for cnc in config.get("cnc", []):
                 self.misp.add_url(event, cnc)
             for url in config.get("url", []):
-                self.misp.add_url(event, cnc)
+                self.misp.add_url(event, url)
             for mutex in config.get("mutex", []):
                 self.misp.add_mutex(event, mutex)
             for user_agent in config.get("user_agent", []):
@@ -84,7 +86,9 @@ class MISP(Report):
                     log.warning("Description for %s is not found" % (att))
                     continue
 
-                self.misp.add_internal_comment(event, "TTP: %s, short: %s" % (att, description["short"]))
+                self.misp.add_internal_comment(
+                    event, "TTP: %s, short: %s" % (att, description["short"])
+                )
 
     def run(self, results):
         """Submits results to MISP.
