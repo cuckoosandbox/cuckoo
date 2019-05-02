@@ -3,6 +3,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import pkg_resources
 import base64
 import bs4
 import chardet
@@ -254,15 +255,9 @@ def exception_message():
     msg += "Python version: %s\n" % platform.python_version()
     msg += "Python implementation: %s\n" % platform.python_implementation()
     msg += "Machine arch: %s\n" % platform.machine()
-
-    try:
-        import pip._internal as pip
-    except ImportError:
-        import pip
-
     msg += "Modules: %s\n\n" % " ".join(sorted(
         "%s:%s" % (package.key, package.version)
-        for package in pip.get_installed_distributions()
+        for package in pkg_resources.working_set
     ))
     return msg
 

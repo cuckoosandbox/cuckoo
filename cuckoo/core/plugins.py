@@ -1,12 +1,14 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import importlib
 import inspect
+import json
 import logging
+import os
+import pkgutil
 
 import cuckoo
 
@@ -34,18 +36,14 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     if os.path.isfile(dirpath):
         dirpath = os.path.dirname(dirpath)
 
-    for fname in os.listdir(dirpath):
-        if fname.endswith(".py") and not fname.startswith("__init__"):
-            module_name, _ = os.path.splitext(fname)
-            try:
-                importlib.import_module(
-                    "%s.%s" % (module_prefix, module_name)
-                )
-            except ImportError as e:
-                raise CuckooOperationalError(
-                    "Unable to load the Cuckoo plugin at %s: %s. Please "
-                    "review its contents and/or validity!" % (fname, e)
-                )
+    for _, module_name, _ in pkgutil.iter_modules([dirpath], module_prefix+"."):
+        try:
+            importlib.import_module(module_name)
+        except ImportError as e:
+            raise CuckooOperationalError(
+                "Unable to load the Cuckoo plugin at %s: %s. Please "
+                "review its contents and/or validity!" % (module_name, e)
+            )
 
     subclasses = class_.__subclasses__()[:]
 
@@ -59,9 +57,9 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
         subclasses.extend(subclass.__subclasses__())
 
         # Check whether this subclass belongs to the module namespace that
-        # we're currently importing. It should be noted that parent and child
+        # we're currently importing. It should be noted that parent
         # namespaces should fail the following if-statement.
-        if module_prefix != ".".join(subclass.__module__.split(".")[:-1]):
+        if not subclass.__module__.startswith(module_prefix):
             continue
 
         namespace[subclass.__name__] = subclass
@@ -73,7 +71,8 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     if as_dict:
         ret = {}
         for plugin in plugins:
-            ret[plugin.__module__.split(".")[-1]] = plugin
+            plugin_module = plugin.__module__[len(module_prefix) + 1:]
+            ret[plugin_module] = plugin
         return ret
 
     return sorted(plugins, key=lambda x: x.__name__.lower())
@@ -326,6 +325,7 @@ class RunSignatures(object):
     """Run Signatures."""
     available_signatures = []
     version = cuckoo_version
+    ttp_descriptions = {}
 
     def __init__(self, results):
         self.results = results
@@ -351,6 +351,16 @@ class RunSignatures(object):
 
         # Sort Signatures by their order.
         cls.available_signatures.sort(key=lambda sig: sig.order)
+
+        cwd_ttps = cwd("stuff", "ttp_descriptions.json")
+        if os.path.exists(cwd_ttps):
+            with open(cwd_ttps, "rb") as fp:
+                cls.ttp_descriptions = json.load(fp)
+        else:
+            log.warning(
+                "Missing TTP descriptions file. No TTP descriptions will be "
+                "added to matched Cuckoo signatures."
+            )
 
     @classmethod
     def should_load_signature(cls, signature):

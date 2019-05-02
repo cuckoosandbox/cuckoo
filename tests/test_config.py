@@ -1173,6 +1173,11 @@ def test_migration_206_210():
     Files.create(cwd("conf"), "auxiliary.conf", """
 [replay]
     """)
+    Files.create(cwd("conf"), "kvm.conf", """
+[kvm]
+machines = cuckoo1
+interface = virbr0
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.6", "2.1.0")
 
@@ -1180,6 +1185,8 @@ def test_migration_206_210():
     assert cfg["cuckoo"]["cuckoo"]["api_token"] is None
     assert cfg["cuckoo"]["cuckoo"]["web_secret"] is None
     assert cfg["processing"]["irma"]["probes"] is None
+    assert cfg["kvm"]["kvm"]["dsn"] == "qemu:///system"
+
 
 class FullMigration(object):
     DIRPATH = None

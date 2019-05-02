@@ -7,15 +7,14 @@ import logging
 import os
 import re
 import time
-
 import xml.etree.ElementTree as ET
 
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooMachineError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooReportError
-from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.files import Folders
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
@@ -833,6 +832,7 @@ class Signature(object):
     enabled = True
     minimum = None
     maximum = None
+    ttp = []
 
     # Maximum amount of marks to record.
     markcount = 50
@@ -1330,9 +1330,17 @@ class Signature(object):
     def on_complete(self):
         """Signature is notified when all API calls have been processed."""
 
+    def extend_ttp(self):
+        """Find the short and long descriptions for the TTPs of a signature"""
+        d = {}
+        for t in self.ttp:
+            d[t] = self._caller.ttp_descriptions.get(t)
+        return d
+
     def results(self):
         """Turn this signature into actionable results."""
         return dict(name=self.name,
+                    ttp=self.extend_ttp(),
                     description=self.description,
                     severity=self.severity,
                     families=self.families,

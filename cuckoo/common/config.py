@@ -391,6 +391,7 @@ class Config(object):
         },
         "kvm": {
             "kvm": {
+                "dsn": String("qemu:///system", required=False),
                 "interface": String("virbr0"),
                 "machines": List(String, "cuckoo1"),
             },
