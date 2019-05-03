@@ -129,12 +129,12 @@ def test_empty_misp():
 
     with responses.RequestsMock(assert_all_requests_are_fired=True) as rsps:
         rsps.add(
-            responses.GET, "https://misphost/servers/getVersion.json",
+            responses.GET, "https://misphost/servers/getPyMISPVersion.json",
             json={
-                "version": "2.4.56",
-                "perm_sync": True,
-            },
+                "version": "2.4.103"
+            }
         )
+
         rsps.add(
             responses.GET, "https://misphost/attributes/describeTypes.json",
             json={
@@ -177,31 +177,30 @@ def test_misp_sample_hashes():
         comment="File submitted to Cuckoo"
     )
 
-def test_misp_maldoc():
+def test_misp_signatures():
     r = MISP()
     r.misp = mock.MagicMock()
-    r.misp.add_url.return_value = None
+    r.misp.add_internal_comment.return_value = None
 
-    r.maldoc_network({
-        "signatures": [
-            {
-                "name": "foobar",
-            },
-            {
-                "name": "malicious_document_urls",
-                "marks": [
-                    {
-                        "category": "file",
-                    },
-                    {
-                        "category": "url",
-                        "ioc": "url_ioc",
+    r.signature({
+            "signatures": [
+                {
+                    "description": "Very signature",
+                    "ttp": {
+                        "T1045": {
+                            "short": "Short description",
+                            "long": "A longer description"
+                        }
                     }
-                ],
-            },
-        ],
+                }
+            ]
     }, "event")
-    r.misp.add_url.assert_called_once_with("event", ["url_ioc"])
+
+    assert r.misp.add_internal_comment.call_count == 2
+    r.misp.add_internal_comment.assert_has_calls([
+        mock.call("event", "Very signature - (T1045)"),
+        mock.call("event", "TTP: T1045, short: Short description")
+    ])
 
 def test_misp_all_urls():
     r = MISP()
@@ -252,10 +251,15 @@ def test_misp_domain_ipaddr():
                     "domain": "time.windows.com",
                     "ip": "1.2.3.4",
                 },
+                {
+                    "domain": "www.msftncsi.com",
+                    "ip": "95.101.2.42"
+                }
             ],
             "hosts": [
                 "2.3.4.5",
                 "3.4.5.6",
+                "8.8.8.8"
             ],
         },
     }, "event")
@@ -267,6 +271,50 @@ def test_misp_domain_ipaddr():
     r.misp.add_ipdst.assert_called_once_with(
         "event", ["2.3.4.5", "3.4.5.6"],
     )
+
+def test_misp_family():
+    r = MISP()
+    r.misp = mock.MagicMock()
+    r.misp.add_detection_name.return_value = None
+    r.misp.add_url.return_value = None
+    r.misp.add_mutex.return_value = None
+    r.misp.add_useragent.return_value = None
+
+    r.family({
+        "metadata": {
+            "cfgextr": [
+                {
+                    "family": "3x4mpl3",
+                    "cnc": ["example.com/gate.php"]
+                },
+                {
+                    "family": "3x4mpl3_2",
+                    "url": ["http://example.org"]
+                },
+                {
+                    "family": "3x4mpl3_3",
+                    "mutex": ["@@@@@@"],
+                    "user_agent": ["M3mebr0wz0r V42"]
+                }
+            ]
+        }
+    }, "event")
+
+    assert r.misp.add_detection_name.call_count == 3
+    r.misp.add_detection_name.assert_has_calls([
+        mock.call("event", "3x4mpl3", "Sandbox detection"),
+        mock.call("event", "3x4mpl3_2", "Sandbox detection"),
+        mock.call("event", "3x4mpl3_3", "Sandbox detection")
+    ])
+
+    assert r.misp.add_url.call_count == 2
+    r.misp.add_url.assert_has_calls([
+        mock.call("event", "example.com/gate.php"),
+        mock.call("event", "http://example.org")
+    ])
+
+    r.misp.add_mutex.assert_called_once_with("event", "@@@@@@")
+    r.misp.add_useragent.assert_called_once_with("event", "M3mebr0wz0r V42")
 
 @mock.patch("cuckoo.reporting.mongodb.mongo")
 def test_mongodb_init_once_new(p):
