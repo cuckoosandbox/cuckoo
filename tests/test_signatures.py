@@ -181,6 +181,8 @@ def test_signature_order():
         name = "sig3"
         order = 2
 
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
     with mock.patch("cuckoo.core.plugins.cuckoo") as p:
         p.signatures = sig1, sig2, sig3
         RunSignatures.init_once()
@@ -206,6 +208,8 @@ class test_call_signature():
         def on_signature(self, sig):
             pass
 
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
     with mock.patch("cuckoo.core.plugins.cuckoo") as p:
         p.signatures = sig,
         RunSignatures.init_once()
