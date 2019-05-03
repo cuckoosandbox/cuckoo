@@ -16,7 +16,7 @@ from cuckoo.common.exceptions import CuckooDatabaseError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.objects import File, URL, Dictionary
-from cuckoo.common.utils import Singleton, classlock, json_encode
+from cuckoo.common.utils import Singleton, classlock, json_encode, parse_bool
 from cuckoo.misc import cwd, format_command
 
 from sqlalchemy import create_engine, Column, not_, func
@@ -1035,6 +1035,16 @@ class Database(object):
             timeout = 0
         if not priority:
             priority = 1
+
+        try:
+            memory = parse_bool(memory)
+        except ValueError:
+            memory = False
+
+        try:
+            enforce_timeout = parse_bool(enforce_timeout)
+        except ValueError:
+            enforce_timeout = False
 
         if isinstance(obj, File):
             sample = Sample(md5=obj.get_md5(),
