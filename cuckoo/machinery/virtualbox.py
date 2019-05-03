@@ -1,5 +1,5 @@
 # Copyright (C) 2011-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -481,3 +481,29 @@ class VirtualBox(Machinery):
         )
         _, _ = proc.communicate()
         return proc
+
+    @staticmethod
+    def version():
+        """Get the version for the installed Virtualbox"""
+        try:
+            proc = Popen(
+                [config("virtualbox:virtualbox:path"), "--version"],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+            )
+            output, err = proc.communicate()
+        except OSError:
+            return None
+
+        output = output.strip()
+        version = ""
+        for c in output:
+            if not c.isdigit() and c != ".":
+                break
+            version += c
+
+        # A 3 digit version number is expected. If it has none or fewer, return
+        # None because we are unsure what we have.
+        if len(version.split(".", 2)) < 3:
+            return None
+
+        return version
