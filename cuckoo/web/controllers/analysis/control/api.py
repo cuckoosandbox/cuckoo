@@ -9,6 +9,7 @@ import socket
 import uuid
 
 from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from guacamole.client import GuacamoleClient, GuacamoleError
 
 from cuckoo.common.config import config
@@ -35,6 +36,7 @@ pending_read_request = threading.Event()
 
 class ControlApi(object):
     @staticmethod
+    @csrf_exempt
     def tunnel(request, task_id):
         task = db.view_task(int(task_id))
         if not task:
