@@ -30,7 +30,7 @@ class Physical(Machinery):
     ERROR = "error"
 
     def _initialize_check(self):
-        """Ensures that credentials have been entered into the config file.
+        """Ensure that credentials have been entered into the config file.
         @raise CuckooCriticalError: if no credentials were provided or if
             one or more physical machines are offline.
         """
@@ -85,7 +85,7 @@ class Physical(Machinery):
                                      "%s (STATUS=%s)" % (label, status))
 
     def stop(self, label):
-        """Stops a physical machine.
+        """Stop a physical machine.
         @param label: physical machine name.
         @raise CuckooMachineError: if unable to stop.
         """
@@ -119,7 +119,7 @@ class Physical(Machinery):
                 continue
 
     def _list(self):
-        """Lists physical machines installed.
+        """List physical machines installed.
         @return: physical machine names list.
         """
         active_machines = []
@@ -130,7 +130,7 @@ class Physical(Machinery):
         return active_machines
 
     def _status(self, label):
-        """Gets current status of a physical machine.
+        """Get current status of a physical machine.
         @param label: physical machine name.
         @return: status string.
         """
@@ -239,7 +239,7 @@ class Physical(Machinery):
                 )
 
     def fog_queue_task(self, hostname):
-        """Queues a task with FOG to deploy the given machine after reboot."""
+        """Queue a task with FOG to deploy the given machine after reboot."""
         if hostname in self.fog_machines:
             macaddr, download = self.fog_machines[hostname]
             self.fog_query(download)

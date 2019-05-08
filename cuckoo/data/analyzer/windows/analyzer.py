@@ -46,11 +46,11 @@ class Files(object):
         self.dumped = []
 
     def is_protected_filename(self, file_name):
-        """Do we want to inject into a process with this name?"""
+        """Return whether or not to inject into a process with this name."""
         return file_name.lower() in self.PROTECTED_NAMES
 
     def add_pid(self, filepath, pid, verbose=True):
-        """Tracks a process identifier for this file."""
+        """Track a process identifier for this file."""
         if not pid or filepath.lower() not in self.files:
             return
 
@@ -150,7 +150,7 @@ class ProcessList(object):
             self.add_pid(pids)
 
     def has_pid(self, pid, notrack=True):
-        """Is this process identifier being tracked?"""
+        """Return whether or not this process identifier being tracked."""
         if int(pid) in self.pids:
             return True
 
@@ -435,7 +435,7 @@ class Analyzer(object):
         self.reboot = []
 
     def get_pipe_path(self, name):
-        """Returns \\\\.\\PIPE on Windows XP and \\??\\PIPE elsewhere."""
+        """Return \\\\.\\PIPE on Windows XP and \\??\\PIPE elsewhere."""
         version = sys.getwindowsversion()
         if version.major == 5 and version.minor == 1:
             return "\\\\.\\PIPE\\%s" % name
@@ -509,7 +509,7 @@ class Analyzer(object):
             self.target = self.config.target
 
     def stop(self):
-        """Allows an auxiliary module to stop the analysis."""
+        """Allow an auxiliary module to stop the analysis."""
         self.do_run = False
 
     def complete(self):

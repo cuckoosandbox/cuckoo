@@ -13,7 +13,7 @@ class MachinesApi:
     @api_get
     def list(request):
         """
-        Returns a list of all machines currently registered in Cuckoo
+        Return a list of all machines currently registered in Cuckoo
         :return:
         """
         data = {}
@@ -29,7 +29,7 @@ class MachinesApi:
     @api_get
     def view(request, name=None):
         """
-        Returns information about a machine
+        Return information about a machine
         :param name: machine name
         :return: Machine information as a dictionary
         """

@@ -6,7 +6,7 @@ from cuckoo.common.abstracts import Report
 from cuckoo.core.feedback import CuckooFeedbackObject, CuckooFeedback
 
 class Feedback(Report):
-    """Reports feedback to the Cuckoo Feedback backend if required."""
+    """Report feedback to the Cuckoo Feedback backend if required."""
 
     def run(self, results):
         # Nothing to see here.

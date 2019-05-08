@@ -38,7 +38,7 @@ class Screenshot:
         return HAVE_PIL
 
     def equal(self, img1, img2, skip_area=None):
-        """Compares two screenshots using Root-Mean-Square Difference (RMS).
+        """Compare two screenshots using Root-Mean-Square Difference (RMS).
         @param img1: screenshot to compare.
         @param img2: screenshot to compare.
         @return: equal status.

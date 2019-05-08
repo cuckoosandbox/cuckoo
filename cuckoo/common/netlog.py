@@ -55,7 +55,7 @@ def default_converter_64bit(v):
     return v
 
 class BsonParser(ProtocolHandler):
-    """Receives and interprets .bson logs from the monitor.
+    """Receive and interpret .bson logs from the monitor.
 
     The monitor provides us with "info" messages that explain how the function
     arguments will come through later on. This class remembers these info
@@ -117,9 +117,9 @@ class BsonParser(ProtocolHandler):
             flags[argument] = "|".join(flags[argument])
 
     def determine_unserializers(self, arginfo):
-        """Determines which unserializers (or converters) have to be used in
-        order to parse the various arguments for this function call. Keeps in
-        mind whether the current bson is 32-bit or 64-bit."""
+        """Determine which unserializers (or converters) have to be used in
+        order to parse the various arguments for this function call. Maintains
+        whether the current bson is 32-bit or 64-bit."""
         argnames, converters = [], []
 
         for argument in arginfo:

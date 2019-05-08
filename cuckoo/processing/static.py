@@ -63,14 +63,14 @@ class PortableExecutable(object):
         self.pe = None
 
     def _get_filetype(self, data):
-        """Gets filetype, uses libmagic if available.
+        """Get filetype, use libmagic if available.
         @param data: data to be analyzed.
         @return: file type or None.
         """
         return sflock.magic.from_buffer(data)
 
     def _get_peid_signatures(self):
-        """Gets PEID signatures.
+        """Get PEID signatures.
         @return: matched signatures or None.
         """
         try:
@@ -81,7 +81,7 @@ class PortableExecutable(object):
             return None
 
     def _get_imported_symbols(self):
-        """Gets imported symbols.
+        """Get imported symbols.
         @return: imported symbols dict or None.
         """
         imports = []
@@ -105,7 +105,7 @@ class PortableExecutable(object):
         return imports
 
     def _get_exported_symbols(self):
-        """Gets exported symbols.
+        """Get exported symbols.
         @return: exported symbols dict or None.
         """
         exports = []
@@ -122,7 +122,7 @@ class PortableExecutable(object):
         return exports
 
     def _get_sections(self):
-        """Gets sections.
+        """Get sections.
         @return: sections dict or None.
         """
         sections = []
@@ -207,7 +207,7 @@ class PortableExecutable(object):
         return infos
 
     def _get_imphash(self):
-        """Gets imphash.
+        """Get imphash.
         @return: imphash string or None.
         """
         try:

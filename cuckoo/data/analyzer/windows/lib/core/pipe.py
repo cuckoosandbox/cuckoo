@@ -21,8 +21,8 @@ log = logging.getLogger(__name__)
 BUFSIZE = 0x10000
 
 class PipeForwarder(threading.Thread):
-    """The Pipe Forwarder forwards all data received from a local pipe to
-    the Cuckoo server through a socket."""
+    """Forward all data received from a local pipe to the Cuckoo
+    server through a socket."""
     sockets = {}
     active = {}
 
@@ -99,8 +99,8 @@ class PipeForwarder(threading.Thread):
             self.active[pid.value] = False
 
 class PipeDispatcher(threading.Thread):
-    """Receives commands through a local pipe, forwards them to the
-    dispatcher, and returns the response."""
+    """Receive commands through a local pipe, forward them to the
+    dispatcher, and return the response."""
 
     def __init__(self, pipe_handle, dispatcher):
         threading.Thread.__init__(self)
@@ -146,8 +146,8 @@ class PipeDispatcher(threading.Thread):
         KERNEL32.CloseHandle(self.pipe_handle)
 
 class PipeServer(threading.Thread):
-    """The Pipe Server accepts incoming pipe handlers and initializes
-    them in a new thread."""
+    """Accept incoming pipe handlers and initialize them in
+    a new thread."""
 
     def __init__(self, pipe_handler, pipe_name, message=False, **kwargs):
         threading.Thread.__init__(self)

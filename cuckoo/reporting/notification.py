@@ -18,7 +18,7 @@ def default(obj):
     raise TypeError("%r is not JSON serializable" % obj)
 
 class Notification(Report):
-    """Notifies external service about finished analysis via URL."""
+    """Notify external service about finished analysis via URL."""
     order = 3
 
     def run(self, results):

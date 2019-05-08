@@ -21,7 +21,7 @@ logging.getLogger("elasticsearch.trace").setLevel(logging.WARNING)
 log = logging.getLogger(__name__)
 
 class ElasticSearch(Report):
-    """Stores report in Elasticsearch."""
+    """Store report in Elasticsearch."""
 
     @classmethod
     def init_once(cls):

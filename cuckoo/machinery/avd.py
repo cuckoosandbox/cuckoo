@@ -19,7 +19,7 @@ class Avd(Machinery):
     """Virtualization layer for Android Emulator."""
 
     def _initialize_check(self):
-        """Runs all checks when a machine manager is initialized.
+        """Run all checks when a machine manager is initialized.
         @raise CuckooMachineError: if the android emulator is not found.
         """
         self.emulator_processes = {}
@@ -76,7 +76,7 @@ class Avd(Machinery):
         self.start_agent(label)
 
     def stop(self, label):
-        """Stops a virtual machine.
+        """Stop a virtual machine.
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to stop.
         """
@@ -84,20 +84,20 @@ class Avd(Machinery):
         self.stop_emulator(label)
 
     def _list(self):
-        """Lists virtual machines installed.
+        """List virtual machines installed.
         @return: virtual machine names list.
         """
         return self.options.avd.machines
 
     def _status(self, label):
-        """Gets current status of a vm.
+        """Get current status of a vm.
         @param label: virtual machine name.
         @return: status string.
         """
         log.debug("Getting status for %s" % label)
 
     def duplicate_reference_machine(self, label):
-        """Creates a new emulator based on a reference one."""
+        """Create a new emulator based on a reference one."""
         reference_machine = self.options.avd.reference_machine
         log.debug("Duplicate Reference Machine '{0}'.".format(reference_machine))
 
@@ -127,7 +127,7 @@ class Avd(Machinery):
         # todo:will see
 
     def delete_old_emulator(self, label):
-        """Deletes any trace of an emulator that would have the same name as
+        """Delete any trace of an emulator that would have the same name as
         the one of the current emulator."""
         old_emulator_config_file = os.path.join(self.options.avd.avd_path,
                                                 "%s.ini" % label)
@@ -142,7 +142,7 @@ class Avd(Machinery):
             shutil.rmtree(old_emulator_path)
 
     def replace_content_in_file(self, fileName, contentToReplace, replacementContent):
-        """Replaces the specified motif by a specified value in the specified
+        """Replace the specified motif by a specified value in the specified
         file.
         """
 
@@ -157,7 +157,7 @@ class Avd(Machinery):
             fd.writelines(newLines)
 
     def start_emulator(self, label, task):
-        """Starts the emulator."""
+        """Start the emulator."""
         emulator_port = self.options.get(label)["emulator_port"]
 
         cmd = [
@@ -216,7 +216,7 @@ class Avd(Machinery):
             del self.emulator_processes[label]
 
     def wait_for_device_ready(self, label):
-        """Analyzes the emulator and returns when it's ready."""
+        """Analyze the emulator and return when it's ready."""
 
         emulator_port = str(self.options.get(label)["emulator_port"])
         adb = self.options.avd.adb_path
@@ -294,7 +294,7 @@ class Avd(Machinery):
         time.sleep(10)
 
     def check_adb_recognize_emulator(self, label):
-        """Checks that ADB recognizes the emulator. Returns True if device is
+        """Check that ADB recognizes the emulator. Return True if device is
         recognized by ADB, False otherwise.
         """
         log.debug("Checking if ADB recognizes emulator...")
@@ -311,7 +311,7 @@ class Avd(Machinery):
         return False
 
     def restart_adb_server(self):
-        """Restarts ADB server. This function is not used because we have to
+        """Restart ADB server. This function is not used because we have to
         verify we don't have multiple devices.
         """
         log.debug("Restarting ADB server...")

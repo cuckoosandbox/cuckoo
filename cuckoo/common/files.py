@@ -13,7 +13,7 @@ from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.misc import getuser
 
 def temppath():
-    """Returns the true temporary directory."""
+    """Return the true temporary directory."""
     tmppath = config("cuckoo:cuckoo:tmppath")
 
     # Backwards compatibility with older configuration.
@@ -37,7 +37,7 @@ class Storage(object):
 class Folders(Storage):
     @staticmethod
     def create(root=".", folders=None):
-        """Creates a directory or multiple directories.
+        """Create a directory or multiple directories.
         @param root: root path.
         @param folders: folders list to be created.
         @raise CuckooOperationalError: if fails to create folder.
@@ -149,7 +149,7 @@ class Files(Storage):
 
     @staticmethod
     def hash_file(method, filepath):
-        """Calculates an hash on a file by path.
+        """Calculate a hash on a file by path.
         @param method: callable hashing method
         @param path: file path
         @return: computed hash string
