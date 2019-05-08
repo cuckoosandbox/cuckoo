@@ -189,7 +189,7 @@ class XenServer(Machinery):
         return machine.snapshot
 
     def _is_halted(self, vm):
-        """Checks if the virtual machine is running.
+        """Check if the virtual machine is running.
         @param uuid: vm uuid
         """
         return vm["power_state"] == "Halted"
@@ -262,7 +262,7 @@ class XenServer(Machinery):
             return vm_list
 
     def _status(self, label):
-        """Gets current status of a vm.
+        """Get current status of a vm.
         @param label: virtual machine uuid
         @return: status string.
         """

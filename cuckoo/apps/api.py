@@ -38,7 +38,7 @@ def json_error(status_code, message):
     return r
 
 def shutdown_server():
-    """Shutdown API werkzeug server"""
+    """Shutdown API werkzeug server."""
     shutdown = request.environ.get("werkzeug.server.shutdown")
     if shutdown:
         shutdown()
@@ -676,8 +676,8 @@ def vpn_status():
 
 @app.route("/exit")
 def exit_api():
-    """Shuts down the server if in debug mode and
-    using the werkzeug server"""
+    """Shut down the server if in debug mode and
+    using the werkzeug server."""
     if not app.debug:
         return json_error(403, "This call can only be used in debug mode")
 

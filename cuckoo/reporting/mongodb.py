@@ -12,7 +12,7 @@ from cuckoo.common.mongo import mongo
 from cuckoo.common.objects import File
 
 class MongoDB(Report):
-    """Stores report in MongoDB."""
+    """Store report in MongoDB."""
     order = 2
 
     # Mongo schema version, used for data migration.
@@ -77,7 +77,7 @@ class MongoDB(Report):
             return self.db.fs.files.find_one(to_find)["_id"]
 
     def run(self, results):
-        """Writes report.
+        """Write report.
         @param results: analysis results dictionary.
         @raise CuckooReportError: if fails to connect or write to MongoDB.
         """

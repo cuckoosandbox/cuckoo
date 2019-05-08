@@ -26,19 +26,19 @@ class TestCreateFolders:
         self.tmp_dir = tempfile.gettempdir()
 
     def test_root_folder(self):
-        """Tests a single folder creation based on the root parameter."""
+        """Test single folder creation based on the root parameter."""
         Folders.create(os.path.join(self.tmp_dir, "foo"))
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
 
     def test_single_folder(self):
-        """Tests a single folder creation."""
+        """Test single folder creation."""
         Folders.create(self.tmp_dir, "foo")
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
 
     def test_multiple_folders(self):
-        """Tests multiple folders creation."""
+        """Test multiple folder creation."""
         Folders.create(self.tmp_dir, ["foo", "bar"])
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         assert os.path.exists(os.path.join(self.tmp_dir, "bar"))
@@ -46,7 +46,7 @@ class TestCreateFolders:
         os.rmdir(os.path.join(self.tmp_dir, "bar"))
 
     def test_copy_folder(self):
-        """Tests recursive folder copy"""
+        """Test recursive folder copy."""
         dirpath = tempfile.mkdtemp()
         set_cwd(dirpath)
 
@@ -54,21 +54,21 @@ class TestCreateFolders:
         assert os.path.isfile("%s/reports/report.json" % dirpath)
 
     def test_duplicate_folder(self):
-        """Tests a duplicate folder creation."""
+        """Test a duplicate folder creation."""
         Folders.create(self.tmp_dir, "foo")
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         Folders.create(self.tmp_dir, "foo")
         os.rmdir(os.path.join(self.tmp_dir, "foo"))
 
     def test_delete_folder(self):
-        """Tests folder deletion #1."""
+        """Test folder deletion #1."""
         Folders.create(self.tmp_dir, "foo")
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         Folders.delete(os.path.join(self.tmp_dir, "foo"))
         assert not os.path.exists(os.path.join(self.tmp_dir, "foo"))
 
     def test_delete_folder2(self):
-        """Tests folder deletion #2."""
+        """Test folder deletion #2."""
         Folders.create(self.tmp_dir, "foo")
         assert os.path.exists(os.path.join(self.tmp_dir, "foo"))
         Folders.delete(self.tmp_dir, "foo")

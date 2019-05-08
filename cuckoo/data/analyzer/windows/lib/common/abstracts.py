@@ -107,7 +107,7 @@ class Package(object):
         return outpath
 
     def init_regkeys(self, regkeys):
-        """Initializes the registry to avoid annoying popups, configure
+        """Initialize the registry to avoid annoying popups, configure
         settings, etc.
         @param regkeys: the root keys, subkeys, and key/value pairs.
         """
@@ -130,7 +130,7 @@ class Package(object):
 
     def execute(self, path, args, mode=None, maximize=False, env=None,
                 source=None, trigger=None):
-        """Starts an executable for analysis.
+        """Start an executable for analysis.
         @param path: executable path
         @param args: executable arguments
         @param mode: monitor mode - which functions to instrument
@@ -169,7 +169,7 @@ class Package(object):
         return p.pid
 
     def package_files(self):
-        """A list of files to upload to host.
+        """Return a list of files to upload to host.
         The list should be a list of tuples (<path on guest>, <name of file in package_files folder>).
         (package_files is a folder that will be created in analysis folder).
         """

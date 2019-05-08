@@ -58,7 +58,7 @@ class SubmitManager(object):
         )
 
     def translate_options_from(self, entry, options):
-        """Translates from Web Interface options to Cuckoo database options."""
+        """Translate from Web Interface options to Cuckoo database options."""
         ret = {}
 
         if not options.get("simulated-human-interaction", True):
@@ -88,7 +88,7 @@ class SubmitManager(object):
         return ret
 
     def translate_options_to(self, options):
-        """Translates from Cuckoo database options to Web Interface options."""
+        """Translate from Cuckoo database options to Web Interface options."""
         ret = {}
 
         if not int(options.get("human", "1")):
@@ -147,7 +147,7 @@ class SubmitManager(object):
 
     def get_files(self, submit_id, password=None, astree=False):
         """
-        Returns files or URLs from a submitted analysis.
+        Return files or URLs from a submitted analysis.
         @param password: The password to unlock container archives with
         @param astree: sflock option; determines the format in which the files are returned
         @return: A tree of files
@@ -195,7 +195,7 @@ class SubmitManager(object):
         return files, submit.data["errors"], submit.data["options"]
 
     def submit(self, submit_id, config):
-        """Reads, interprets, and converts the JSON configuration provided by
+        """Read, interpret, and convert the JSON configuration provided by
         the Web Interface into something we insert into the database."""
         ret = []
         submit = db.view_submit(submit_id)

@@ -44,7 +44,7 @@ class VMware(Machinery):
         super(VMware, self)._initialize_check()
 
     def _check_vmx(self, vmx_path):
-        """Checks whether a vmx file exists and is valid.
+        """Check whether a vmx file exists and is valid.
         @param vmx_path: path to vmx file
         @raise CuckooMachineError: if file not found or not ending with .vmx
         """
@@ -56,7 +56,7 @@ class VMware(Machinery):
             raise CuckooMachineError("Vm file %s not found" % vmx_path)
 
     def _check_snapshot(self, vmx_path, snapshot):
-        """Checks snapshot existance.
+        """Check snapshot existence.
         @param vmx_path: path to vmx file
         @param snapshot: snapshot name
         @raise CuckooMachineError: if snapshot not found
@@ -114,7 +114,7 @@ class VMware(Machinery):
                                      "mode: %s" % (vmx_path, mode, e))
 
     def stop(self, vmx_path):
-        """Stops a virtual machine.
+        """Stop a virtual machine.
         @param vmx_path: path to vmx file
         @raise CuckooMachineError: if unable to stop.
         """
@@ -135,7 +135,7 @@ class VMware(Machinery):
                         vmx_path)
 
     def _revert(self, vmx_path, snapshot):
-        """Revets machine to snapshot.
+        """Revert machine to snapshot.
         @param vmx_path: path to vmx file
         @param snapshot: snapshot name
         @raise CuckooMachineError: if unable to revert
@@ -154,7 +154,7 @@ class VMware(Machinery):
                                      "machine %s: %s" % (vmx_path, e))
 
     def _is_running(self, vmx_path):
-        """Checks if virtual machine is running.
+        """Check if virtual machine is running.
         @param vmx_path: path to vmx file
         @return: running status
         """

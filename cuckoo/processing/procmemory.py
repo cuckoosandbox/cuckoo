@@ -52,7 +52,7 @@ class ProcessMemory(Processing):
                 print>>o, "autoMark(%s, AU_CODE)" % region["addr"]
 
     def _fixup_pe_header(self, pe):
-        """Fixes the PE header from an in-memory representation to an
+        """Fix the PE header from an in-memory representation to an
         on-disk representation."""
         for section in pe.sections:
             section.PointerToRawData = section.VirtualAddress

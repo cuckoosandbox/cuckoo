@@ -91,7 +91,7 @@ class MISP(Report):
                 )
 
     def run(self, results):
-        """Submits results to MISP.
+        """Submit results to MISP.
         @param results: Cuckoo results dict.
         """
         url = self.options.get("url")

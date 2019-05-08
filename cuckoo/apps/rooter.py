@@ -59,7 +59,7 @@ def rt_available(rt_table):
         return False
 
 def vpn_status():
-    """Gets current VPN status."""
+    """Get current VPN status."""
     ret = {}
     for line in run(s.service, "openvpn", "status")[0].split("\n"):
         x = re.search("'(?P<vpn>\\w+)'\\ is\\ (?P<running>not)?", line)
@@ -125,7 +125,7 @@ def init_rttable(rt_table, interface):
         run(s.ip, *args)
 
 def flush_rttable(rt_table):
-    """Flushes specified routing table entries."""
+    """Flush specified routing table entries."""
     if rt_table in ["local", "main", "default"]:
         return
 
