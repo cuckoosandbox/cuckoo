@@ -84,7 +84,7 @@ def chunk(request, task_id, pid, pagenum):
 
 @require_safe
 def filtered_chunk(request, task_id, pid, category):
-    """Filters calls for call category.
+    """Filter calls for call category.
     @param task_id: cuckoo task id
     @param pid: pid you want calls
     @param category: call category type

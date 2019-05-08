@@ -148,7 +148,7 @@ class UUID(Type):
             log.error("Incorrect UUID %s", value)
 
     def check(self, value):
-        """Checks if the value is of type UUID."""
+        """Check if the value is of type UUID."""
         try:
             click.UUID(value)
             return True
@@ -1041,7 +1041,7 @@ class Config(object):
 
     @staticmethod
     def from_confdir(dirpath, loose=False, sanitize=False):
-        """Reads all the configuration from a configuration directory. If
+        """Read all the configuration from a configuration directory. If
         `sanitize` is set, then black out sensitive fields."""
         ret = {}
         for filename in os.listdir(dirpath):
@@ -1182,7 +1182,7 @@ def cast(s, value):
     return type_.parse(value)
 
 def read_kv_conf(filepath):
-    """Reads a flat Cuckoo key/value configuration file."""
+    """Read a flat Cuckoo key/value configuration file."""
     ret = {}
     for line in open(filepath, "rb"):
         line = line.strip()

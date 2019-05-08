@@ -194,7 +194,7 @@ def cuckoo_main(max_analysis_count=0):
 @click.option("--cwd", help="Cuckoo Working Directory")
 @click.pass_context
 def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
-    """Invokes the Cuckoo daemon or one of its subcommands.
+    """Invoke the Cuckoo daemon or one of its subcommands.
 
     To be able to use different Cuckoo configurations on the same machine with
     the same Cuckoo installation, we use the so-called Cuckoo Working
@@ -247,7 +247,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
 @click.pass_context
 @click.option("--conf", type=click.Path(exists=True, file_okay=True, readable=True), help="Flat key/value configuration file")
 def init(ctx, conf):
-    """Initializes Cuckoo and its configuration."""
+    """Initialize Cuckoo and its configuration."""
     if conf and os.path.exists(conf):
         cfg = read_kv_conf(conf)
     else:
@@ -398,7 +398,7 @@ def process(ctx, instance, report, maxcount, timeout):
 @click.option("--sudo", is_flag=True, help="Request superuser privileges")
 @click.pass_context
 def rooter(ctx, socket, group, service, iptables, ip, sudo):
-    """Instantiates the Cuckoo Rooter."""
+    """Instantiate the Cuckoo Rooter."""
     init_console_logging(level=ctx.parent.level)
 
     if sudo:
@@ -626,7 +626,7 @@ def migrate(revision):
 @click.argument("path", type=click.Path(file_okay=False, exists=True))
 @click.pass_context
 def import_(ctx, mode, path):
-    """Imports an older Cuckoo setup into a new CWD. The old setup should be
+    """Import an older Cuckoo setup into a new CWD. The old setup should be
     identified by PATH and the new CWD may be specified with the --cwd
     parameter, e.g., "cuckoo --cwd /tmp/cwd import old-cuckoo"."""
     if os.path.exists(os.path.join(path, ".cwd")):

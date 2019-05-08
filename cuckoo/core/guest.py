@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 db = Database()
 
 def analyzer_zipfile(platform, monitor):
-    """Creates the Zip file that is sent to the Guest."""
+    """Create the zip file that is sent to the Guest."""
     t = time.time()
 
     zip_data = io.BytesIO()

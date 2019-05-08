@@ -48,7 +48,7 @@ def check_specific_config(filename):
             )
 
 def check_configs():
-    """Checks if config files exist.
+    """Check if config files exist.
     @raise CuckooStartupError: if config files do not exist.
     """
     configs = (
@@ -94,7 +94,7 @@ def check_configs():
     return True
 
 def check_version():
-    """Checks version of Cuckoo."""
+    """Check version of Cuckoo."""
     if not config("cuckoo:cuckoo:version_check"):
         return
 
@@ -131,14 +131,14 @@ def check_version():
     return r
 
 def init_logging(level):
-    """Initializes logging."""
+    """Initialize logging."""
     logging.getLogger().setLevel(logging.DEBUG)
     init_logger("cuckoo.log", level)
     init_logger("cuckoo.json")
     init_logger("task")
 
 def init_console_logging(level=logging.INFO):
-    """Initializes logging only to console and database."""
+    """Initialize logging only to console and database."""
     logging.getLogger().setLevel(logging.DEBUG)
     init_logger("console", level)
     init_logger("database")
@@ -170,7 +170,7 @@ def init_tasks():
         db.set_status(task.id, TASK_FAILED_ANALYSIS)
 
 def init_modules():
-    """Initializes plugins."""
+    """Initialize plugins."""
     log.debug("Imported modules...")
 
     categories = (
@@ -415,7 +415,7 @@ def init_routing():
             rooter("init_rttable", rt_table, interface)
 
 def ensure_tmpdir():
-    """Verifies if the current user can read and create files in the
+    """Verify if the current user can read and create files in the
     cuckoo temporary directory (and creates it, if needed)."""
     try:
         if not os.path.isdir(temppath()):

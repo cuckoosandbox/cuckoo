@@ -12,7 +12,7 @@ from lib.common.registry import set_regkey_full
 log = logging.getLogger(__name__)
 
 class Reboot(Auxiliary):
-    """Prepares the environment to behave as if the VM has been rebooted."""
+    """Prepare the environment to behave as if the VM has been rebooted."""
 
     def start(self):
         if self.analyzer.config.package != "reboot":

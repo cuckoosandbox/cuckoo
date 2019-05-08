@@ -11,7 +11,7 @@ from cuckoo.common.utils import random_token
 from cuckoo.misc import cwd
 
 def write_supervisor_conf(username):
-    """Writes supervisord.conf configuration file if it does not exist yet."""
+    """Write supervisord.conf configuration file if it does not exist yet."""
     # TODO Handle updates?
     if os.path.exists(cwd("supervisord.conf")):
         return

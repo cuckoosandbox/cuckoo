@@ -13,7 +13,7 @@ from lib.core.ioctl import driver_name as random_name
 log = logging.getLogger(__name__)
 
 class LoadZer0m0n(Auxiliary):
-    """Loads the zer0m0n kernel driver."""
+    """Load the zer0m0n kernel driver."""
 
     def start(self):
         if self.options.get("analysis") not in ("both", "kernel"):

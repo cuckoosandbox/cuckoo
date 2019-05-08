@@ -116,7 +116,7 @@ def test_empty_mattermost():
 
 @responses.activate
 def test_empty_misp():
-    """Merely connects to MISP and creates the new event."""
+    """Merely connect to MISP and create the new event."""
     set_cwd(tempfile.mkdtemp())
     conf = {
         "misp": {

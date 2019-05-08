@@ -90,7 +90,7 @@ class Zip(Package):
 
 
 def _prepare_archive_at_path(filename):
-    """ Verifies that there's a readable zip archive at the given path.
+    """ Verify that there's a readable zip archive at the given path.
 
     This function returns a new name for the archive (for most cases it's
     the same as the original one; but if an archive named "foo.zip" contains

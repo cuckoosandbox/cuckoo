@@ -87,7 +87,7 @@ class MISP(Report):
                 self.misp.add_internal_comment(event, "TTP: %s, short: %s" % (att, description["short"]))
 
     def run(self, results):
-        """Submits results to MISP.
+        """Submit results to MISP.
         @param results: Cuckoo results dict.
         """
         url = self.options.get("url")

@@ -99,7 +99,7 @@ def fetch_community(branch="master", force=False, filepath=None):
             open(filepath, "wb").write(t.extractfile(member).read())
 
 def enumerate_files(path, pattern):
-    """Yields all filepaths from a directory."""
+    """Yield all filepaths from a directory."""
     if os.path.isfile(path):
         yield path
     elif os.path.isdir(path):
@@ -346,7 +346,7 @@ def process_tasks(instance, maxcount, timeout):
 
 def cuckoo_clean():
     """Clean up cuckoo setup.
-    It deletes logs, all stored data from file system and configured
+    Delete logs, all stored data from file system and configured
     databases (SQL and MongoDB).
     """
     # Init logging (without writing to file).

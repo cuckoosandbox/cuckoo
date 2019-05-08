@@ -18,7 +18,7 @@ from cuckoo.misc import set_cwd, cwd
 db = Database()
 
 def reset_logging():
-    """Resets the logging module to its initial state so that we can
+    """Reset the logging module to its initial state so that we can
     re-register all kinds of logging logic for unit testing purposes."""
     logging.root = logging.RootLogger(logging.WARNING)
     logging.Logger.root = logging.root

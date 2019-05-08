@@ -127,7 +127,7 @@ class Process(object):
 
     @staticmethod
     def set_config(config):
-        """Sets the analyzer configuration once."""
+        """Set the analyzer configuration once."""
         Process.config = config
 
     def get_system_info(self):

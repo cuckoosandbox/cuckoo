@@ -55,7 +55,7 @@ class vSphere(Machinery):
         random.seed()
 
     def _initialize_check(self):
-        """Runs checks against virtualization software when a machine manager
+        """Run checks against virtualization software when a machine manager
         is initialized.
         @raise CuckooCriticalError: if a misconfiguration or unsupported state
                                     is found.

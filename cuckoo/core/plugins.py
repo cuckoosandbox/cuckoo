@@ -466,7 +466,7 @@ class RunSignatures(object):
                     self.api_sigs[call["api"]].remove(sig)
 
     def process_yara_matches(self):
-        """Yields any Yara matches to each signature."""
+        """Yield any Yara matches to each signature."""
         def loop_yara(category, filepath, matches):
             for match in matches:
                 match = YaraMatch(match, category)
@@ -650,7 +650,7 @@ class RunReporting(object):
             )
 
     def run(self):
-        """Generates all reports.
+        """Generate all reports.
         @raise CuckooReportError: if a report module fails.
         """
         # In every reporting module you can specify a numeric value that

@@ -24,7 +24,7 @@ class Replay(Auxiliary):
         self.port = None
 
     def pcap2mitm(self, pcappath, tlsmaster):
-        """Used to translate a .pcap into a .mitm file."""
+        """Translate a .pcap into a .mitm file."""
         mitmpath = tempfile.mktemp(suffix=".mitm")
         with open(mitmpath, "wb") as f:
             httpreplay.utils.pcap2mitm(pcappath, f, tlsmaster, True)

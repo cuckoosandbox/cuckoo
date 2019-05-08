@@ -30,7 +30,7 @@ class VirtualBox(Machinery):
     ERROR = "machete"
 
     def _initialize_check(self):
-        """Runs all checks when a machine manager is initialized.
+        """Run all checks when a machine manager is initialized.
         @raise CuckooMachineError: if VBoxManage is not found.
         """
         if not self.options.virtualbox.path:
@@ -182,7 +182,7 @@ class VirtualBox(Machinery):
             return
 
     def stop(self, label):
-        """Stops a virtual machine.
+        """Stop a virtual machine.
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to stop.
         """
@@ -235,7 +235,7 @@ class VirtualBox(Machinery):
         self._wait_status(label, self.POWEROFF, self.ABORTED, self.SAVED)
 
     def _list(self):
-        """Lists virtual machines installed.
+        """List virtual machines installed.
         @return: virtual machine names list.
         """
         try:
@@ -268,8 +268,8 @@ class VirtualBox(Machinery):
         return machines
 
     def vminfo(self, label, field):
-        """Returns False if invoking vboxmanage fails. Otherwise the VM
-        information value, if any."""
+        """Return False if invoking vboxmanage fails. Otherwise return the
+        VM information value, if any."""
         try:
             args = [
                 self.options.virtualbox.path,
@@ -314,7 +314,7 @@ class VirtualBox(Machinery):
                 return line.split("=", 1)[1]
 
     def _status(self, label):
-        """Gets current status of a vm.
+        """Get current status of a vm.
         @param label: virtual machine name.
         @return: status string.
         """
@@ -332,7 +332,7 @@ class VirtualBox(Machinery):
         )
 
     def dump_memory(self, label, path):
-        """Takes a memory dump.
+        """Take a memory dump.
         @param path: path to where to store the memory dump.
         """
 

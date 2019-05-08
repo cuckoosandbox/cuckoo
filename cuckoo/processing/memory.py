@@ -90,7 +90,7 @@ class VolatilityAPI(object):
         return False
 
     def init_config(self):
-        """Creates a volatility configuration."""
+        """Create a volatility configuration."""
         if self.config is not None and self.addr_space is not None:
             return
 

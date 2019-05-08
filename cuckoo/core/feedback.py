@@ -18,7 +18,7 @@ from cuckoo.misc import version, cwd
 log = logging.getLogger(__name__)
 
 class CuckooFeedback(object):
-    """Contacts Cuckoo HQ with feedback & optional analysis dump."""
+    """Contact Cuckoo HQ with feedback & optional analysis dump."""
     endpoint = "https://feedback.cuckoosandbox.org/api/submit/"
     exc_whitelist = (
         CuckooFeedbackError,
@@ -200,7 +200,7 @@ class CuckooFeedbackObject(object):
         return self.include_report(report)
 
     def gather_export_files(self, dirpath):
-        """Returns a list of all files of interest from an analysis."""
+        """Return a list of all files of interest from an analysis."""
         ret = []
         for name in self.export_files:
             if isinstance(name, basestring):

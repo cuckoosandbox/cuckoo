@@ -138,7 +138,7 @@ class AnalysisManager(threading.Thread):
         return True
 
     def store_task_info(self):
-        """grab latest task from db (if available) and update self.task"""
+        """Grab latest task from db (if available) and update self.task"""
         dbtask = self.db.view_task(self.task.id)
         self.task = dbtask.to_dict()
 

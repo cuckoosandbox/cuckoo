@@ -18,7 +18,7 @@ from cuckoo.common.virustotal import (
 log = logging.getLogger(__name__)
 
 class VirusTotal(Processing):
-    """Gets antivirus signatures from VirusTotal.com for various results.
+    """Get antivirus signatures from VirusTotal.com for various results.
 
     Currently obtains VirusTotal results for the target sample or URL and the
     dropped files.
@@ -26,7 +26,7 @@ class VirusTotal(Processing):
     order = 2
 
     def run(self):
-        """Runs VirusTotal processing
+        """Run VirusTotal processing
         @return: full VirusTotal report.
         """
         self.key = "virustotal"
@@ -94,7 +94,7 @@ class VirusTotal(Processing):
                         "\"%s\": %s", url, e.message)
 
     def should_scan_file(self, filetype):
-        """Determines whether a certain filetype should be scanned on
+        """Determine whether a certain filetype should be scanned on
         VirusTotal. For example, we're not interested in scanning text
         files.
         @param filetype: file type

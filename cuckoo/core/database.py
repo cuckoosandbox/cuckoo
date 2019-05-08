@@ -120,7 +120,7 @@ class Machine(Base):
             self._rcparams = value
 
     def to_dict(self):
-        """Converts object to dict.
+        """Convert object to dict.
         @return: dict
         """
         d = {}
@@ -136,7 +136,7 @@ class Machine(Base):
         return d
 
     def to_json(self):
-        """Converts object to JSON.
+        """Convert object to JSON.
         @return: JSON data
         """
         return json.dumps(self.to_dict())
@@ -198,7 +198,7 @@ class Guest(Base):
         return "<Guest('{0}','{1}')>".format(self.id, self.name)
 
     def to_dict(self):
-        """Converts object to dict.
+        """Convert object to dict.
         @return: dict
         """
         d = {}
@@ -211,7 +211,7 @@ class Guest(Base):
         return d
 
     def to_json(self):
-        """Converts object to JSON.
+        """Convert object to JSON.
         @return: JSON data
         """
         return json.dumps(self.to_dict())
@@ -256,7 +256,7 @@ class Sample(Base):
         return "<Sample('{0}','{1}')>".format(self.id, self.sha256)
 
     def to_dict(self):
-        """Converts object to dict.
+        """Convert object to dict.
         @return: dict
         """
         d = {}
@@ -265,7 +265,7 @@ class Sample(Base):
         return d
 
     def to_json(self):
-        """Converts object to JSON.
+        """Convert object to JSON.
         @return: JSON data
         """
         return json.dumps(self.to_dict())
@@ -291,7 +291,7 @@ class Error(Base):
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
 
     def to_dict(self):
-        """Converts object to dict.
+        """Convert object to dict.
         @return: dict
         """
         d = {}
@@ -300,7 +300,7 @@ class Error(Base):
         return d
 
     def to_json(self):
-        """Converts object to JSON.
+        """Convert object to JSON.
         @return: JSON data
         """
         return json.dumps(self.to_dict())
@@ -371,7 +371,7 @@ class Task(Base):
             self._options = value
 
     def to_dict(self, dt=False):
-        """Converts object to dict.
+        """Convert object to dict.
         @param dt: encode datetime objects
         @return: dict
         """
@@ -398,7 +398,7 @@ class Task(Base):
         return d
 
     def to_json(self):
-        """Converts object to JSON.
+        """Convert object to JSON.
         @return: JSON data
         """
         return json_encode(self.to_dict())
@@ -465,7 +465,7 @@ class Database(object):
             self._create_tables()
 
     def _create_tables(self):
-        """Creates all the database tables etc."""
+        """Create all database tables etc."""
         try:
             Base.metadata.create_all(self.engine)
         except SQLAlchemyError as e:
@@ -509,7 +509,7 @@ class Database(object):
         self.engine.dispose()
 
     def _connect_database(self, connection_string):
-        """Connect to a Database.
+        """Connect to a database.
         @param connection_string: Connection string specifying the database
         """
         try:
@@ -677,7 +677,7 @@ class Database(object):
 
     @classlock
     def fetch(self, machine=None, service=True):
-        """Fetches a task waiting to be processed and locks it for running.
+        """Fetch a task waiting to be processed and lock it for running.
         @return: None or task
         """
         session = self.Session()
@@ -704,7 +704,7 @@ class Database(object):
 
     @classlock
     def guest_start(self, task_id, name, label, manager):
-        """Logs guest start.
+        """Log guest start.
         @param task_id: task identifier
         @param name: vm name
         @param label: vm label
@@ -728,7 +728,7 @@ class Database(object):
 
     @classlock
     def guest_get_status(self, task_id):
-        """Logs guest start.
+        """Log guest start.
         @param task_id: task id
         @return: guest status
         """
@@ -745,7 +745,7 @@ class Database(object):
 
     @classlock
     def guest_set_status(self, task_id, status):
-        """Logs guest start.
+        """Log guest start.
         @param task_id: task identifier
         @param status: status
         """
@@ -764,7 +764,7 @@ class Database(object):
 
     @classlock
     def guest_remove(self, guest_id):
-        """Removes a guest start entry."""
+        """Remove a guest start entry."""
         session = self.Session()
         try:
             guest = session.query(Guest).get(guest_id)
@@ -779,7 +779,7 @@ class Database(object):
 
     @classlock
     def guest_stop(self, guest_id):
-        """Logs guest stop.
+        """Log guest stop.
         @param guest_id: guest log entry id
         """
         session = self.Session()
@@ -799,7 +799,7 @@ class Database(object):
 
     @classlock
     def list_machines(self, locked=False):
-        """Lists virtual machines.
+        """List virtual machines.
         @return: list of virtual machines
         """
         session = self.Session()
@@ -817,7 +817,7 @@ class Database(object):
 
     @classlock
     def lock_machine(self, label=None, platform=None, tags=None):
-        """Places a lock on a free virtual machine.
+        """Place a lock on a free virtual machine.
         @param label: optional virtual machine label
         @param platform: optional virtual machine platform
         @param tags: optional tags required (list)
@@ -876,7 +876,7 @@ class Database(object):
 
     @classlock
     def unlock_machine(self, label):
-        """Remove lock form a virtual machine.
+        """Remove a lock from a virtual machine.
         @param label: virtual machine label
         @return: unlocked machine
         """
@@ -905,7 +905,7 @@ class Database(object):
 
     @classlock
     def count_machines_available(self):
-        """How many virtual machines are ready for analysis.
+        """Return number of virtual machines ready for analysis.
         @return: free virtual machines count
         """
         session = self.Session()
@@ -920,7 +920,7 @@ class Database(object):
 
     @classlock
     def get_available_machines(self):
-        """  Which machines are available
+        """Return machines that are available.
         @return: free virtual machines
         """
         session = self.Session()
@@ -1396,7 +1396,7 @@ class Database(object):
             session.close()
 
     def minmax_tasks(self):
-        """Find tasks minimum and maximum
+        """Find tasks minimum and maximum.
         @return: unix timestamps of minimum and maximum
         """
         session = self.Session()
@@ -1416,7 +1416,7 @@ class Database(object):
 
     @classlock
     def count_tasks(self, status=None):
-        """Count tasks in the database
+        """Count tasks in the database.
         @param status: apply a filter according to the task status
         @return: number of tasks found
         """
@@ -1503,7 +1503,7 @@ class Database(object):
 
     @classlock
     def view_sample(self, sample_id):
-        """Retrieve information on a sample given a sample id.
+        """Retrieve information on a sample given a sample ID.
         @param sample_id: ID of the sample to query.
         @return: details on the sample used in sample: sample_id.
         """
@@ -1547,7 +1547,7 @@ class Database(object):
 
     @classlock
     def count_samples(self):
-        """Counts the amount of samples in the database."""
+        """Count number of samples in the database."""
         session = self.Session()
         try:
             sample_count = session.query(Sample).count()
