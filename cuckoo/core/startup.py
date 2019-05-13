@@ -7,7 +7,6 @@ import errno
 import logging
 import logging.handlers
 import os
-import pkg_resources
 import requests
 import socket
 import sys
@@ -101,6 +100,8 @@ def check_version():
     """Checks version of Cuckoo."""
     if not config("cuckoo:cuckoo:version_check"):
         return
+
+    import pkg_resources
 
     print(" Checking for updates...")
 
