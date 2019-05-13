@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -395,6 +395,11 @@ class Machinery(object):
             time.sleep(1)
             waitme += 1
             current = self._status(label)
+
+    @staticmethod
+    def version():
+        """Return the version of the virtualization software"""
+        return None
 
 class LibVirtMachinery(Machinery):
     """Libvirt based machine manager.

@@ -11,7 +11,9 @@ import io
 import jsbeautifier
 import json
 import logging
+import operator
 import os
+import pkg_resources
 import platform
 import re
 import string
@@ -20,7 +22,7 @@ import threading
 import warnings
 import xmlrpclib
 
-from distutils.version import StrictVersion
+from distutils.version import StrictVersion, LooseVersion
 
 from cuckoo.common.constants import GITHUB_URL, ISSUES_PAGE_URL
 from cuckoo.misc import cwd, version
@@ -352,3 +354,16 @@ def list_of_ints(l):
 
 def list_of_strings(l):
     return list_of(l, basestring)
+
+def cmp_version(first, second, op):
+    op_lookup = {
+        ">": operator.gt,
+        "<": operator.lt,
+        ">=": operator.ge,
+        "<=": operator.le,
+        "!=": operator.ne,
+        "==": operator.eq
+    }
+    op = op_lookup.get(op)
+
+    return op(LooseVersion(first), LooseVersion(second))
