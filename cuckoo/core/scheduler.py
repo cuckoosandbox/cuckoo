@@ -62,6 +62,7 @@ class AnalysisManager(threading.Thread):
         self.route = None
         self.interface = None
         self.rt_table = None
+        self.unrouted_network = False
 
     def init(self):
         """Initialize the analysis."""
@@ -369,6 +370,8 @@ class AnalysisManager(threading.Thread):
                 str(config("routing:tor:dnsport")),
                 str(config("routing:tor:proxyport"))
             )
+
+        self.unrouted_network = True
 
     def wait_finish(self):
         """Some VMs don't have an actual agent. Mainly those that are used as
@@ -786,6 +789,11 @@ class AnalysisManager(threading.Thread):
                 "status": "error",
             })
         finally:
+            # In case the analysis manager crashes, the network cleanup
+            # should still be performed.
+            if not self.unrouted_network:
+                self.unroute_network()
+
             if self.cfg.cuckoo.process_results:
                 self.db.set_status(self.task.id, TASK_REPORTED)
             else:
