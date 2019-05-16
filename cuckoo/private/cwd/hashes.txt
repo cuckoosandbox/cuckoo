@@ -292,7 +292,6 @@ c8492c74db400e6300194c1bafd3088a102bdc8e analyzer/windows/modules/auxiliary/huma
 e86627abeb5ecc0112438ad179e9d0487870785a analyzer/windows/modules/packages/ie.py
 
 # TBD
-b327de7ae427d9e39f43d11f15b4754fc99ed98b agent/agent.py
 cb3a77d8dd7edf46de54545ca7b0c5b201f85917 analyzer/windows/bin/execsc.exe
 93727e778dadc13d83cea61a9ea88bf6b5906686 analyzer/windows/modules/auxiliary/human.py
 24cbd18428df8dbc6b9ccd7896d066c492f6d381 analyzer/windows/modules/packages/ps1.py
@@ -300,3 +299,22 @@ cb3a77d8dd7edf46de54545ca7b0c5b201f85917 analyzer/windows/bin/execsc.exe
 d8fce614d615f6bdb3117e92bfa6e4ae2b48ea52 analyzer/windows/modules/packages/vbs.py
 f81e71f788149039f31c9b0b5e2891733e51b5d7 whitelist/ip.txt
 4575c7d09b316cad3a71059a27b78cbcb9c1f6b4 stuff/ttp_descriptions.json
+74c4c577a61f96571ac47e86c83fc0ece9d5f0ad agent/agent.py
+4d567f35bd79192d8f279f474816b9686e71896b analyzer/darwin/lib/api/screenshot.py
+633ab6bd08eb393ca630b59ce0ee5374862c6558 analyzer/darwin/lib/common/hashing.py
+d5e3410184765dba6af2895b0dd528558f51ef8d analyzer/darwin/modules/packages/zip.py
+6db386e3ebea277637397a42616b2232e2d6b771 analyzer/linux/lib/common/abstracts.py
+0c77d682544f214e3314350fe7767e40ecf5b174 analyzer/linux/lib/common/hashing.py
+11d0d726c6c17e8abce33b07df9cb498e021da1c analyzer/linux/modules/auxiliary/stap.py
+faf94dddbe6fc6a262c56735e7c437f326fffe59 analyzer/windows/analyzer.py
+a3847083dc4ee78e186359fb03071489ebfd5932 analyzer/windows/lib/api/process.py
+ba6b59b09ef3a157f6081cd1e0f12168cd20538d analyzer/windows/lib/common/abstracts.py
+105aac03a5a5ddf1eaf9262389a593d1aaebd0fe analyzer/windows/lib/common/hashing.py
+9b0df7467fa48ea6451475c93c27682ae492c33c analyzer/windows/lib/core/pipe.py
+8f531c7997a8e36e16f1511322adb718630476cd analyzer/windows/modules/auxiliary/disguise.py
+90bfc348b008e717b5a44cb4ae91b8260682bf84 analyzer/windows/modules/auxiliary/reboot.py
+44187be47fd7ddb3b7bed7ab596510168eec1294 analyzer/windows/modules/auxiliary/recentfiles.py
+348e720075790c862be1e67894ed4ab30ed4f7ce analyzer/windows/modules/auxiliary/zer0m0n.py
+e13518903a2fcaec3d0b140d3164c426f07ab647 analyzer/windows/modules/packages/ie.py
+09702bc15041a80f399f0c143cc3ec29196e4962 analyzer/windows/modules/packages/zip.py
+c278d582c26003467794ee4d0ab7ae337034c2ea monitor/latest
