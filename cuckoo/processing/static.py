@@ -9,6 +9,7 @@ import datetime
 import logging
 import oletools.olevba
 import oletools.oleobj
+import olefile
 import os
 import peepdf.JSAnalysis
 import peepdf.PDFCore
@@ -533,6 +534,45 @@ class OfficeDocument(object):
             "eps": self.extract_eps(),
         }
 
+class HwpDocument(object):
+    """Static analysis of HWP documents."""
+    
+    def __init__(self, filepath, task_id):
+        self.filepath = filepath
+        self.files = {}
+        self.ex = ExtractManager.for_task(task_id)
+
+    def unpack_hwp(self):
+        """Unpacks ole-based zip files."""
+        ole = olefile.OleFileIO(self.filepath)
+        streams = ole.listdir()
+        for stream in streams:
+            stream_name = '/'.join(stream)
+	    content = ole.openstream(stream).read()
+	    try:        
+	        stream_content = zlib.decompress(ole.openstream(stream).read(), -15)
+                self.files[stream_name] = stream_content
+	    except:
+	        pass
+        ole.close()
+
+    def extract_eps(self):
+        """Extract some information from Encapsulated Post Script files."""
+        ret = []
+        for filename, content in self.files.items():
+            if filename.lower().endswith(".eps") or filename.lower().endswith(".ps"):
+                ret.append(content)
+        return ret
+
+    def run(self):
+        self.unpack_hwp()
+
+        self.ex.peek_office(self.files)
+
+        return {
+            "eps": self.extract_eps()
+        }
+		
 class PdfDocument(object):
     """Static analysis of PDF documents."""
 
@@ -1079,7 +1119,10 @@ class Static(Processing):
             static["wsf"] = WindowsScriptFile(f.file_path).run()
 
         if package in ("doc", "ppt", "xls") or ext in self.office_ext:
-            static["office"] = OfficeDocument(f.file_path, self.task["id"]).run()
+            if package == "hwp" or ext == "hwp":
+                static["office"] = HwpDocument(f.file_path, self.task["id"]).run()
+            else:
+                static["office"] = OfficeDocument(f.file_path, self.task["id"]).run()
 
         if package == "pdf" or ext == "pdf":
             if f.get_content_type() == "application/pdf":
