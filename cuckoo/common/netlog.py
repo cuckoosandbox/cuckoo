@@ -20,6 +20,7 @@ elif hasattr(bson, "loads"):
 
 from cuckoo.common.files import Storage
 from cuckoo.common.exceptions import CuckooResultError
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class BsonParser(object):
         "x": pointer_converter_32bit,
     }
 
-    def __init__(self, fd):
+    def __init__(self, fd, task_id=None):
         self.fd = fd
         self.infomap = {}
         self.flags_value = {}
@@ -83,6 +84,7 @@ class BsonParser(object):
         self.pid = None
         self.is_64bit = False
         self.buffer_sha1 = None
+        self.task_id = task_id
 
     def resolve_flags(self, apiname, argdict, flags):
         # Resolve 1:1 values.
@@ -203,17 +205,11 @@ class BsonParser(object):
                 if sha1 != self.buffer_sha1:
                     log.warning("Incorrect sha1 passed along for a buffer.")
 
-                # If the parent is netlogs ResultHandler then we actually dump
-                # it - this should only be the case during the analysis, any
-                # after processing will then be ignored.
-                from cuckoo.core.resultserver import ResultHandler
-
-                if isinstance(self.fd, ResultHandler):
-                    filepath = os.path.join(
-                        self.fd.storagepath, "buffer", self.buffer_sha1
-                    )
-                    with open(filepath, "wb") as f:
-                        f.write(buf)
+                filepath = cwd(
+                    "buffer", self.buffer_sha1, analysis=self.task_id
+                )
+                with open(filepath, "wb") as f:
+                    f.write(buf)
 
                 continue
 

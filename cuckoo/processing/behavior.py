@@ -294,7 +294,7 @@ class BehaviorAnalysis(Processing):
             ApiStats(self),
 
             # platform specific stuff
-            WindowsMonitor(self),
+            WindowsMonitor(self, task_id=self.task["id"]),
             LinuxSystemTap(self),
 
             # Reboot information.

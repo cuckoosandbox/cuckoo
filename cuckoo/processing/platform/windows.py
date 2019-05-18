@@ -213,6 +213,7 @@ class WindowsMonitor(BehaviorHandler):
     key = "processes"
 
     def __init__(self, *args, **kwargs):
+        self.task_id = kwargs.pop("task_id")
         super(WindowsMonitor, self).__init__(*args, **kwargs)
         self.processes = []
         self.behavior = {}
@@ -227,7 +228,7 @@ class WindowsMonitor(BehaviorHandler):
     def parse(self, path):
         # Invoke parsing of current log file.
         self.fp = open(path, "rb")   # TODO: no proper cleanup
-        parser = BsonParser(self.fp)
+        parser = BsonParser(self.fp, self.task_id)
 
         for event in parser:
             if event["type"] == "process":
