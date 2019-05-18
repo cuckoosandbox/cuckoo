@@ -164,8 +164,8 @@ class FileUpload(ProtocolHandler):
         else:
             filepath, pids = None, []
 
-        log.debug("Task #%s: File upload for %s", self.task_id, dump_path)
-        file_path = os.path.join(self.storagepath, dump_path)
+        log.debug("Task #%s: File upload for %r", self.task_id, dump_path)
+        file_path = os.path.join(self.storagepath, dump_path.decode("utf-8"))
 
         try:
             self.fd = open_exclusive(file_path)
