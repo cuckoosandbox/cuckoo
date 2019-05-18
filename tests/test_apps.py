@@ -414,6 +414,7 @@ class TestProcessingTasks(object):
     @mock.patch("cuckoo.apps.apps.process")
     @mock.patch("cuckoo.apps.apps.logger")
     def test_logger(self, p, q, r):
+        mkdir(cwd(analysis=123))
         process_task({
             "id": 123,
             "target": "foo",
@@ -499,6 +500,7 @@ def test_process_dodelete(r, s, p):
 def test_process_log_taskid(p, q):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
+    mkdir(cwd(analysis=12345))
 
     init_console_logging(logging.DEBUG)
     init_logfile("process-p0.json")
