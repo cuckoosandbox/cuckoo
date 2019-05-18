@@ -5,7 +5,6 @@
 
 from __future__ import print_function
 
-import datetime
 import errno
 import gevent.pool
 import gevent.server
@@ -14,15 +13,13 @@ import json
 import logging
 import os
 import socket
-import struct
 import threading
 
 from cuckoo.common.abstracts import ProtocolHandler
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.exceptions import CuckooResultError
-from cuckoo.common.files import Folders, open_exclusive
+from cuckoo.common.files import open_exclusive
 from cuckoo.common.utils import Singleton
 from cuckoo.core.log import task_log_start, task_log_stop
 from cuckoo.misc import cwd
@@ -37,7 +34,7 @@ BUFSIZE = 16 * 1024
 
 # Directories in which analysis-related files will be stored; also acts as
 # whitelist
-RESULT_UPLOADABLE = ("files", "shots", "buffer",  "extracted")
+RESULT_UPLOADABLE = ("files", "shots", "buffer",  "extracted", "memory")
 RESULT_DIRECTORIES = RESULT_UPLOADABLE + ("reports", "logs")
 
 # Prevent malicious clients from using potentially dangerious filenames
@@ -205,6 +202,7 @@ class LogHandler(ProtocolHandler):
             log.error("Task #%s: attempted to reopen live log analysis.log.",
                       self.task_id)
             return
+
         log.debug("Task #%s: live log analysis.log initialized.",
                   self.task_id)
 
