@@ -217,24 +217,6 @@ class TestLogHandler(object):
         with open(cwd("analysis.log", analysis=1), "rb") as f:
             assert f.read() == "first\nsecond\n"
 
-    @pytest.mark.order2
-    def test_reopen(self):
-        with pytest.raises(OSError) as e:
-            mock_handler_context(LogHandler,
-                                 cwd(analysis=1),
-                                 [],
-                                 ['reopen\n'])
-
-        assert e.value.errno == errno.EEXIST
-
-    @mock.patch('cuckoo.core.resultserver.open_exclusive')
-    def test_open_error(self, open_exclusive):
-        err = OSError()
-        err.errno = errno.EACCES
-        open_exclusive.side_effect = err
-        with pytest.raises(OSError):
-            mock_handler_context(LogHandler, cwd(analysis=1), [], [])
-
 @pytest.mark.usefixtures('cuckoo_cwd')
 class TestBsonStore(object):
     def test_success(self):

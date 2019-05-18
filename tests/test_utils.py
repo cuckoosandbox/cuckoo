@@ -15,7 +15,9 @@ import tempfile
 import cuckoo
 
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.common.files import Folders, Files, Storage, temppath
+from cuckoo.common.files import (
+    Folders, Files, Storage, temppath, open_exclusive
+)
 from cuckoo.common.whitelist import is_whitelisted_domain
 from cuckoo.common import utils
 from cuckoo.main import cuckoo_create
@@ -437,3 +439,11 @@ def test_is_whitelisted_domain():
     assert is_whitelisted_domain("java.com") is True
     assert is_whitelisted_domain("java2.com") is False
     assert is_whitelisted_domain("crl.microsoft.com") is True
+
+def test_open_exclusive():
+    fpath = os.path.join(tempfile.mkdtemp(), "yeet.exclusive")
+    with open(fpath, "wb") as fp:
+        fp.write("42421337Test")
+
+    with pytest.raises(OSError):
+        open_exclusive(fpath, bufsize=1)
