@@ -121,10 +121,15 @@ def task_log_stop(task_id):
     """Disassociate a thread from a task."""
     _tasks_lock.acquire()
     try:
-        _, fp =_tasks.pop(task_key())
-        _task_threads[task_id].remove(task_key())
+        thread_key = task_key()
+        if thread_key not in _tasks:
+            return
+
+        _, fp =_tasks.pop(thread_key)
+        _task_threads[task_id].remove(thread_key)
         if not _task_threads[task_id]:
             fp.close()
+            _task_threads.pop(task_id)
     finally:
         _tasks_lock.release()
 
