@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,15 +7,19 @@ import gevent.thread
 import json
 import logging
 import logging.handlers
-import thread
 import time
+
+from threading import Lock
 
 from cuckoo.common.colors import red, yellow, cyan
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
 
+_task_threads = {}
 _tasks = {}
 _loggers = {}
+
+_tasks_lock = Lock()
 
 # Current GMT+x.
 if time.localtime().tm_isdst:
@@ -99,14 +103,30 @@ class JsonFormatter(logging.Formatter):
 
 def task_log_start(task_id):
     """Associate a thread with a task."""
-    fp = open(cwd("cuckoo.log", analysis=task_id), "a+b")
-    _tasks[task_key()] = (task_id, fp)
+    _tasks_lock.acquire()
+    try:
+        if task_id not in _task_threads:
+            _task_threads[task_id] = []
+            fp = open(cwd("cuckoo.log", analysis=task_id), "a+b")
+            _tasks[task_key()] = (task_id, fp)
+        else:
+            existing_key = _task_threads[task_id][0]
+            _tasks[task_key()] = _tasks[existing_key]
+
+        _task_threads[task_id].append(task_key())
+    finally:
+        _tasks_lock.release()
 
 def task_log_stop(task_id):
     """Disassociate a thread from a task."""
-    task = _tasks.pop(task_key(), None)
-    if task:
-        task[1].close()
+    _tasks_lock.acquire()
+    try:
+        _, fp =_tasks.pop(task_key())
+        _task_threads[task_id].remove(task_key())
+        if not _task_threads[task_id]:
+            fp.close()
+    finally:
+        _tasks_lock.release()
 
 def init_logger(name, level=None):
     formatter = logging.Formatter(
