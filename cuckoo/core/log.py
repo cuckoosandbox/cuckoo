@@ -8,6 +8,7 @@ import json
 import logging
 import logging.handlers
 import time
+import os
 
 from threading import Lock
 
@@ -107,7 +108,11 @@ def task_log_start(task_id):
     try:
         if task_id not in _task_threads:
             _task_threads[task_id] = []
-            fp = open(cwd("cuckoo.log", analysis=task_id), "a+b")
+            task_path = cwd(analysis=task_id)
+            if not os.path.exists(task_path):
+                return
+
+            fp = open(os.path.join(task_path, "cuckoo.log"), "a+b")
             _tasks[task_key()] = (task_id, fp)
         else:
             existing_key = _task_threads[task_id][0]
