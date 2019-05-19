@@ -842,6 +842,6 @@ if __name__ == "__main__":
         try:
             server = xmlrpclib.Server("http://127.0.0.1:8000")
             server.complete(success, error, "unused_path")
-        except xmlrpclib.ProtocolError:
+        except Exception as e:
             urllib2.urlopen("http://127.0.0.1:8000/status",
                             urllib.urlencode(data)).read()
