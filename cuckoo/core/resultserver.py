@@ -47,10 +47,10 @@ def netlog_sanitize_fname(path):
     path = path.replace("\\", "/")
     dir_part, name = os.path.split(path)
     if dir_part not in RESULT_UPLOADABLE:
-        raise CuckooOperationalError("Netlog client requested banned path: %s"
+        raise CuckooOperationalError("Netlog client requested banned path: %r"
                                      % path)
     if any(c in BANNED_PATH_CHARS for c in name):
-        raise CuckooOperationalError("Netlog client requested banned path: %s"
+        raise CuckooOperationalError("Netlog client requested banned path: %r"
                                      % path)
     return path
 
@@ -84,6 +84,9 @@ class HandlerContext(object):
         try:
             return self.sock.recv(16384)
         except socket.error as e:
+            if e.errno == errno.EBADF:
+                return ""
+
             if e.errno != errno.ECONNRESET:
                 raise
             log.debug("Task #%s had connection reset for %r", self.task_id,
@@ -299,7 +302,10 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         ctx = HandlerContext(task_id, storagepath, sock)
         task_log_start(task_id)
         try:
-            protocol = self.negotiate_protocol(task_id, ctx)
+            try:
+                protocol = self.negotiate_protocol(task_id, ctx)
+            except EOFError:
+                return
 
             # Registering the context allows us to abort the handler by
             # shutting down its socket when the task is deleted; this should
@@ -341,7 +347,7 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         klass = self.commands.get(command)
         if not klass:
             log.warning("Task #%s: unknown netlog protocol requested (%r), "
-                        "terminating connection.", self.task_id, command)
+                        "terminating connection.", task_id, command)
             return
         ctx.command = command
         return klass(task_id, ctx, version)
