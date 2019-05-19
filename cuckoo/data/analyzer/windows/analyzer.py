@@ -519,12 +519,6 @@ class Analyzer(object):
         self.command_pipe.stop()
         self.log_pipe_server.stop()
 
-        # Dump all the notified files.
-        self.files.dump_files()
-
-        # Hell yeah.
-        log.info("Analysis completed.")
-
         # Cleanly close remaining connections
         disconnect_pipes()
         disconnect_logger()
@@ -795,8 +789,11 @@ class Analyzer(object):
                 log.warning("Exception running finish callback of auxiliary "
                             "module %s: %s", aux.__class__.__name__, e)
 
-        # Let's invoke the completion procedure.
-        self.complete()
+        # Dump all the notified files.
+        self.files.dump_files()
+
+        # Hell yeah.
+        log.info("Analysis completed.")
         return True
 
 if __name__ == "__main__":
@@ -837,6 +834,17 @@ if __name__ == "__main__":
             "description": error_exc,
         }
     finally:
+        try:
+            # Let's invoke the completion procedure.
+            analyzer.complete()
+        except Exception as e:
+            complete_excp = traceback.format_exc()
+            data["status"] = "exception"
+            if "description" in data:
+                data["description"] += "\n%s" % complete_excp
+            else:
+                data["description"] = complete_excp
+
         # Report that we're finished. First try with the XML RPC thing and
         # if that fails, attempt the new Agent.
         try:
