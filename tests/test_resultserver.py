@@ -12,8 +12,8 @@ from __future__ import print_function
 
 import errno
 import json
-import logging
 import mock
+import platform
 import pytest
 import shutil
 import socket
@@ -21,12 +21,10 @@ import tempfile
 
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders
-from cuckoo.core.log import task_log_start, task_log_stop
 from cuckoo.core.resultserver import FileUpload, LogHandler, BsonStore
 from cuckoo.core.resultserver import GeventResultServerWorker
 from cuckoo.core.resultserver import HandlerContext
 from cuckoo.core.resultserver import RESULT_DIRECTORIES, MAX_NETLOG_LINE
-from cuckoo.core.startup import init_logging
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import mkdir, set_cwd, cwd
 
@@ -215,7 +213,10 @@ class TestLogHandler(object):
                              ['first\n', 'second\n'])
 
         with open(cwd("analysis.log", analysis=1), "rb") as f:
-            assert f.read() == "first\nsecond\n"
+            if platform.system() == "Windows":
+                assert f.read() == "first\r\nsecond\r\n"
+            else:
+                assert f.read() == "first\nsecond\n"
 
 @pytest.mark.usefixtures('cuckoo_cwd')
 class TestBsonStore(object):
