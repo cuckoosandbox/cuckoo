@@ -50,8 +50,9 @@ def netlog_sanitize_fname(path):
         raise CuckooOperationalError("Netlog client requested banned path: %r"
                                      % path)
     if any(c in BANNED_PATH_CHARS for c in name):
-        raise CuckooOperationalError("Netlog client requested banned path: %r"
-                                     % path)
+        for c in BANNED_PATH_CHARS:
+            path = path.replace(c, "X")
+
     return path
 
 class HandlerContext(object):
