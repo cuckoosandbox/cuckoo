@@ -23,10 +23,10 @@ from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Folders
 from cuckoo.core.resultserver import FileUpload, LogHandler, BsonStore
 from cuckoo.core.resultserver import GeventResultServerWorker
-from cuckoo.core.resultserver import HandlerContext
+from cuckoo.core.resultserver import HandlerContext, netlog_sanitize_fname
 from cuckoo.core.resultserver import RESULT_DIRECTORIES, MAX_NETLOG_LINE
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import mkdir, set_cwd, cwd
+from cuckoo.misc import set_cwd, cwd
 
 @pytest.fixture(scope='module')
 def cuckoo_cwd():
@@ -186,7 +186,6 @@ class TestFileUpload(object):
             assert blob['path'] == "files/2.exe"
             assert blob["pids"] == [11, 12]
 
-
     def invalid_path(self, path):
         with pytest.raises(CuckooOperationalError) as e:
             mock_handler_context(FileUpload, cwd(analysis=1), [path], [])
@@ -194,14 +193,18 @@ class TestFileUpload(object):
 
     def test_invalid_paths(self):
         self.invalid_path("dummy")
-        self.invalid_path("files/p\x00ath.exe")
-        self.invalid_path("files/path.exe:$DATA")
         self.invalid_path("notallowed/path.exe")
         self.invalid_path("shots/notallowed/path.jpg")
         self.invalid_path("reports/report.json")
         self.invalid_path("/tmp/foobar")
         self.invalid_path("../hello")
         self.invalid_path("../../foobar")
+
+    def test_banned_names(self):
+        assert netlog_sanitize_fname("files/file1.exe") == "files/file1.exe"
+        assert netlog_sanitize_fname("files/p\x00ath.exe") == "files/pXath.exe"
+        assert netlog_sanitize_fname("files/path.exe:$DATA") == "files/path.exeX$DATA"
+        assert netlog_sanitize_fname("files/file.\x00.exe:$DATA") == "files/file.X.exeX$DATA"
 
 @pytest.mark.usefixtures('cuckoo_cwd')
 class TestLogHandler(object):
