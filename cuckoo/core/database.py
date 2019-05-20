@@ -576,7 +576,7 @@ class Database(object):
             session.query(Machine).delete()
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error cleaning machines: {0}".format(e))
+            log.exception("Database error cleaning machines: {0}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -622,7 +622,7 @@ class Database(object):
         try:
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error adding machine: {0}".format(e))
+            log.exception("Database error adding machine: {0}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -649,7 +649,7 @@ class Database(object):
 
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error setting status: {0}".format(e))
+            log.exception("Database error setting status: {0}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -670,7 +670,7 @@ class Database(object):
             row.route = route
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error setting route: {0}".format(e))
+            log.exception("Database error setting route: {0}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -697,7 +697,7 @@ class Database(object):
 
             return row
         except SQLAlchemyError as e:
-            log.debug("Database error fetching task: {0}".format(e))
+            log.exception("Database error fetching task: {0}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -720,7 +720,7 @@ class Database(object):
             session.refresh(guest)
             return guest.id
         except SQLAlchemyError as e:
-            log.debug("Database error logging guest start: {0}".format(e))
+            log.exception("Database error logging guest start: {0}".format(e))
             session.rollback()
             return None
         finally:
@@ -737,7 +737,7 @@ class Database(object):
             guest = session.query(Guest).filter_by(task_id=task_id).first()
             return guest.status if guest else None
         except SQLAlchemyError as e:
-            log.debug("Database error logging guest start: {0}".format(e))
+            log.exception("Database error logging guest start: {0}".format(e))
             session.rollback()
             return
         finally:
@@ -756,7 +756,7 @@ class Database(object):
             session.commit()
             session.refresh(guest)
         except SQLAlchemyError as e:
-            log.debug("Database error logging guest start: {0}".format(e))
+            log.exception("Database error logging guest start: {0}".format(e))
             session.rollback()
             return None
         finally:
@@ -771,7 +771,7 @@ class Database(object):
             session.delete(guest)
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error logging guest remove: {0}".format(e))
+            log.exception("Database error logging guest remove: {0}".format(e))
             session.rollback()
             return None
         finally:
@@ -789,7 +789,7 @@ class Database(object):
             guest.shutdown_on = datetime.datetime.now()
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error logging guest stop: {0}".format(e))
+            log.exception("Database error logging guest stop: {0}".format(e))
             session.rollback()
         except TypeError:
             log.warning("Data inconsistency in guests table detected, it might be a crash leftover. Continue")
@@ -810,7 +810,7 @@ class Database(object):
                 machines = session.query(Machine).options(joinedload("tags")).all()
             return machines
         except SQLAlchemyError as e:
-            log.debug("Database error listing machines: {0}".format(e))
+            log.exception("Database error listing machines: {0}".format(e))
             return []
         finally:
             session.close()
@@ -853,7 +853,7 @@ class Database(object):
             # Get the first free machine.
             machine = machines.filter_by(locked=False).first()
         except SQLAlchemyError as e:
-            log.debug("Database error locking machine: {0}".format(e))
+            log.exception("Database error locking machine: {0}".format(e))
             session.close()
             return None
 
@@ -864,7 +864,7 @@ class Database(object):
                 session.commit()
                 session.refresh(machine)
             except SQLAlchemyError as e:
-                log.debug("Database error locking machine: {0}".format(e))
+                log.exception("Database error locking machine: {0}".format(e))
                 session.rollback()
                 return None
             finally:
@@ -884,7 +884,7 @@ class Database(object):
         try:
             machine = session.query(Machine).filter_by(label=label).first()
         except SQLAlchemyError as e:
-            log.debug("Database error unlocking machine: {0}".format(e))
+            log.exception("Database error unlocking machine: {0}".format(e))
             session.close()
             return None
 
@@ -895,7 +895,7 @@ class Database(object):
                 session.commit()
                 session.refresh(machine)
             except SQLAlchemyError as e:
-                log.debug("Database error locking machine: {0}".format(e))
+                log.exception("Database error locking machine: {0}".format(e))
                 session.rollback()
                 return None
             finally:
@@ -913,7 +913,7 @@ class Database(object):
             machines_count = session.query(Machine).filter_by(locked=False).count()
             return machines_count
         except SQLAlchemyError as e:
-            log.debug("Database error counting machines: {0}".format(e))
+            log.exception("Database error counting machines: {0}".format(e))
             return 0
         finally:
             session.close()
@@ -928,7 +928,9 @@ class Database(object):
             machines = session.query(Machine).options(joinedload("tags")).filter_by(locked=False).all()
             return machines
         except SQLAlchemyError as e:
-            log.debug("Database error getting available machines: {0}".format(e))
+            log.exception(
+                "Database error getting available machines: {0}".format(e)
+            )
             return []
         finally:
             session.close()
@@ -943,7 +945,9 @@ class Database(object):
         try:
             machine = session.query(Machine).filter_by(label=label).first()
         except SQLAlchemyError as e:
-            log.debug("Database error setting machine status: {0}".format(e))
+            log.exception(
+                "Database error setting machine status: {0}".format(e)
+            )
             session.close()
             return
 
@@ -954,7 +958,7 @@ class Database(object):
                 session.commit()
                 session.refresh(machine)
             except SQLAlchemyError as e:
-                log.debug("Database error setting machine status: %s", e)
+                log.exception("Database error setting machine status: %s", e)
                 session.rollback()
             finally:
                 session.close()
@@ -971,7 +975,7 @@ class Database(object):
         try:
             machine = session.query(Machine).filter_by(label=label).first()
         except SQLAlchemyError as e:
-            log.debug("Database error setting machine rcparams: %s", e)
+            log.exception("Database error setting machine rcparams: %s", e)
             session.close()
             return
 
@@ -981,7 +985,7 @@ class Database(object):
                 session.commit()
                 session.refresh(machine)
             except SQLAlchemyError as e:
-                log.debug("Database error setting machine rcparams: %s", e)
+                log.exception("Database error setting machine rcparams: %s", e)
                 session.rollback()
             finally:
                 session.close()
@@ -1000,7 +1004,7 @@ class Database(object):
         try:
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error adding error log: {0}".format(e))
+            log.exception("Database error adding error log: {0}".format(e))
             session.rollback()
         finally:
             session.close()
@@ -1064,11 +1068,13 @@ class Database(object):
                 try:
                     sample = session.query(Sample).filter_by(md5=obj.get_md5()).first()
                 except SQLAlchemyError as e:
-                    log.debug("Error querying sample for hash: {0}".format(e))
+                    log.exception(
+                        "Error querying sample for hash: {0}".format(e)
+                    )
                     session.close()
                     return None
             except SQLAlchemyError as e:
-                log.debug("Database error adding task: {0}".format(e))
+                log.exception("Database error adding task: {0}".format(e))
                 session.close()
                 return None
 
@@ -1123,7 +1129,7 @@ class Database(object):
             session.commit()
             task_id = task.id
         except SQLAlchemyError as e:
-            log.debug("Database error adding task: {0}".format(e))
+            log.exception("Database error adding task: {0}".format(e))
             session.rollback()
             return None
         finally:
@@ -1291,7 +1297,7 @@ class Database(object):
             session.refresh(submit)
             submit_id = submit.id
         except SQLAlchemyError as e:
-            log.debug("Database error adding submit entry: %s", e)
+            log.exception("Database error adding submit entry: %s", e)
             session.rollback()
         finally:
             session.close()
@@ -1306,7 +1312,7 @@ class Database(object):
                 q = q.options(joinedload("tasks"))
             submit = q.get(submit_id)
         except SQLAlchemyError as e:
-            log.debug("Database error viewing submit: %s", e)
+            log.exception("Database error viewing submit: %s", e)
             return
         finally:
             session.close()
@@ -1335,7 +1341,7 @@ class Database(object):
         try:
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error rescheduling task: {0}".format(e))
+            log.exception("Database error rescheduling task: {0}".format(e))
             session.rollback()
             return False
         finally:
@@ -1400,7 +1406,7 @@ class Database(object):
             tasks = search.limit(limit).offset(offset).all()
             return tasks
         except SQLAlchemyError as e:
-            log.debug("Database error listing tasks: {0}".format(e))
+            log.exception("Database error listing tasks: {0}".format(e))
             return []
         finally:
             session.close()
@@ -1419,7 +1425,7 @@ class Database(object):
 
             return int(_min[0].strftime("%s")), int(_max[0].strftime("%s"))
         except SQLAlchemyError as e:
-            log.debug("Database error counting tasks: {0}".format(e))
+            log.exception("Database error counting tasks: {0}".format(e))
             return
         finally:
             session.close()
@@ -1438,7 +1444,7 @@ class Database(object):
                 tasks_count = session.query(Task).count()
             return tasks_count
         except SQLAlchemyError as e:
-            log.debug("Database error counting tasks: {0}".format(e))
+            log.exception("Database error counting tasks: {0}".format(e))
             return 0
         finally:
             session.close()
@@ -1460,7 +1466,7 @@ class Database(object):
             else:
                 task = session.query(Task).get(task_id)
         except SQLAlchemyError as e:
-            log.debug("Database error viewing task: {0}".format(e))
+            log.exception("Database error viewing task: {0}".format(e))
             return None
         else:
             if task:
@@ -1483,7 +1489,7 @@ class Database(object):
                 joinedload("tags")
             ).filter(Task.id.in_(task_ids)).order_by(Task.id).all()
         except SQLAlchemyError as e:
-            log.debug("Database error viewing tasks: {0}".format(e))
+            log.exception("Database error viewing tasks: {0}".format(e))
             return []
         else:
             for task in tasks:
@@ -1504,7 +1510,7 @@ class Database(object):
             session.delete(task)
             session.commit()
         except SQLAlchemyError as e:
-            log.debug("Database error deleting task: {0}".format(e))
+            log.exception("Database error deleting task: {0}".format(e))
             session.rollback()
             return False
         finally:
@@ -1523,7 +1529,7 @@ class Database(object):
         except AttributeError:
             return None
         except SQLAlchemyError as e:
-            log.debug("Database error viewing task: {0}".format(e))
+            log.exception("Database error viewing task: {0}".format(e))
             return None
         else:
             if sample:
@@ -1546,7 +1552,7 @@ class Database(object):
             elif sha256:
                 sample = session.query(Sample).filter_by(sha256=sha256).first()
         except SQLAlchemyError as e:
-            log.debug("Database error searching sample: {0}".format(e))
+            log.exception("Database error searching sample: {0}".format(e))
             return None
         else:
             if sample:
@@ -1562,7 +1568,7 @@ class Database(object):
         try:
             sample_count = session.query(Sample).count()
         except SQLAlchemyError as e:
-            log.debug("Database error counting samples: {0}".format(e))
+            log.exception("Database error counting samples: {0}".format(e))
             return 0
         finally:
             session.close()
@@ -1578,7 +1584,7 @@ class Database(object):
         try:
             machine = session.query(Machine).options(joinedload("tags")).filter_by(name=name).first()
         except SQLAlchemyError as e:
-            log.debug("Database error viewing machine: {0}".format(e))
+            log.exception("Database error viewing machine: {0}".format(e))
             return None
         else:
             if machine:
@@ -1597,7 +1603,9 @@ class Database(object):
         try:
             machine = session.query(Machine).options(joinedload("tags")).filter_by(label=label).first()
         except SQLAlchemyError as e:
-            log.debug("Database error viewing machine by label: {0}".format(e))
+            log.exception(
+                "Database error viewing machine by label: {0}".format(e)
+            )
             return None
         else:
             if machine:
@@ -1617,7 +1625,7 @@ class Database(object):
             q = session.query(Error).filter_by(task_id=task_id)
             errors = q.order_by(Error.id).all()
         except SQLAlchemyError as e:
-            log.debug("Database error viewing errors: {0}".format(e))
+            log.exception("Database error viewing errors: {0}".format(e))
             return []
         finally:
             session.close()
@@ -1656,6 +1664,6 @@ class Database(object):
             if task.processing == instance:
                 return task.id
         except SQLAlchemyError as e:
-            log.debug("Database error getting new processing tasks: %s", e)
+            log.exception("Database error getting new processing tasks: %s", e)
         finally:
             session.close()
