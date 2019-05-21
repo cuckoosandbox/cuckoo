@@ -7,7 +7,7 @@ import ctypes
 import logging
 
 from lib.common.defines import KERNEL32, SYSTEMTIME
-from lib.common.results import NetlogHandler, NetlogConnection
+from lib.common.results import NetlogHandler
 
 log = logging.getLogger()
 netlog_handler = None
@@ -31,7 +31,7 @@ def init_logging():
 
 def disconnect_logger():
     """Cleanly close the logger. Note that LogHandler also implements close."""
-    NetlogConnection.close(netlog_handler)
+    netlog_handler.close()
 
 def set_clock(clock):
     st = SYSTEMTIME()

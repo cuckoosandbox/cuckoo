@@ -841,7 +841,9 @@ if __name__ == "__main__":
             complete_excp = traceback.format_exc()
             data["status"] = "exception"
             if "description" in data:
-                data["description"] += "\n%s" % complete_excp
+                data["description"] += "%s\n%s" % (
+                    data["description"], complete_excp
+                )
             else:
                 data["description"] = complete_excp
 
