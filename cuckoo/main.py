@@ -98,15 +98,22 @@ def cuckoo_resources():
         return
 
     soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    limit = soft
     if soft != hard:
         log.debug("Increasing resource limit for number of open files to %s",
                   hard if hard != resource.RLIM_INFINITY else '[unlimited]')
-        resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
+        try:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
+            limit = hard
+        except ValueError:
+            log.debug(
+                "Failed to increase open file limit from %s to %s", soft, hard
+            )
 
-    if hard != resource.RLIM_INFINITY:
+    if limit != resource.RLIM_INFINITY:
         # This can really affect the stability of Cuckoo, so the user should
         # really fix it.  TODO: find a good minimum.
-        if hard <= 4096:
+        if limit <= 4096:
             log.error("The maximum number of open files is low (%s). If you "
                       "do not increase it, you may run into errors later "
                       "on.", hard)
@@ -207,6 +214,7 @@ def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
+    rs, sched = None, None
     try:
         rs = ResultServer()
         sched = Scheduler(max_analysis_count)
@@ -214,9 +222,12 @@ def cuckoo_main(max_analysis_count=0):
     except KeyboardInterrupt:
         log.info("CTRL+C detected! Stopping..")
     finally:
-        sched.stop()
+        if sched:
+            sched.stop()
+
         Pidfile("cuckoo").remove()
-        rs.instance.stop()
+        if rs:
+            rs.instance.stop()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
