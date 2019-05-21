@@ -51,9 +51,7 @@ def netlog_sanitize_fname(path):
                                      % path)
     if any(c in BANNED_PATH_CHARS for c in name):
         for c in BANNED_PATH_CHARS:
-            name = name.replace(c, "X")
-
-        path = os.path.join(dir_part, name)
+            path = path.replace(c, "X")
 
     return path
 
@@ -286,7 +284,7 @@ class GeventResultServerWorker(gevent.server.StreamServer):
                             task_id)
             ctxs = self.handlers.pop(task_id, set())
             for ctx in ctxs:
-                log.warning("Cancel %s for task %r", ctx, task_id)
+                log.debug("Cancel %s for task %r", ctx, task_id)
                 ctx.cancel()
 
     def handle(self, sock, addr):
@@ -327,6 +325,8 @@ class GeventResultServerWorker(gevent.server.StreamServer):
             try:
                 with protocol:
                     protocol.handle()
+            except CuckooOperationalError as e:
+                log.error(e)
             finally:
                 with self.task_mgmt_lock:
                     s.discard(ctx)
