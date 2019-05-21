@@ -869,9 +869,10 @@ ep_only = true
 signature = 55 8B EC 6A FF 68 98 ?? ?? ?? 68 10 ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 64 89 25 ?? ?? ?? ?? 83 EC 58 53 56 57 89 65 E8 FF 15
 ep_only = true
 
-[Armadillo v1.xx - v2.xx]
-signature = 55 8B EC 53 8B 5D 08 56 8B 75 0C 57 8B 7D 10 85 F6
-ep_only = true
+; False positive - https://www.zscaler.com/blogs/research/your-windows-8-packed
+;[Armadillo v1.xx - v2.xx]
+;signature = 55 8B EC 53 8B 5D 08 56 8B 75 0C 57 8B 7D 10 85 F6
+;ep_only = true
 
 [Armadillo v2.00]
 signature = 55 8B EC 6A FF 68 00 02 41 00 68 C4 A0 40 00 64 A1 00 00 00 00 50 64 89 25 00 00 00 00 83 EC 58
