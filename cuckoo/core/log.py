@@ -3,14 +3,14 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import copy
-import gevent.thread
 import json
 import logging
 import logging.handlers
-import time
 import os
+import threading
+import time
 
-from threading import Lock
+import gevent.thread
 
 from cuckoo.common.colors import red, yellow, cyan
 from cuckoo.core.database import Database
@@ -20,7 +20,7 @@ _task_threads = {}
 _tasks = {}
 _loggers = {}
 
-_tasks_lock = Lock()
+_tasks_lock = threading.Lock()
 
 # Current GMT+x.
 if time.localtime().tm_isdst:

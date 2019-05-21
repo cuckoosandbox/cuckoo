@@ -76,6 +76,7 @@ class NetlogConnection(object):
 
     def close(self):
         try:
+            self.sock.shutdown(socket.SHUT_RDWR)
             self.sock.close()
             self.sock = None
         except Exception:
