@@ -208,13 +208,15 @@ def cuckoo_main(max_analysis_count=0):
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
     try:
-        ResultServer()
+        rs = ResultServer()
         sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:
+        log.info("CTRL+C detected! Stopping..")
+    finally:
         sched.stop()
-
-    Pidfile("cuckoo").remove()
+        Pidfile("cuckoo").remove()
+        rs.instance.stop()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
