@@ -8,6 +8,10 @@ from cuckoo.misc import cwd
 
 domains = set()
 ips = set()
+mispdomains = set()
+mispips = set()
+mispurls = set()
+misphashes = set()
 
 def _load_whitelist(wlset, wl_file):
     for b in (True, False):
@@ -37,3 +41,31 @@ def is_whitelisted_ip(ip):
         _load_whitelist(ips, "ip.txt")
 
     return ip in ips
+
+def is_whitelisted_mispdomain(domain):
+    if not mispdomains:
+        # Initialize the domain whitelist.
+        _load_whitelist(mispdomains, "mispdomain.txt")
+
+    return domain in mispdomains
+
+def is_whitelisted_mispip(ip):
+    if not mispips:
+        # Initialize the ip whitelist.
+        _load_whitelist(mispips, "mispip.txt")
+
+    return ip in mispips
+
+def is_whitelisted_mispurl(url):
+    if not mispurls:
+        # Initialize the ip whitelist.
+        _load_whitelist(mispurls, "mispurl.txt")
+
+    return ip in mispurls
+
+def is_whitelisted_misphash(hash):
+    if not misphashes:
+        # Initialize the ip whitelist.
+        _load_whitelist(misphashes, "misphash.txt")
+
+    return hash in misphashes
