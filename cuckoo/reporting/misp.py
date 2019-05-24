@@ -73,8 +73,29 @@ class MISP(Report):
                 self.misp.add_useragent(event, user_agent)
 
     def signature(self, results, event):
-        for sig in results["signatures"]:
-            data = "%s - (%s)" % (sig["description"], ",".join(sig["ttp"]))
+        for sig in results.get("signatures", []):
+            try:
+                temp = []
+                for mark in sig.get("marks", []):
+                    if mark["type"] == "generic":
+                        temp.append("%s %s" % (mark.get("parent_process", ""), mark.get("martian_process", "")))
+                        temp.append("%s %s" % (mark.get("reg_key", ""), mark.get("reg_value", "")))
+                        temp.append("%s %s" % (mark.get("option", ""), mark.get("value", "")))
+                        temp.append("%s" % mark.get("domain", ""))
+                        temp.append("%s" % mark.get("description", ""))
+                        temp.append("%s" % mark.get("host", ""))
+                    elif mark["type"] == "call":
+                        if not mark["call"]["api"] in temp:
+                            temp.append(mark["call"]["api"])
+                    elif mark["type"] == "config":
+                        temp.append(mark["config"]["url"])
+                    else:
+                        temp.append(mark[mark["type"]])
+                datainfo = ",".join([x for x in temp if x not in ["", " "]])
+            except:
+                datainfo = ",".join(sig["ttp"])
+                pass
+            data = "%s - (%s)" % (sig["description"], datainfo)
             self.misp.add_internal_comment(event, data)
             for att, description in sig["ttp"].items():
                 if description is None:
