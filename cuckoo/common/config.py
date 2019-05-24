@@ -750,6 +750,12 @@ class Config(object):
                 "url": String(),
                 "apikey": String(sanitize=True),
                 "mode": String("maldoc ipaddr hashes url"),
+                "distribution": Int(),
+                "analysis": Int(),
+                "threat_level": Int(),
+                "min_malscore": Int(),
+                "tag": String(),
+                "upload_sample": Boolean(False),
             },
             "mongodb": {
                 "enabled": Boolean(False),
