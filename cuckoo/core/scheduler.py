@@ -64,6 +64,7 @@ class AnalysisManager(threading.Thread):
         self.interface = None
         self.rt_table = None
         self.unrouted_network = False
+        self.stopped_aux = False
 
     def init(self):
         """Initialize the analysis."""
@@ -587,7 +588,9 @@ class AnalysisManager(threading.Thread):
             })
         finally:
             # Stop Auxiliary modules.
-            self.aux.stop()
+            if not self.stopped_aux:
+                self.aux.stop()
+                self.stopped_aux = True
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
@@ -666,7 +669,8 @@ class AnalysisManager(threading.Thread):
             ResultServer().del_task(self.task, self.machine)
 
             # Drop the network routing rules if any.
-            self.unroute_network()
+            if not self.unrouted_network:
+                self.unroute_network()
 
             try:
                 # Release the analysis machine. But only if the machine has
@@ -792,17 +796,28 @@ class AnalysisManager(threading.Thread):
                 "status": "error",
             })
         finally:
-            # In case the analysis manager crashes, the network cleanup
-            # should still be performed.
-            if not self.unrouted_network:
-                self.unroute_network()
-
             if self.cfg.cuckoo.process_results:
                 self.db.set_status(self.task.id, TASK_REPORTED)
             else:
                 self.db.set_status(self.task.id, TASK_COMPLETED)
             task_log_stop(self.task.id)
             active_analysis_count -= 1
+
+    def cleanup(self):
+        # In case the analysis manager crashes, the network cleanup
+        # should still be performed.
+        if not self.unrouted_network:
+            self.unroute_network()
+
+        if not self.stopped_aux:
+            self.aux.stop()
+
+    def force_stop(self):
+        # Make the guest manager stop the status checking loop and return
+        # to the main analysis manager routine.
+        self.db.guest_set_status(self.task.id, "stopping")
+        self.guest_manager.stop()
+        log.debug("Force stopping task #%s", self.task.id)
 
 class Scheduler(object):
     """Tasks Scheduler.
@@ -820,6 +835,7 @@ class Scheduler(object):
         self.db = Database()
         self.maxcount = maxcount
         self.total_analysis_count = 0
+        self.analysis_managers = set()
 
     def initialize(self):
         """Initialize the machine manager."""
@@ -908,8 +924,37 @@ class Scheduler(object):
     def stop(self):
         """Stop scheduler."""
         self.running = False
+
+        # Force stop all analysis managers.
+        for am in self.analysis_managers:
+            try:
+                am.force_stop()
+            except Exception as e:
+                log.exception("Error force stopping analysis manager: %s", e)
+
         # Shutdown machine manager (used to kill machines that still alive).
         machinery.shutdown()
+
+        # Remove network rules if any are present and stop auxiliary modules
+        for am in self.analysis_managers:
+            try:
+                am.cleanup()
+            except Exception as e:
+                log.exception(
+                    "Error while cleaning up analysis manager: %s", e
+                )
+
+    def _cleanup_managers(self):
+        cleaned = set()
+        for am in self.analysis_managers:
+            if not am.isAlive():
+                try:
+                    am.cleanup()
+                except Exception as e:
+                    log.exception("Error in analysis manager cleanup: %s", e)
+
+                cleaned.add(am)
+        return cleaned
 
     def start(self):
         """Start scheduler."""
@@ -927,6 +972,10 @@ class Scheduler(object):
         # This loop runs forever.
         while self.running:
             time.sleep(1)
+
+            # Run cleanup on finished analysis managers and untrack them
+            for am in self._cleanup_managers():
+                self.analysis_managers.discard(am)
 
             # Wait until the machine lock is not locked. This is only the case
             # when all machines are fully running, rather that about to start
@@ -1035,6 +1084,7 @@ class Scheduler(object):
                 analysis = AnalysisManager(task.id, errors)
                 analysis.daemon = True
                 analysis.start()
+                self.analysis_managers.add(analysis)
 
             # Deal with errors.
             try:

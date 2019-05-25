@@ -106,6 +106,7 @@ class OldGuestManager(object):
         # TODO, pull options parameter into __init__ so we can do this here
         self.timeout = None
         self.server = None
+        self.do_run = True
 
     def wait(self, status):
         """Waiting for status.
@@ -117,7 +118,7 @@ class OldGuestManager(object):
         end = time.time() + self.timeout
         self.server._set_timeout(self.timeout)
 
-        while db.guest_get_status(self.task_id) == "starting":
+        while db.guest_get_status(self.task_id) == "starting" and self.do_run:
             # Check if we've passed the timeout.
             if time.time() > end:
                 raise CuckooGuestCriticalTimeout(
@@ -179,6 +180,8 @@ class OldGuestManager(object):
             # availability of the agent and verify that it's ready to receive
             # data.
             self.wait(CUCKOO_GUEST_INIT)
+            if not self.do_run:
+                return
 
             # Invoke the upload of the analyzer to the guest.
             self.upload_analyzer(monitor)
@@ -233,7 +236,7 @@ class OldGuestManager(object):
         end = time.time() + self.timeout
         self.server._set_timeout(self.timeout)
 
-        while db.guest_get_status(self.task_id) == "running":
+        while db.guest_get_status(self.task_id) == "running" and self.do_run:
             time.sleep(1)
 
             # If the analysis hits the critical timeout, just return straight
@@ -286,10 +289,16 @@ class GuestManager(object):
         self.environ = {}
 
         self.options = {}
+        self.do_run = True
 
     @property
     def aux(self):
         return self.analysis_manager.aux
+
+    def stop(self):
+        self.do_run = False
+        if self.is_old:
+            self.old.do_run = False
 
     def get(self, method, *args, **kwargs):
         """Simple wrapper around requests.get()."""
@@ -334,7 +343,7 @@ class GuestManager(object):
         """Wait until the Virtual Machine is available for usage."""
         end = time.time() + self.timeout
 
-        while db.guest_get_status(self.task_id) == "starting":
+        while db.guest_get_status(self.task_id) == "starting" and self.do_run:
             try:
                 socket.create_connection((self.ipaddr, self.port), 1).close()
                 break
@@ -424,6 +433,8 @@ class GuestManager(object):
 
         # Wait for the agent to come alive.
         self.wait_available()
+        if not self.do_run:
+            return
 
         # Could be beautified a bit, but basically we have to perform the
         # same check here as we did in wait_available().
@@ -523,7 +534,7 @@ class GuestManager(object):
 
         end = time.time() + self.timeout
 
-        while db.guest_get_status(self.task_id) == "running":
+        while db.guest_get_status(self.task_id) == "running" and self.do_run:
             log.debug("%s: analysis still processing", self.vmid)
 
             time.sleep(1)

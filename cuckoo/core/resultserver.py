@@ -272,6 +272,7 @@ class GeventResultServerWorker(gevent.server.StreamServer):
     def add_task(self, task_id, ipaddr):
         with self.task_mgmt_lock:
             self.tasks[ipaddr] = task_id
+            log.debug("Now tracking machine %s for task #%s", ipaddr, task_id)
 
     def del_task(self, task_id, ipaddr):
         """Delete ResultServer state and abort pending RequestHandlers. Since
@@ -280,8 +281,15 @@ class GeventResultServerWorker(gevent.server.StreamServer):
         have been closed after the analyzer signalled completion."""
         with self.task_mgmt_lock:
             if self.tasks.pop(ipaddr, None) is None:
-                log.warning("ResultServer did not have a task with ID %s",
-                            task_id)
+                log.warning(
+                    "ResultServer did not have a task with ID %s and IP %s",
+                    task_id, ipaddr
+                )
+            else:
+                log.debug(
+                    "Stopped tracking machine %s for task #%s",
+                    ipaddr, task_id
+                )
             ctxs = self.handlers.pop(task_id, set())
             for ctx in ctxs:
                 log.debug("Cancel %s for task %r", ctx, task_id)

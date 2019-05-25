@@ -220,14 +220,15 @@ def cuckoo_main(max_analysis_count=0):
         sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:
-        log.info("CTRL+C detected! Stopping..")
+        log.info("CTRL+C detected! Stopping.. This can take a few seconds")
     finally:
-        if sched:
-            sched.stop()
-
-        Pidfile("cuckoo").remove()
+        sched.running = False
         if rs:
             rs.instance.stop()
+
+        Pidfile("cuckoo").remove()
+        if sched:
+            sched.stop()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
