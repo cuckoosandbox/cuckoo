@@ -313,7 +313,7 @@ class GuestManager(object):
         except requests.ConnectionError:
             raise CuckooGuestError(
                 "Cuckoo Agent failed without error status, please try "
-                "upgrading to the latest version of agent.py (>= 0.8) and "
+                "upgrading to the latest version of agent.py (>= 0.10) and "
                 "notify us if the issue persists."
             )
 
@@ -332,7 +332,7 @@ class GuestManager(object):
         except requests.ConnectionError:
             raise CuckooGuestError(
                 "Cuckoo Agent failed without error status, please try "
-                "upgrading to the latest version of agent.py (>= 0.8) and "
+                "upgrading to the latest version of agent.py (>= 0.10) and "
                 "notify us if the issue persists."
             )
 
@@ -425,8 +425,8 @@ class GuestManager(object):
         @param options: the task options
         @param monitor: identifier of the monitor to be used.
         """
-        log.info("Starting analysis on guest (id=%s, ip=%s)",
-                 self.vmid, self.ipaddr)
+        log.info("Starting analysis #%s on guest (id=%s, ip=%s)",
+                 self.task_id, self.vmid, self.ipaddr)
 
         self.options = options
         self.timeout = options["timeout"] + config("cuckoo:timeouts:critical")
@@ -535,7 +535,9 @@ class GuestManager(object):
         end = time.time() + self.timeout
 
         while db.guest_get_status(self.task_id) == "running" and self.do_run:
-            log.debug("%s: analysis still processing", self.vmid)
+            log.debug(
+                "%s: analysis #%s still processing", self.vmid, self.task_id
+            )
 
             time.sleep(1)
 
@@ -547,11 +549,17 @@ class GuestManager(object):
 
             try:
                 status = self.get("/status", timeout=5).json()
+            except CuckooGuestError:
+                # this might fail due to timeouts or just temporary network
+                # issues thus we don't want to abort the analysis just yet and
+                # wait for things to recover
+                log.info(
+                    "Virtual Machine /status failed. This can indicate the "
+                    "guest losing network connectivity"
+                )
+                continue
             except Exception as e:
-                log.info("Virtual Machine /status failed (%r)", e)
-                # this might fail due to timeouts or just temporary network issues
-                # thus we don't want to abort the analysis just yet and wait for things to
-                # recover
+                log.error("Virtual machine /status failed. %s", e)
                 continue
 
             if status["status"] == "complete":
@@ -559,8 +567,8 @@ class GuestManager(object):
                 return
             elif status["status"] == "exception":
                 log.warning(
-                    "%s: analysis caught an exception\n%s",
-                    self.vmid, status["description"]
+                    "%s: analysis #%s caught an exception\n%s",
+                    self.vmid, self.task_id, status["description"]
                 )
                 return
 

@@ -222,7 +222,8 @@ def cuckoo_main(max_analysis_count=0):
     except KeyboardInterrupt:
         log.info("CTRL+C detected! Stopping.. This can take a few seconds")
     finally:
-        sched.running = False
+        if sched:
+            sched.running = False
         if rs:
             rs.instance.stop()
 
