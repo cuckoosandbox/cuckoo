@@ -198,6 +198,7 @@ do_setup(
         "flask==0.12.2",
         "flask-sqlalchemy==2.4.0",
         "httpreplay>=0.2.4, <0.3",
+        "ipaddress>=1.0.22",
         "gevent>=1.2, <1.3",
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",

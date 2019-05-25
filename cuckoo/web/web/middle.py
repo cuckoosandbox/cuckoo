@@ -4,11 +4,10 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 from django.shortcuts import redirect
-from ipaddress import ip_network,ip_address
+from ipaddress import ip_network, ip_address
 
 from cuckoo.common.config import config
 from cuckoo.misc import version
-from cuckoo.web.utils import get_client_ip
 
 class CuckooAuthentication(object):
     def process_request(self, request):
@@ -36,20 +35,23 @@ class CuckooHeaders(object):
 
 class CuckooFileDownloadAuthentication(object):
     def process_request(self, request):
-        if not request.path.startswith(("/file/sample/","/file/dropped/")): 
+        if not request.path.startswith(("/file/sample/", "/file/dropped/")):
             return
+
         #if no ALLOWED_FILEDOWNLOAD_SUBNETS in web local_settings, ignore this
         try:
             from settings import ALLOWED_FILEDOWNLOAD_SUBNETS
-        except ImportError as e:
-            return        
-        ip = get_client_ip(request)
+        except ImportError:
+            return
+
+        ip = request.META.get("REMOTE_ADDR")
         isallowed = False
         if ip:
-            for network in ALLOWED_FILEDOWNLOAD_SUBNETS.split(','):
-                network = ip_network(unicode(network),strict=False)
+            for network in ALLOWED_FILEDOWNLOAD_SUBNETS.split(","):
+                network = ip_network(unicode(network), strict=False)
                 if ip_address(unicode(ip)) in network:
                     isallowed = True
                     return
+
         if not isallowed and not request.session.get("auth"):
-            return redirect("/secret/")    
+            return redirect("/secret/")
