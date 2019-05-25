@@ -13,7 +13,7 @@ from cuckoo.common.exceptions import (
     CuckooMachineError, CuckooCriticalError, CuckooMachineSnapshotError,
     CuckooDependencyError, CuckooMissingMachineError
 )
-from cuckoo.common.files import Folders, Files
+from cuckoo.common.files import Folders
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
 from cuckoo.core.init import write_cuckoo_conf
@@ -446,8 +446,10 @@ class TestVirtualbox(object):
         self.m._wait_status = mock.MagicMock(return_value=None)
 
         with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
-            p.poll.return_value = True
-            p.returncode = 0
+            proc = mock.MagicMock()
+            proc.returncode = 0
+            proc.poll.return_value = True
+            p.return_value = proc
             self.m.stop("label")
 
         p.assert_called_once_with(
@@ -459,6 +461,10 @@ class TestVirtualbox(object):
         )
 
         with mock.patch("cuckoo.machinery.virtualbox.Popen") as p:
+            proc = mock.MagicMock()
+            proc.returncode = 0
+            proc.poll.return_value = True
+            p.return_value = proc
             self.m._status.return_value = self.m.SAVED
             self.m.stop("label")
             p.assert_not_called()
