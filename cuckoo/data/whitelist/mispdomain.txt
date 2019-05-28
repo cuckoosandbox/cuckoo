@@ -1,3 +1,4 @@
+# Domains that should not be reported to MISP should be added here
 www.msftncsi.com
 dns.msftncsi.com
 teredo.ipv6.microsoft.com

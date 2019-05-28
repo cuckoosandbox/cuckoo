@@ -14,19 +14,18 @@ mispurls = set()
 misphashes = set()
 
 def _load_whitelist(wlset, wl_file):
-    for b in (True, False):
-        private = {"private": True} if b else {}
-        wl_path = cwd("whitelist", wl_file, **private)
-        if not os.path.isfile(wl_path):
-            continue
+    wl_path = cwd("whitelist", wl_file)
 
-        with open(wl_path, "rb") as fp:
-            whitelist = fp.read()
+    if not os.path.isfile(wl_path):
+        wl_path = cwd("..", "data", "whitelist", wl_file, private=True)
 
-        for entry in whitelist.split("\n"):
-            entry = entry.strip()
-            if entry and not entry.startswith("#"):
-                wlset.add(entry)
+    with open(wl_path, "rb") as fp:
+        whitelist = fp.read()
+
+    for entry in whitelist.split("\n"):
+        entry = entry.strip()
+        if entry and not entry.startswith("#"):
+            wlset.add(entry)
 
 def is_whitelisted_domain(domain):
     if not domains:
@@ -44,28 +43,28 @@ def is_whitelisted_ip(ip):
 
 def is_whitelisted_mispdomain(domain):
     if not mispdomains:
-        # Initialize the domain whitelist.
+        # Initialize the misp domain whitelist.
         _load_whitelist(mispdomains, "mispdomain.txt")
 
     return domain in mispdomains
 
 def is_whitelisted_mispip(ip):
     if not mispips:
-        # Initialize the ip whitelist.
+        # Initialize the misp ip whitelist.
         _load_whitelist(mispips, "mispip.txt")
 
     return ip in mispips
 
 def is_whitelisted_mispurl(url):
     if not mispurls:
-        # Initialize the ip whitelist.
+        # Initialize the misp url whitelist.
         _load_whitelist(mispurls, "mispurl.txt")
 
-    return ip in mispurls
+    return url in mispurls
 
 def is_whitelisted_misphash(hash):
     if not misphashes:
-        # Initialize the ip whitelist.
+        # Initialize the misp hash whitelist.
         _load_whitelist(misphashes, "misphash.txt")
 
     return hash in misphashes

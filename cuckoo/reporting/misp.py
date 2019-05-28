@@ -2,14 +2,17 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import logging
 import os.path
 import shlex
 import warnings
-import logging
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooProcessingError
-from cuckoo.common.whitelist import is_whitelisted_mispdomain,is_whitelisted_mispip,is_whitelisted_mispurl,is_whitelisted_misphash
+from cuckoo.common.whitelist import (
+    is_whitelisted_mispdomain, is_whitelisted_mispip, is_whitelisted_mispurl,
+    is_whitelisted_misphash
+)
 
 log = logging.getLogger(__name__)
 
@@ -34,21 +37,30 @@ class MISP(Report):
         urls = set()
         for protocol in ("http_ex", "https_ex"):
             for entry in results.get("network", {}).get(protocol, []):
-                if not is_whitelisted_mispdomain(entry["host"]) and not is_whitelisted_mispdomain(entry["host"]):
-                    url = "%s://%s%s" % (
-                          entry["protocol"], entry["host"], entry["uri"])
-                    if not is_whitelisted_mispurl(url):
-                        urls.add(url)
+                if is_whitelisted_mispdomain(entry["host"]):
+                    continue
+                if is_whitelisted_mispdomain(entry["host"]):
+                    continue
+
+                url = "%s://%s%s" % (
+                      entry["protocol"], entry["host"], entry["uri"])
+
+                if not is_whitelisted_mispurl(url):
+                    urls.add(url)
 
         self.misp.add_url(event, sorted(list(urls)))
 
     def domain_ipaddr(self, results, event):
-
         domains, ips = {}, set()
         for domain in results.get("network", {}).get("domains", []):
-            if not is_whitelisted_mispip(domain["ip"]) and not is_whitelisted_mispdomain(domain["domain"]):
-                domains[domain["domain"]] = domain["ip"]
-                ips.add(domain["ip"])
+            if is_whitelisted_mispip(domain["ip"]):
+                continue
+
+            if is_whitelisted_mispdomain(domain["domain"]):
+                continue
+
+            domains[domain["domain"]] = domain["ip"]
+            ips.add(domain["ip"])
 
         ipaddrs = set()
         for ipaddr in results.get("network", {}).get("hosts", []):
@@ -74,32 +86,47 @@ class MISP(Report):
 
     def signature(self, results, event):
         for sig in results.get("signatures", []):
-            try:
-                temp = []
-                for mark in sig.get("marks", []):
-                    if mark["type"] == "generic":
-                        temp.append("%s %s" % (mark.get("parent_process", ""), mark.get("martian_process", "")))
-                        temp.append("%s %s" % (mark.get("reg_key", ""), mark.get("reg_value", "")))
-                        temp.append("%s %s" % (mark.get("option", ""), mark.get("value", "")))
-                        temp.append("%s" % mark.get("domain", ""))
-                        temp.append("%s" % mark.get("description", ""))
-                        temp.append("%s" % mark.get("host", ""))
-                    elif mark["type"] == "call":
-                        if not mark["call"]["api"] in temp:
-                            temp.append(mark["call"]["api"])
-                    elif mark["type"] == "config":
-                        temp.append(mark["config"]["url"])
-                    else:
-                        temp.append(mark[mark["type"]])
-                datainfo = ",".join([x for x in temp if x not in ["", " "]])
-            except:
-                datainfo = ",".join(sig["ttp"])
-                pass
-            data = "%s - (%s)" % (sig["description"], datainfo)
+
+            marks = []
+
+            if sig["ttp"]:
+                marks.append("%s" % ", ".join(sig["ttp"]))
+
+            for mark in sig.get("marks", []):
+                if mark["type"] == "generic":
+                    marks.append(
+                        "%s %s" % (mark.get("parent_process", ""),
+                                   mark.get("martian_process", ""))
+                    )
+                    marks.append(
+                        "%s %s" % (mark.get("reg_key", ""),
+                                   mark.get("reg_value", ""))
+                    )
+                    marks.append(
+                        "%s %s" % (mark.get("option", ""),
+                                   mark.get("value", ""))
+                    )
+                    marks.append("%s" % mark.get("domain", ""))
+                    marks.append("%s" % mark.get("description", ""))
+                    marks.append("%s" % mark.get("host", ""))
+
+                elif mark["type"] == "call":
+                    if not mark["call"]["api"] in marks:
+                        marks.append(mark["call"]["api"])
+
+                elif mark["type"] == "config":
+                    marks.append(mark["config"].get("url", ""))
+
+                else:
+                    marks.append(mark[mark["type"]])
+
+            markslist = ", ".join([x for x in marks if x and x != " "])
+
+            data = "%s - (%s)" % (sig["description"], markslist)
             self.misp.add_internal_comment(event, data)
             for att, description in sig["ttp"].items():
-                if description is None:
-                    log.warning("Description for %s is not found" % (att))
+                if not description:
+                    log.warning("Description for %s is not found", att)
                     continue
 
                 self.misp.add_internal_comment(
@@ -113,60 +140,71 @@ class MISP(Report):
         url = self.options.get("url")
         apikey = self.options.get("apikey")
         mode = shlex.split(self.options.get("mode") or "")
-        score = results.get("info", None).get("score")
+        score = results.get("info", {}).get("score", 0)
         upload_sample = self.options.get("upload_sample")
-        f = results["target"]["file"]
-        hash_whitelisted = is_whitelisted_misphash(f["md5"]) or is_whitelisted_misphash(f["sha1"]) or is_whitelisted_misphash(f["sha256"])
 
-        if score >= self.options.get("min_malscore", 0) and not hash_whitelisted:
-            if not url or not apikey:
-                raise CuckooProcessingError(
-                    "Please configure the URL and API key for your MISP instance."
-                )
+        if results.get("target", {}).get("category") == "file":
+            f = results.get("target", {}).get("file", {})
+            hash_whitelisted = is_whitelisted_misphash(f["md5"]) or \
+                               is_whitelisted_misphash(f["sha1"]) or \
+                               is_whitelisted_misphash(f["sha256"])
 
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                import pymisp
+            if hash_whitelisted:
+                return
 
-            self.misp = pymisp.PyMISP(url, apikey, False, "json")
+        if score < self.options.get("min_malscore", 0):
+            return
 
-            #Get default settings for a new event
-            distribution = self.options.get("distribution") or 0
-            threat_level = self.options.get("threat_level") or 4
-            analysis = self.options.get("analysis") or 0
-            tag = self.options.get("tag") or "Cuckoo"
-
-            event = self.misp.new_event(
-                distribution=distribution,
-                threat_level_id=threat_level,
-                analysis=analysis,
-                info="Cuckoo Sandbox analysis #%d" % self.task["id"]
+        if not url or not apikey:
+            raise CuckooProcessingError(
+                "Please configure the URL and API key for your MISP "
+                "instance."
             )
 
-            # Add a specific tag to flag Cuckoo's event
-            if tag:
-                mispresult = self.misp.tag(event['Event']['uuid'], tag)
-                if mispresult.has_key('message'):
-                    log.debug("tag event: %s" % mispresult['message'])
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            import pymisp
 
-            if upload_sample and results.get("target", {}).get("category") == "file":
-                if results.get("target", {}).get("file", {}):
-                    self.misp.upload_sample(
-                        filename=os.path.basename(self.task["target"]),
-                        filepath_or_bytes=self.task["target"],
-                        event_id=event["Event"]["id"],
-                        category="External analysis",
-                    )
+        self.misp = pymisp.PyMISP(url, apikey, False, "json")
 
-            self.signature(results, event)
+        # Get default settings for a new event
+        distribution = self.options.get("distribution") or 0
+        threat_level = self.options.get("threat_level") or 4
+        analysis = self.options.get("analysis") or 0
+        tag = self.options.get("tag") or "Cuckoo"
 
-            if "hashes" in mode:
-                self.sample_hashes(results, event)
+        event = self.misp.new_event(
+            distribution=distribution,
+            threat_level_id=threat_level,
+            analysis=analysis,
+            info="Cuckoo Sandbox analysis #%d" % self.task["id"]
+        )
 
-            if "url" in mode:
-                self.all_urls(results, event)
+        # Add a specific tag to flag Cuckoo's event
+        if tag:
+            mispresult = self.misp.tag(event["Event"]["uuid"], tag)
+            if mispresult.has_key("message"):
+                log.debug("tag event: %s" % mispresult["message"])
 
-            if "ipaddr" in mode:
-                self.domain_ipaddr(results, event)
+        if upload_sample:
+            target = results.get("target", {})
+            if target.get("category") == "file" and target.get("file"):
+                self.misp.upload_sample(
+                    filename=os.path.basename(self.task["target"]),
+                    filepath_or_bytes=self.task["target"],
+                    event_id=event["Event"]["id"],
+                    category="External analysis",
+                )
 
-            self.family(results, event)
+        self.signature(results, event)
+
+        if "hashes" in mode:
+            self.sample_hashes(results, event)
+
+        if "url" in mode:
+            self.all_urls(results, event)
+
+        if "ipaddr" in mode:
+            self.domain_ipaddr(results, event)
+
+        self.family(results, event)
