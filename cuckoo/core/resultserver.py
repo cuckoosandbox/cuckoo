@@ -54,7 +54,7 @@ class ResultServer(SocketServer.ThreadingTCPServer, object):
                 SocketServer.ThreadingTCPServer.__init__(
                     self, server_addr, ResultHandler, *args, **kwargs
                 )
-            except Exception as e:
+            except EnvironmentError as e:
                 if e.errno == errno.EADDRINUSE:
                     if config("cuckoo:resultserver:force_port"):
                         raise CuckooCriticalError(
