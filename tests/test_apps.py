@@ -717,9 +717,9 @@ class TestMigrateCWD(object):
         # TODO Move this to its own 2.0.3 -> 2.0.4 migration handler.
         assert os.path.exists(cwd("stuff"))
         assert os.path.exists(cwd("whitelist"))
-        assert open(cwd("whitelist", "domain.txt"), "rb").read().strip() == (
-            "# You can add whitelisted domains here."
-        )
+
+        wl = open(cwd("whitelist", "domain.txt"), "rb").read().split("\n")
+        assert wl[0] == "# You can add whitelisted domains here."
         assert os.path.exists(cwd("yara", "dumpmem"))
         assert not os.path.exists(cwd("yara", "index_binaries.yar"))
 
