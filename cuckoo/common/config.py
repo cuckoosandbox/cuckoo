@@ -243,7 +243,8 @@ class Config(object):
             "resultserver": {
                 "ip": String("192.168.56.1"),
                 "port": Int(2042),
-                "force_port": Boolean(False),
+                "force_port": Boolean(False, False),  # Unused
+                "pool_size": Int(0, False),
                 "upload_max_size": Int(128 * 1024 * 1024),
             },
             "processing": {
@@ -751,6 +752,12 @@ class Config(object):
                 "url": String(),
                 "apikey": String(sanitize=True),
                 "mode": String("maldoc ipaddr hashes url"),
+                "distribution": Int(0, required=False),
+                "analysis": Int(0, required=False),
+                "threat_level": Int(4, required=False),
+                "min_malscore": Int(0, required=False),
+                "tag": String("Cuckoo", required=False),
+                "upload_sample": Boolean(False, required=False),
             },
             "mongodb": {
                 "enabled": Boolean(False),

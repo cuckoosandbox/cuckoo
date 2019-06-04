@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -6,21 +6,31 @@ import copy
 import json
 import logging
 import logging.handlers
-import thread
+import os
+import threading
 import time
+
+import gevent.thread
 
 from cuckoo.common.colors import red, yellow, cyan
 from cuckoo.core.database import Database
 from cuckoo.misc import cwd
 
+_task_threads = {}
 _tasks = {}
 _loggers = {}
+
+_tasks_lock = threading.Lock()
 
 # Current GMT+x.
 if time.localtime().tm_isdst:
     tz = time.altzone / -3600.
 else:
     tz = time.timezone / -3600.
+
+# The greenlet library (used by Gevent) also creates some state per thread,
+# so we can (ab)use this for both multi-threading and Gevent code
+task_key = gevent.thread.get_ident
 
 class DatabaseHandler(logging.Handler):
     """Logging to database handler.
@@ -41,12 +51,11 @@ class TaskHandler(logging.Handler):
     """
 
     def emit(self, record):
-        task_id = _tasks.get(thread.get_ident())
-        if not task_id:
+        task = _tasks.get(task_key())
+        if not task:
             return
 
-        with open(cwd("cuckoo.log", analysis=task_id), "a+b") as f:
-            f.write("%s\n" % self.format(record))
+        task[1].write("%s\n" % self.format(record))
 
 class ConsoleHandler(logging.StreamHandler):
     """Logging to console handler."""
@@ -72,9 +81,8 @@ class JsonFormatter(logging.Formatter):
     def format(self, record):
         action = record.__dict__.get("action")
         status = record.__dict__.get("status")
-        task_id = _tasks.get(
-            thread.get_ident(), record.__dict__.get("task_id")
-        )
+        task = _tasks.get(task_key())
+        task_id = task[0] if task else record.__dict__.get("task_id")
         d = {
             "action": action,
             "task_id": task_id,
@@ -96,11 +104,39 @@ class JsonFormatter(logging.Formatter):
 
 def task_log_start(task_id):
     """Associate a thread with a task."""
-    _tasks[thread.get_ident()] = task_id
+    _tasks_lock.acquire()
+    try:
+        if task_id not in _task_threads:
+            task_path = cwd(analysis=task_id)
+            if not os.path.exists(task_path):
+                return
+
+            _task_threads[task_id] = []
+            fp = open(os.path.join(task_path, "cuckoo.log"), "a+b")
+            _tasks[task_key()] = (task_id, fp)
+        else:
+            existing_key = _task_threads[task_id][0]
+            _tasks[task_key()] = _tasks[existing_key]
+
+        _task_threads[task_id].append(task_key())
+    finally:
+        _tasks_lock.release()
 
 def task_log_stop(task_id):
     """Disassociate a thread from a task."""
-    _tasks.pop(thread.get_ident(), None)
+    _tasks_lock.acquire()
+    try:
+        thread_key = task_key()
+        if thread_key not in _tasks:
+            return
+
+        _, fp = _tasks.pop(thread_key)
+        _task_threads[task_id].remove(thread_key)
+        if not _task_threads[task_id]:
+            fp.close()
+            _task_threads.pop(task_id)
+    finally:
+        _tasks_lock.release()
 
 def init_logger(name, level=None):
     formatter = logging.Formatter(

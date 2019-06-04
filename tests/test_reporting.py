@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import json
 import mock
 import os.path
 import pytest
@@ -19,6 +20,7 @@ from cuckoo.reporting.feedback import Feedback
 from cuckoo.reporting.misp import MISP
 from cuckoo.reporting.mongodb import MongoDB
 from cuckoo.reporting.singlefile import SingleFile
+
 
 def test_init():
     p = Report()
@@ -115,6 +117,92 @@ def test_empty_mattermost():
     assert len(responses.calls) == 2
 
 @responses.activate
+def test_min_malscore_misp_low():
+    """Try to send event with low malscore."""
+    set_cwd(tempfile.mkdtemp())
+    conf = {
+        "misp": {
+            "enabled": True,
+            "url": "https://misphost",
+            "apikey": "A"*32,
+            "mode": "",
+            "min_malscore": 5
+        }
+    }
+
+    with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+        rsps.add(
+            responses.GET, "https://misphost/servers/getPyMISPVersion.json",
+            json={
+                "version": "2.4.103"
+            }
+        )
+
+        rsps.add(
+            responses.GET, "https://misphost/attributes/describeTypes.json",
+            json={
+                "result": {
+                    "categories": None,
+                    "types": None,
+                    "category_type_mappings": None,
+                    "sane_defaults": True,
+                },
+            },
+        )
+        rsps.add(
+            responses.POST, "https://misphost/events",
+            json={
+                "response": None,
+            },
+        )
+
+        task(2, {}, conf, {"info": {"score": 2}})
+        assert len(rsps.calls) == 0
+
+@responses.activate
+def test_min_malscore_misp():
+    """Try to send event with low malscore."""
+    set_cwd(tempfile.mkdtemp())
+    conf = {
+        "misp": {
+            "enabled": True,
+            "url": "https://misphost",
+            "apikey": "A"*32,
+            "mode": "",
+            "min_malscore": 5
+        }
+    }
+
+    with responses.RequestsMock(assert_all_requests_are_fired=False) as rsps:
+        rsps.add(
+            responses.GET, "https://misphost/servers/getPyMISPVersion.json",
+            json={
+                "version": "2.4.103"
+            }
+        )
+
+        rsps.add(
+            responses.GET, "https://misphost/attributes/describeTypes.json",
+            json={
+                "result": {
+                    "categories": None,
+                    "types": None,
+                    "category_type_mappings": None,
+                    "sane_defaults": True,
+                },
+            },
+        )
+        rsps.add(
+            responses.POST, "https://misphost/events",
+            json={
+                "response": None,
+            },
+        )
+
+        task(2, {}, conf, {"info": {"score": 6}})
+        assert len(rsps.calls) == 3
+
+@responses.activate
 def test_empty_misp():
     """Merely connect to MISP and create the new event."""
     set_cwd(tempfile.mkdtemp())
@@ -182,27 +270,28 @@ def test_misp_signatures():
     r.misp = mock.MagicMock()
     r.misp.add_internal_comment.return_value = None
 
-    r.signature({
-            "signatures": [
-                {
-                    "description": "Very signature",
-                    "ttp": {
-                        "T1045": {
-                            "short": "Short description",
-                            "long": "A longer description"
-                        }
-                    }
-                }
-            ]
-    }, "event")
+    with open("tests/files/reportsignatures.json", "rb") as fp:
+        signatures = json.load(fp)
 
-    assert r.misp.add_internal_comment.call_count == 2
+    r.signature({"signatures": signatures}, "event")
+
+    assert r.misp.add_internal_comment.call_count == 36
     r.misp.add_internal_comment.assert_has_calls([
-        mock.call("event", "Very signature - (T1045)"),
-        mock.call("event", "TTP: T1045, short: Short description")
-    ])
+        mock.call("event", "Creates a service - (T1031, CreateServiceW)"),
+        mock.call("event", "Searches running processes potentially to identify"
+                           " processes for sandbox evasion, code injection or"
+                           " memory dumping -"
+                           " (T1057, Process32FirstW, Process32NextW)"),
+        mock.call("event", "TTP: T1054, short: Indicator Blocking"),
+        mock.call("event", "Disables Windows Security features -"
+                           " (T1089, T1112, attempts to disable user access"
+                           " control)"),
+        mock.call("event", "Communicates with host for which no DNS query was"
+                           " performed - (200.87.164.69)")
+    ], any_order=True)
 
 def test_misp_all_urls():
+    set_cwd(tempfile.mkdtemp())
     r = MISP()
     r.misp = mock.MagicMock()
     r.misp.add_url.return_value = None
@@ -232,6 +321,7 @@ def test_misp_all_urls():
     )
 
 def test_misp_domain_ipaddr():
+    set_cwd(tempfile.mkdtemp())
     r = MISP()
     r.misp = mock.MagicMock()
     r.misp.add_domains_ips.return_value = None
@@ -245,9 +335,6 @@ def test_misp_domain_ipaddr():
                     "ip": "1.2.3.4",
                 },
                 {
-                    # TODO Now that we have global whitelisting, this
-                    # custom-made support for the MISP reporting module should
-                    # probably be removed.
                     "domain": "time.windows.com",
                     "ip": "1.2.3.4",
                 },
@@ -302,9 +389,9 @@ def test_misp_family():
 
     assert r.misp.add_detection_name.call_count == 3
     r.misp.add_detection_name.assert_has_calls([
-        mock.call("event", "3x4mpl3", "Sandbox detection"),
-        mock.call("event", "3x4mpl3_2", "Sandbox detection"),
-        mock.call("event", "3x4mpl3_3", "Sandbox detection")
+        mock.call("event", "3x4mpl3", "External analysis"),
+        mock.call("event", "3x4mpl3_2", "External analysis"),
+        mock.call("event", "3x4mpl3_3", "External analysis")
     ])
 
     assert r.misp.add_url.call_count == 2

@@ -371,6 +371,12 @@ def test_all_config_written():
         p.Template = Template
         write_cuckoo_conf(cfg)
 
+    print cfg["cuckoo"]
+    # Force port was removed/now unused for backwards compatibility
+    cfg["cuckoo"]["resultserver"].pop("force_port", None)
+
+    # Pool size is a hidden option for now
+    cfg["cuckoo"]["resultserver"].pop("pool_size", None)
     for key, value in cfg.items():
         for key2, value2 in value.items():
             for key3, value3 in value2.items():

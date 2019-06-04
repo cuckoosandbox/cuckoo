@@ -481,7 +481,6 @@ def _20c1_20c2(c):
     }
     c["cuckoo"]["routing"]["rt_table"] = "main"
     c["cuckoo"]["routing"]["auto_rt"] = True
-    c["cuckoo"]["resultserver"]["force_port"] = False
     if c["cuckoo"]["timeouts"]["critical"] == 600:
         c["cuckoo"]["timeouts"]["critical"] = 60
     c["processing"]["misp"] = {

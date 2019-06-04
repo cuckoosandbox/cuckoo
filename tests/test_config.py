@@ -121,7 +121,7 @@ max_analysis_count = 0
 rooter = /tmp/cuckoo-rooter
 tmppath =
 [resultserver]
-force_port = no
+port = 1234
 [database]
 connection =
 timeout =
@@ -169,7 +169,7 @@ class TestConfigType:
         """Testing the boolean parsing in the configuration file parsing."""
         assert self.cuckoo.get("cuckoo")["version_check"] is True
         assert self.cuckoo.get("cuckoo")["max_analysis_count"] is not False
-        assert self.cuckoo.get("resultserver")["force_port"] is False
+        assert self.cuckoo.get("resultserver")["port"] == 1234
 
     def test_path_parse(self):
         """Testing the Path parsing in the configuration file parsing."""
@@ -876,7 +876,7 @@ interface = hehe
     assert cfg["auxiliary"]["reboot"]["enabled"] is True
     assert cfg["cuckoo"]["routing"]["rt_table"] == "main"
     assert cfg["cuckoo"]["routing"]["auto_rt"] is True
-    assert cfg["cuckoo"]["resultserver"]["force_port"] is False
+    assert cfg["cuckoo"]["resultserver"]["port"] == 2042
     assert cfg["cuckoo"]["timeouts"]["critical"] == 60
     assert cfg["processing"]["misp"]["enabled"] is False
     assert cfg["processing"]["misp"]["url"] is None

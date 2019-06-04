@@ -509,6 +509,12 @@ def migrate_cwd():
         shutil.copytree(
             cwd("..", "data", "whitelist", private=True), cwd("whitelist")
         )
+    else:
+        data_wl = cwd("..", "data", "whitelist", private=True)
+        for wl_file in os.listdir(data_wl):
+            cwd_wl = cwd("whitelist", wl_file)
+            if not os.path.isfile(cwd_wl):
+                shutil.copy(os.path.join(data_wl, wl_file), cwd_wl)
 
     # Create the new $CWD/yara/dumpmem/ directory.
     if not os.path.exists(cwd("yara", "dumpmem")):

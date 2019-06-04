@@ -846,11 +846,6 @@ class Signature(object):
     filter_apinames = []
     filter_categories = []
 
-    # If no on_call() handler is present and this field has been set, then
-    # dispatch on a per-API basis to the accompanying API. That is, rather
-    # than calling the generic on_call(), call, e.g., on_call_CreateFile().
-    on_call_dispatch = False
-
     def __init__(self, caller):
         """
         @param caller: calling object. Stores results in caller.results
@@ -1293,10 +1288,6 @@ class Signature(object):
         @param call: logged API call.
         @param process: proc object.
         """
-        # Dispatch this call to a per-API specific handler.
-        if self.on_call_dispatch:
-            return getattr(self, "on_call_%s" % call["api"])(call, process)
-
         raise NotImplementedError
 
     def on_signature(self, signature):
@@ -1436,17 +1427,29 @@ class BehaviorHandler(object):
         behavior[self.key]."""
         raise NotImplementedError
 
+
 class ProtocolHandler(object):
     """Abstract class for protocol handlers coming out of the analysis."""
-    def __init__(self, handler, version=None):
-        self.handler = handler
+    def __init__(self, task_id, ctx, version=None):
+        self.task_id = task_id
+        self.handler = ctx
+        self.fd = None
         self.version = version
 
-    def init(self):
-        pass
+    def __enter__(self):
+        self.init()
+
+    def __exit__(self, type, value, traceback):
+        self.close()
 
     def close(self):
-        pass
+        if self.fd:
+            self.fd.close()
+            self.fd = None
+
+    def handle(self):
+        raise NotImplementedError
+
 
 class Extractor(object):
     """One piece in a series of recursive extractors & unpackers."""

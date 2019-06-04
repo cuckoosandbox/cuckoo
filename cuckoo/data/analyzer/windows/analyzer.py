@@ -31,8 +31,9 @@ from lib.core.config import Config
 from lib.core.ioctl import zer0m0n
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
+from lib.core.pipe import disconnect_pipes
 from lib.core.privileges import grant_privilege
-from lib.core.startup import init_logging, set_clock
+from lib.core.startup import init_logging, disconnect_logger, set_clock
 from modules import auxiliary
 
 log = logging.getLogger("analyzer")
@@ -518,11 +519,9 @@ class Analyzer(object):
         self.command_pipe.stop()
         self.log_pipe_server.stop()
 
-        # Dump all the notified files.
-        self.files.dump_files()
-
-        # Hell yeah.
-        log.info("Analysis completed.")
+        # Cleanly close remaining connections
+        disconnect_pipes()
+        disconnect_logger()
 
     def run(self):
         """Run analysis.
@@ -790,8 +789,11 @@ class Analyzer(object):
                 log.warning("Exception running finish callback of auxiliary "
                             "module %s: %s", aux.__class__.__name__, e)
 
-        # Let's invoke the completion procedure.
-        self.complete()
+        # Dump all the notified files.
+        self.files.dump_files()
+
+        # Hell yeah.
+        log.info("Analysis completed.")
         return True
 
 if __name__ == "__main__":
@@ -832,11 +834,24 @@ if __name__ == "__main__":
             "description": error_exc,
         }
     finally:
+        try:
+            # Let's invoke the completion procedure.
+            analyzer.complete()
+        except Exception as e:
+            complete_excp = traceback.format_exc()
+            data["status"] = "exception"
+            if "description" in data:
+                data["description"] += "%s\n%s" % (
+                    data["description"], complete_excp
+                )
+            else:
+                data["description"] = complete_excp
+
         # Report that we're finished. First try with the XML RPC thing and
         # if that fails, attempt the new Agent.
         try:
             server = xmlrpclib.Server("http://127.0.0.1:8000")
             server.complete(success, error, "unused_path")
-        except xmlrpclib.ProtocolError:
+        except Exception as e:
             urllib2.urlopen("http://127.0.0.1:8000/status",
                             urllib.urlencode(data)).read()

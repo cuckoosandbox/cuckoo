@@ -89,6 +89,41 @@ def cuckoo_create(username=None, cfg=None, quiet=False):
             open(cwd("cwd", "init-post.jinja2", private=True), "rb").read()
         ).render()
 
+def cuckoo_resources():
+    try:
+        import resource
+    except ImportError:
+        # Only Unix platforms have this option; should not be an issue on
+        # Windows
+        return
+
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    limit = soft
+    if soft != hard:
+        log.debug("Increasing resource limit for number of open files to %s",
+                  hard if hard != resource.RLIM_INFINITY else '[unlimited]')
+        try:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
+            limit = hard
+        except ValueError:
+            log.debug(
+                "Failed to increase open file limit from %s to %s", soft, hard
+            )
+
+    if limit != resource.RLIM_INFINITY:
+        # This can really affect the stability of Cuckoo, so the user should
+        # really fix it.  TODO: find a good minimum.
+        if limit <= 4096:
+            log.error("The maximum number of open files is low (%s). If you "
+                      "do not increase it, you may run into errors later "
+                      "on.", hard)
+            log.error("See also: https://cuckoo.sh/docs/faq/index.html#"
+                      "ioerror-errno-24-too-many-open-files")
+
+    # IDEAS:
+    # Check if limit is realistic versus the number of VMs
+    # Same for pool_size
+
 def cuckoo_init(level, ctx, cfg=None):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
@@ -112,6 +147,9 @@ def cuckoo_init(level, ctx, cfg=None):
         )
 
     init_console_logging(level)
+
+    # Make sure user is aware of potential resource limits
+    cuckoo_resources()
 
     # Only one Cuckoo process should exist per CWD. Run this check before any
     # files are possibly modified. Note that we mkdir $CWD/pidfiles/ here as
@@ -176,14 +214,22 @@ def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
+    rs, sched = None, None
     try:
-        ResultServer()
+        rs = ResultServer()
         sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:
-        sched.stop()
+        log.info("CTRL+C detected! Stopping.. This can take a few seconds")
+    finally:
+        if sched:
+            sched.running = False
+        if rs:
+            rs.instance.stop()
 
-    Pidfile("cuckoo").remove()
+        Pidfile("cuckoo").remove()
+        if sched:
+            sched.stop()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")

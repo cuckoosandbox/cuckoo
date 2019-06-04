@@ -13,7 +13,6 @@ import json
 import logging
 import operator
 import os
-import pkg_resources
 import platform
 import re
 import string

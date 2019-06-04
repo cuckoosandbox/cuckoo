@@ -407,13 +407,14 @@ class TestProcessingTasks(object):
             ("--cwd", cwd(), "process", "instance"),
             standalone_mode=False
         )
-        p.assert_called_once_with("instance", 0)
+        p.assert_called_once_with("instance", 0, 0)
         q.assert_called_once()
 
     @mock.patch("cuckoo.apps.apps.Database")
     @mock.patch("cuckoo.apps.apps.process")
     @mock.patch("cuckoo.apps.apps.logger")
     def test_logger(self, p, q, r):
+        mkdir(cwd(analysis=123))
         process_task({
             "id": 123,
             "target": "foo",
@@ -499,6 +500,7 @@ def test_process_dodelete(r, s, p):
 def test_process_log_taskid(p, q):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
+    mkdir(cwd(analysis=12345))
 
     init_console_logging(logging.DEBUG)
     init_logfile("process-p0.json")
@@ -715,9 +717,9 @@ class TestMigrateCWD(object):
         # TODO Move this to its own 2.0.3 -> 2.0.4 migration handler.
         assert os.path.exists(cwd("stuff"))
         assert os.path.exists(cwd("whitelist"))
-        assert open(cwd("whitelist", "domain.txt"), "rb").read().strip() == (
-            "# You can add whitelisted domains here."
-        )
+
+        wl = open(cwd("whitelist", "domain.txt"), "rb").read().split("\n")
+        assert wl[0] == "# You can add whitelisted domains here."
         assert os.path.exists(cwd("yara", "dumpmem"))
         assert not os.path.exists(cwd("yara", "index_binaries.yar"))
 

@@ -198,6 +198,8 @@ do_setup(
         "flask==0.12.2",
         "flask-sqlalchemy==2.4.0",
         "httpreplay>=0.2.4, <0.3",
+        "ipaddress>=1.0.22",
+        "gevent>=1.2, <1.3",
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
         "oletools==0.51",
@@ -206,7 +208,7 @@ do_setup(
         "pillow==3.2",
         "pyelftools==0.24",
         "pyguacamole==0.6",
-        "pymisp==2.4.103",
+        "pymisp==2.4.106",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
@@ -229,7 +231,6 @@ do_setup(
             "scapy==2.3.2",
         ],
         "distributed": [
-            "gevent==1.1.1",
             "psycopg2==2.6.2",
         ],
         "postgresql": [
