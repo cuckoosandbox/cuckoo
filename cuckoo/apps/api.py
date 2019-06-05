@@ -714,5 +714,8 @@ def cuckoo_api(hostname, port, debug):
     app.run(host=hostname, port=port, debug=debug)
 
 if os.environ.get("CUCKOO_APP") == "api":
+    from cuckoo.core.startup import ensure_tmpdir, init_console_logging
     decide_cwd(exists=True)
     Database().connect()
+    init_console_logging()
+    ensure_tmpdir()
