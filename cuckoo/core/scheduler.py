@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -479,9 +479,10 @@ class AnalysisManager(threading.Thread):
             try:
                 machinery.enable_remote_control(self.machine.label)
             except NotImplementedError:
-                raise CuckooMachineError(
-                    "Remote control support has not been implemented "
-                    "for this machinery."
+                log.error(
+                    "Remote control support has not been implemented for the "
+                    "configured machinery module: %s",
+                    config("cuckoo:cuckoo:machinery")
                 )
 
         try:
@@ -516,9 +517,10 @@ class AnalysisManager(threading.Thread):
                     )
                     self.db.set_machine_rcparams(self.machine.label, params)
                 except NotImplementedError:
-                    raise CuckooMachineError(
-                        "Remote control support has not been implemented "
-                        "for this machinery."
+                    log.error(
+                        "Remote control support has not been implemented for the "
+                        "configured machinery module: %s",
+                        config("cuckoo:cuckoo:machinery")
                     )
 
             # Enable network routing.
@@ -654,9 +656,10 @@ class AnalysisManager(threading.Thread):
                 try:
                     machinery.disable_remote_control(self.machine.label)
                 except NotImplementedError:
-                    raise CuckooMachineError(
-                        "Remote control support has not been implemented "
-                        "for this machinery."
+                    log.error(
+                        "Remote control support has not been implemented for the "
+                        "configured machinery module: %s",
+                        config("cuckoo:cuckoo:machinery")
                     )
 
             # Mark the machine in the database as stopped. Unless this machine
