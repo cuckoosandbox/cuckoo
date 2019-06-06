@@ -65,6 +65,7 @@ class AnalysisManager(threading.Thread):
         self.rt_table = None
         self.unrouted_network = False
         self.stopped_aux = False
+        self.rs_port = config("cuckoo:resultserver:port")
 
     def init(self):
         """Initialize the analysis."""
@@ -210,7 +211,7 @@ class AnalysisManager(threading.Thread):
 
         options["id"] = self.task.id
         options["ip"] = self.machine.resultserver_ip
-        options["port"] = self.machine.resultserver_port
+        options["port"] = self.rs_port
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
@@ -302,7 +303,7 @@ class AnalysisManager(threading.Thread):
             rooter(
                 "drop_enable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
-                str(config("cuckoo:resultserver:port"))
+                str(self.rs_port)
             )
 
         if self.route == "inetsim":
@@ -311,7 +312,7 @@ class AnalysisManager(threading.Thread):
                 "inetsim_enable", self.machine.ip,
                 config("routing:inetsim:server"),
                 config("%s:%s:interface" % (machinery, machinery)),
-                str(config("cuckoo:resultserver:port")),
+                str(self.rs_port),
                 config("routing:inetsim:ports") or ""
             )
 
@@ -354,7 +355,7 @@ class AnalysisManager(threading.Thread):
             rooter(
                 "drop_disable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
-                str(config("cuckoo:resultserver:port"))
+                str(self.rs_port)
             )
 
         if self.route == "inetsim":
@@ -363,7 +364,7 @@ class AnalysisManager(threading.Thread):
                 "inetsim_disable", self.machine.ip,
                 config("routing:inetsim:server"),
                 config("%s:%s:interface" % (machinery, machinery)),
-                str(config("cuckoo:resultserver:port")),
+                str(self.rs_port),
                 config("routing:inetsim:ports") or ""
             )
 
@@ -449,6 +450,8 @@ class AnalysisManager(threading.Thread):
                 "action": "vm.acquire", "status": "error",
             })
             return False
+
+        self.rs_port = self.machine.resultserver_port or ResultServer().port
 
         # At this point we can tell the ResultServer about it.
         try:
@@ -819,7 +822,9 @@ class AnalysisManager(threading.Thread):
     def force_stop(self):
         # Make the guest manager stop the status checking loop and return
         # to the main analysis manager routine.
-        self.db.guest_set_status(self.task.id, "stopping")
+        if self.db.guest_get_status(self.task.id):
+            self.db.guest_set_status(self.task.id, "stopping")
+
         self.guest_manager.stop()
         log.debug("Force stopping task #%s", self.task.id)
 

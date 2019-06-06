@@ -444,7 +444,7 @@ def cuckoo_machine(vmname, action, ip, platform, options, tags,
             resultserver_port = int(resultserver_port)
         else:
             resultserver_ip = cfg["cuckoo"]["resultserver"]["ip"]
-            resultserver_port = cfg["cuckoo"]["resultserver"]["port"]
+            resultserver_port = 0
 
         machines.append(vmname)
         cfg[machinery][vmname] = {

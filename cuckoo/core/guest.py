@@ -532,13 +532,18 @@ class GuestManager(object):
             self.old.wait_for_completion()
             return
 
+        count = 0
         end = time.time() + self.timeout
 
         while db.guest_get_status(self.task_id) == "running" and self.do_run:
-            log.debug(
-                "%s: analysis #%s still processing", self.vmid, self.task_id
-            )
+            if count >= 5:
+                log.debug(
+                    "%s: analysis #%s still processing", self.vmid,
+                    self.task_id
+                )
+                count = 0
 
+            count += 1
             time.sleep(1)
 
             # If the analysis hits the critical timeout, just return straight
@@ -553,7 +558,7 @@ class GuestManager(object):
                 # this might fail due to timeouts or just temporary network
                 # issues thus we don't want to abort the analysis just yet and
                 # wait for things to recover
-                log.info(
+                log.warning(
                     "Virtual Machine /status failed. This can indicate the "
                     "guest losing network connectivity"
                 )
