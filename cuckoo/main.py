@@ -139,13 +139,16 @@ def cuckoo_init(level, ctx, cfg=None):
 
     # Determine if this is a proper CWD.
     if not os.path.exists(cwd(".cwd")):
-        sys.exit(
-            "No proper Cuckoo Working Directory was identified, did you pass "
-            "along the correct directory? For new installations please use a "
-            "non-existant directory to build up the CWD! You can craft a CWD "
-            "manually, but keep in mind that the CWD layout may change along "
-            "with Cuckoo releases (and don't forget to fill out '$CWD/.cwd')!"
-        )
+        sys.stderr.write(red(
+            "\nNo proper Cuckoo Working Directory was identified, did you "
+            "pass along the correct directory?\n"
+            "The '.cwd' file is missing in the specified directory. "
+            "For new installations please use a non-existant directory to "
+            "build up the CWD! You can craft a CWD manually, but keep in mind "
+            "that the CWD layout may change along with Cuckoo releases "
+            "(and don't forget to fill out '$CWD/.cwd')!\n"
+        ))
+        sys.exit(1)
 
     init_console_logging(level)
 
