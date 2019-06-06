@@ -93,18 +93,28 @@ class SubmitManager(object):
 
         if not int(options.get("human", "1")):
             ret["simulated-human-interaction"] = False
+            options.pop("human")
 
         if options.get("free") == "yes":
             ret["enable-injection"] = False
+            options.pop("free")
 
         if options.get("procmemdump") == "yes":
             ret["process-memory-dump"] = True
+            options.pop("procmemdump")
 
         if options.get("remotecontrol") == "yes":
             ret["remote-control"] = True
+            options.pop("remotecontrol")
 
         if options.get("route"):
             ret["network-routing"] = options["route"]
+            options.pop("route")
+
+        # Propagate any additional manually set key/value pairs.
+        for key, value in options.items():
+            if key not in self.known_web_options:
+                ret[key] = value
 
         return ret
 

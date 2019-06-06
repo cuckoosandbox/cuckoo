@@ -418,6 +418,14 @@ def test_option_translations_from():
         "remotecontrol": "yes",
     }
 
+    assert sm.translate_options_from({}, {
+        "simulated-human-interaction": False,
+        "function": "DoStuff",
+        "json.calls": "0"
+    }) == {
+        "human": 0, "function": "DoStuff", "json.calls": "0"
+    }
+
 def test_option_translations_to():
     sm = SubmitManager()
 
@@ -439,4 +447,12 @@ def test_option_translations_to():
         "remotecontrol": "yes",
     }) == {
         "remote-control": True,
+    }
+
+    assert sm.translate_options_to({
+        "human": "0", "function": "DoStuff", "json.calls": "0"
+    }) == {
+        "simulated-human-interaction": False,
+        "function": "DoStuff",
+        "json.calls": "0"
     }
