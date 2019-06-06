@@ -47,9 +47,9 @@ before_test:
   - "psql cuckootestimport <tests/files/sql/11pg.sql >NUL"
 
 test_script:
-  - "cuckoo.exe -d"
+  - "cuckoo.exe -d --ignore-vuln"
   - "cuckoo.exe community"
-  - "cuckoo.exe -d || dir >NUL"
+  - "cuckoo.exe -d --ignore-vuln || dir >NUL"
   - "pytest.exe --cov=cuckoo"
 
 after_test:

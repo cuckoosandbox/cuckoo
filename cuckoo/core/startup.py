@@ -96,10 +96,12 @@ def check_configs():
             )
     return True
 
-def check_version():
+def check_version(ignore_vuln=False):
     """Check version of Cuckoo."""
     if not config("cuckoo:cuckoo:version_check"):
         return
+
+    ignore_vuln = ignore_vuln or config("cuckoo:cuckoo:ignore_vulnerabilities")
 
     import pkg_resources
 
@@ -196,7 +198,7 @@ def check_version():
     for warning in warnings:
         print("--> %s\n" % color(warning, 4))
 
-    if warnings and not config("cuckoo:cuckoo:ignore_vulnerabilities"):
+    if warnings and not ignore_vuln:
         print(
             "This check can be disabled by enabling "
             "'ignore_vulnerabilities' in cuckoo.conf under the "

@@ -167,7 +167,7 @@ def cuckoo_init(level, ctx, cfg=None):
     pidfile.create()
 
     check_configs()
-    check_version()
+    check_version(ctx.ignore_vuln)
 
     ctx.log and init_logging(level)
 
@@ -252,10 +252,11 @@ def cuckoo_main(max_analysis_count=0):
 @click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
 @click.option("--nolog", is_flag=True, help="Don't log to file.")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
+@click.option("--ignore-vuln", is_flag=True, help="Ignore vulnerability warnings and start")
 @click.option("--user", help="Drop privileges to this user")
 @click.option("--cwd", help="Cuckoo Working Directory")
 @click.pass_context
-def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
+def main(ctx, debug, quiet, nolog, maxcount, ignore_vuln, user, cwd):
     """Invoke the Cuckoo daemon or one of its subcommands.
 
     To be able to use different Cuckoo configurations on the same machine with
@@ -277,6 +278,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
     ctx.user = user
 
     ctx.log = not nolog
+    ctx.ignore_vuln = ignore_vuln
 
     if quiet:
         level = logging.WARN
