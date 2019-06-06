@@ -94,7 +94,8 @@ class TestInit(object):
         assert os.path.exists(os.path.join(cwd(), "stuff", "mitm.py"))
         p.assert_not_called()
 
-    def test_cuckoo_init_no_resultserver(self):
+    @mock.patch("cuckoo.main.check_version")
+    def test_cuckoo_init_no_resultserver(self, cv):
         """Test that 'cuckoo init' doesn't launch the ResultServer."""
         with pytest.raises(SystemExit):
             main.main(

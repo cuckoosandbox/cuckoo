@@ -45,10 +45,12 @@ class TestAppsWithCWD(object):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
 
+    @mock.patch("cuckoo.machinery.virtualbox.VirtualBox.version")
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.cuckoo_main")
-    def test_main(self, p, q):
+    def test_main(self, p, q, vb):
         p.side_effect = SystemExit(0)
+        vb.return_value = "9999"
 
         # Ensure that the "latest" binary value makes sense so that the
         # "run community command" exception is not thrown.
@@ -56,9 +58,11 @@ class TestAppsWithCWD(object):
         main.main(("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False)
         q.assert_called_once()
 
+    @mock.patch("cuckoo.machinery.virtualbox.VirtualBox.version")
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.log")
-    def test_main_exception(self, p, q):
+    def test_main_exception(self, p, q, vb):
+        vb.return_value = "9999"
         q.side_effect = Exception("this is a test")
         with pytest.raises(SystemExit):
             main.main(
@@ -758,8 +762,9 @@ class TestCommunitySuggestion(object):
             log = False
         return context
 
+    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_default_cwd(self, p):
+    def test_default_cwd(self, p, cv):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
         with chdir(cwd()):
@@ -767,32 +772,36 @@ class TestCommunitySuggestion(object):
             cuckoo_init(logging.INFO, self.ctx)
             p.assert_called_once_with("cuckoo community")
 
+    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_hardcoded_cwd(self, p):
+    def test_hardcoded_cwd(self, p, cv):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
         decide_cwd(cwd())
         cuckoo_init(logging.INFO, self.ctx)
         p.assert_called_once_with("cuckoo --cwd %s community" % cwd())
 
+    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_hardcoded_cwd_with_space(self, p):
+    def test_hardcoded_cwd_with_space(self, p, cv):
         set_cwd(tempfile.mkdtemp("foo bar"))
         cuckoo_create()
         decide_cwd(cwd())
         cuckoo_init(logging.INFO, self.ctx)
         p.assert_called_once_with('cuckoo --cwd "%s" community' % cwd())
 
+    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_hardcoded_cwd_with_quote(self, p):
+    def test_hardcoded_cwd_with_quote(self, p, cv):
         set_cwd(tempfile.mkdtemp("foo ' bar"))
         cuckoo_create()
         decide_cwd(cwd())
         cuckoo_init(logging.INFO, self.ctx)
         p.assert_called_once_with('cuckoo --cwd "%s" community' % cwd())
 
+    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_has_signatures(self, p):
+    def test_has_signatures(self, p, cv):
         set_cwd(tempfile.mkdtemp())
         sys.modules.pop("signatures", None)
         sys.modules.pop("signatures.android", None)

@@ -1274,6 +1274,11 @@ class TestApiEndpoints(object):
                     "enabled": True,
                 },
             },
+            "cuckoo": {
+                "cuckoo": {
+                    "ignore_vulnerabilities": True,
+                },
+            }
         })
         db.connect()
         r = client.get("/cuckoo/api/status/")
@@ -1282,7 +1287,14 @@ class TestApiEndpoints(object):
 
     def test_api_status200(self, client):
         set_cwd(tempfile.mkdtemp())
-        cuckoo_create()
+
+        cuckoo_create(cfg={
+            "cuckoo": {
+                "cuckoo": {
+                    "ignore_vulnerabilities": True,
+                },
+            },
+        })
         Database().connect()
         r = client.get("/cuckoo/api/status")
         assert r.status_code == 200
