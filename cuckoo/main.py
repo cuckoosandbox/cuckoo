@@ -8,6 +8,7 @@ import logging
 import os
 import shutil
 import subprocess
+import signal
 import sys
 
 import cuckoo
@@ -215,13 +216,8 @@ def cuckoo_main(max_analysis_count=0):
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
     rs, sched = None, None
-    try:
-        rs = ResultServer()
-        sched = Scheduler(max_analysis_count)
-        sched.start()
-    except KeyboardInterrupt:
-        log.info("CTRL+C detected! Stopping.. This can take a few seconds")
-    finally:
+
+    def stop():
         if sched:
             sched.running = False
         if rs:
@@ -230,6 +226,23 @@ def cuckoo_main(max_analysis_count=0):
         Pidfile("cuckoo").remove()
         if sched:
             sched.stop()
+
+    def handle_sigterm(sig, f):
+        stop()
+
+    # Handle a SIGTERM, to reduce the chance of Cuckoo exiting without
+    # cleaning
+    signal.signal(signal.SIGTERM, handle_sigterm)
+
+    try:
+        rs = ResultServer()
+        sched = Scheduler(max_analysis_count)
+        sched.start()
+    except KeyboardInterrupt:
+        log.info("CTRL+C detected! Stopping.. This can take a few seconds")
+    finally:
+        if Pidfile("cuckoo").exists():
+            stop()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")

@@ -591,8 +591,8 @@ class AnalysisManager(threading.Thread):
         finally:
             # Stop Auxiliary modules.
             if not self.stopped_aux:
-                self.aux.stop()
                 self.stopped_aux = True
+                self.aux.stop()
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
@@ -813,6 +813,7 @@ class AnalysisManager(threading.Thread):
             self.unroute_network()
 
         if not self.stopped_aux:
+            self.stopped_aux = True
             self.aux.stop()
 
     def force_stop(self):

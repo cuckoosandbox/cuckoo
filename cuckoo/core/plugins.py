@@ -158,6 +158,7 @@ class RunAuxiliary(object):
         self.enabled = enabled
 
     def stop(self):
+        stopped = []
         for module in self.enabled:
             try:
                 module.stop()
@@ -172,6 +173,10 @@ class RunAuxiliary(object):
             else:
                 log.debug("Stopped auxiliary module: %s",
                           module.__class__.__name__)
+            stopped.append(module)
+
+        for s in stopped:
+            self.enabled.remove(s)
 
 class RunProcessing(object):
     """Analysis Results Processing Engine.
