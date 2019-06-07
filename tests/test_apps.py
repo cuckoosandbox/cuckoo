@@ -760,11 +760,11 @@ class TestCommunitySuggestion(object):
     def ctx(self):
         class context(object):
             log = False
+            ignore_vuln = True
         return context
 
-    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_default_cwd(self, p, cv):
+    def test_default_cwd(self, p):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
         with chdir(cwd()):
@@ -772,36 +772,32 @@ class TestCommunitySuggestion(object):
             cuckoo_init(logging.INFO, self.ctx)
             p.assert_called_once_with("cuckoo community")
 
-    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_hardcoded_cwd(self, p, cv):
+    def test_hardcoded_cwd(self, p):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
         decide_cwd(cwd())
         cuckoo_init(logging.INFO, self.ctx)
         p.assert_called_once_with("cuckoo --cwd %s community" % cwd())
 
-    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_hardcoded_cwd_with_space(self, p, cv):
+    def test_hardcoded_cwd_with_space(self, p):
         set_cwd(tempfile.mkdtemp("foo bar"))
         cuckoo_create()
         decide_cwd(cwd())
         cuckoo_init(logging.INFO, self.ctx)
         p.assert_called_once_with('cuckoo --cwd "%s" community' % cwd())
 
-    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_hardcoded_cwd_with_quote(self, p, cv):
+    def test_hardcoded_cwd_with_quote(self, p):
         set_cwd(tempfile.mkdtemp("foo ' bar"))
         cuckoo_create()
         decide_cwd(cwd())
         cuckoo_init(logging.INFO, self.ctx)
         p.assert_called_once_with('cuckoo --cwd "%s" community' % cwd())
 
-    @mock.patch("cuckoo.main.check_version")
     @mock.patch("cuckoo.main.green")
-    def test_has_signatures(self, p, cv):
+    def test_has_signatures(self, p):
         set_cwd(tempfile.mkdtemp())
         sys.modules.pop("signatures", None)
         sys.modules.pop("signatures.android", None)
