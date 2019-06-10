@@ -76,13 +76,17 @@ def test_vpn_disable():
 def test_forward_drop():
     with mock.patch("cuckoo.apps.rooter.run") as p:
         r.forward_drop()
-    p.assert_called_once_with(None, "-P", "FORWARD", "DROP")
+    p.assert_called_once_with(
+        None, "-P", "FORWARD", "DROP", "-m", "comment", "--comment",
+        "cuckoo-rooter"
+    )
 
 def test_enable_nat():
     with mock.patch("cuckoo.apps.rooter.run") as p:
         r.enable_nat("foo")
     p.assert_called_once_with(
-        None, "-t", "nat", "-A", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
+        None, "-t", "nat", "-A", "POSTROUTING", "-o", "foo", "-j",
+        "MASQUERADE", "-m", "comment", "--comment", "cuckoo-rooter"
     )
 
 @mock.patch("cuckoo.apps.rooter.run")
@@ -94,7 +98,8 @@ def test_disable_nat(p):
     assert p.call_count == 2
     assert p.call_list[0] == p.call_list[1]
     p.assert_any_call(
-        None, "-t", "nat", "-D", "POSTROUTING", "-o", "foo", "-j", "MASQUERADE"
+        None, "-t", "nat", "-D", "POSTROUTING", "-o", "foo", "-j",
+        "MASQUERADE",  "-m", "comment", "--comment", "cuckoo-rooter"
     )
 
 # TODO init_rttable

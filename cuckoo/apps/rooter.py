@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018 Cuckoo Foundation.
+# Copyright (C) 2015-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,6 +7,7 @@ import json
 import logging
 import os.path
 import re
+import signal
 import socket
 import stat
 import subprocess
@@ -18,6 +19,8 @@ from cuckoo.misc import version as __version__
 class s(object):
     service = None
     iptables = None
+    iptables_save = None
+    iptables_restore = None
     ip = None
 
 log = logging.getLogger(__name__)
@@ -28,6 +31,35 @@ def run(*args):
     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate()
     return stdout, stderr
+
+def run_iptables(*args):
+    iptables_args = [s.iptables]
+    iptables_args.extend(list(args))
+    iptables_args.extend(["-m", "comment", "--comment", "cuckoo-rooter"])
+    return run(*iptables_args)
+
+def cleanup_rooter():
+    """Filter out all Cuckoo rooter entries from iptables-save and
+    restore the resulting ruleset."""
+    try:
+        stdout, stderr = run(s.iptables_save)
+    except OSError as e:
+        log.error(
+            "Failed to clean Cuckoo rooter rules. Is iptables-save "
+            "available? %s", e
+        )
+        return
+
+    if not stdout:
+        return
+
+    cleaned = []
+    for l in stdout.split("\n"):
+        if l and "cuckoo-rooter" not in l:
+            cleaned.append(l)
+
+    p = subprocess.Popen([s.iptables_restore], stdin=subprocess.PIPE)
+    p.communicate(input="\n".join(cleaned))
 
 def version():
     return {
@@ -78,20 +110,20 @@ def vpn_disable(name):
 
 def forward_drop():
     """Disable any and all forwarding unless explicitly said so."""
-    run(s.iptables, "-P", "FORWARD", "DROP")
+    run_iptables("-P", "FORWARD", "DROP")
 
 def state_enable():
     """Enable stateful connection tracking."""
-    run(
-        s.iptables, "-A", "INPUT", "-m", "state",
-        "--state", "ESTABLISHED,RELATED", "-j", "ACCEPT"
+    run_iptables(
+        "-A", "INPUT", "-m", "state", "--state", "ESTABLISHED,RELATED",
+        "-j", "ACCEPT"
     )
 
 def state_disable():
     """Disable stateful connection tracking."""
     while True:
-        _, err = run(
-            s.iptables, "-D", "INPUT", "-m", "state",
+        _, err = run_iptables(
+            "-D", "INPUT", "-m", "state",
             "--state", "ESTABLISHED,RELATED", "-j", "ACCEPT"
         )
         if err:
@@ -99,14 +131,15 @@ def state_disable():
 
 def enable_nat(interface):
     """Enable NAT on this interface."""
-    run(s.iptables, "-t", "nat", "-A", "POSTROUTING",
-        "-o", interface, "-j", "MASQUERADE")
+    run_iptables(
+        "-t", "nat", "-A", "POSTROUTING", "-o", interface, "-j", "MASQUERADE"
+    )
 
 def disable_nat(interface):
     """Disable NAT on this interface."""
     while True:
-        _, err = run(
-            s.iptables, "-t", "nat", "-D", "POSTROUTING",
+        _, err = run_iptables(
+            "-t", "nat", "-D", "POSTROUTING",
             "-o", interface, "-j", "MASQUERADE"
         )
         if err:
@@ -133,14 +166,14 @@ def flush_rttable(rt_table):
 
 def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
     """Route DNS requests from the VM to a custom DNS on a separate network."""
-    run(
-        s.iptables, "-t", "nat", action, "PREROUTING", "-p", "tcp",
+    run_iptables(
+        "-t", "nat", action, "PREROUTING", "-p", "tcp",
         "--dport", "53", "--source", vm_ip, "-j", "DNAT",
         "--to-destination", "%s:%s" % (dns_ip, dns_port)
     )
 
-    run(
-        s.iptables, "-t", "nat", action, "PREROUTING", "-p", "udp",
+    run_iptables(
+        "-t", "nat", action, "PREROUTING", "-p", "udp",
         "--dport", "53", "--source", vm_ip, "-j", "DNAT",
         "--to-destination", "%s:%s" % (dns_ip, dns_port)
     )
@@ -151,29 +184,29 @@ def forward_enable(src, dst, ipaddr):
     # Delete libvirt's default FORWARD REJECT rules. e.g.:
     # -A FORWARD -o virbr0 -j REJECT --reject-with icmp-port-unreachable
     # -A FORWARD -i virbr0 -j REJECT --reject-with icmp-port-unreachable
-    run(s.iptables, "-D", "FORWARD", "-i", src, "-j", "REJECT")
-    run(s.iptables, "-D", "FORWARD", "-o", src, "-j", "REJECT")
+    run_iptables("-D", "FORWARD", "-i", src, "-j", "REJECT")
+    run_iptables("-D", "FORWARD", "-o", src, "-j", "REJECT")
 
-    run(
-        s.iptables, "-A", "FORWARD", "-i", src, "-o", dst,
+    run_iptables(
+        "-A", "FORWARD", "-i", src, "-o", dst,
         "--source", ipaddr, "-j", "ACCEPT"
     )
 
-    run(
-        s.iptables, "-A", "FORWARD", "-i", dst, "-o", src,
+    run_iptables(
+        "-A", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT"
     )
 
 def forward_disable(src, dst, ipaddr):
     """Disable forwarding of a specific IP address from one interface into
     another."""
-    run(
-        s.iptables, "-D", "FORWARD", "-i", src, "-o", dst,
+    run_iptables(
+        "-D", "FORWARD", "-i", src, "-o", dst,
         "--source", ipaddr, "-j", "ACCEPT"
     )
 
-    run(
-        s.iptables, "-D", "FORWARD", "-i", dst, "-o", src,
+    run_iptables(
+        "-D", "FORWARD", "-i", dst, "-o", src,
         "--destination", ipaddr, "-j", "ACCEPT"
     )
 
@@ -202,8 +235,8 @@ def inetsim_redirect_port(action, srcip, dstip, ports):
         if not srcport.isdigit() or not dstport.isdigit():
             log.debug("Invalid inetsim ports entry: %s", entry)
             continue
-        run(
-            s.iptables, "-t", "nat", action, "PREROUTING", "--source", srcip,
+        run_iptables(
+            "-t", "nat", action, "PREROUTING", "--source", srcip,
             "-p", "tcp", "--syn", "--dport", srcport,
             "-j", "DNAT", "--to-destination", "%s:%s" % (dstip, dstport)
         )
@@ -213,86 +246,88 @@ def inetsim_enable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
     """Enable hijacking of all traffic and send it to InetSim."""
     inetsim_redirect_port("-A", ipaddr, inetsim_ip, ports)
 
-    run(
-        s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+    run_iptables(
+        "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port,
         "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(
-        s.iptables, "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
+    run_iptables(
+        "-t", "nat", "-A", "PREROUTING", "--source", ipaddr,
         "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(
-        s.iptables, "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
+    run_iptables(
+        "-A", "OUTPUT", "-m", "conntrack", "--ctstate",
         "INVALID", "-j", "DROP"
     )
 
-    run(
-        s.iptables, "-A", "OUTPUT", "-m", "state", "--state",
+    run_iptables(
+        "-A", "OUTPUT", "-m", "state", "--state",
         "INVALID", "-j", "DROP"
     )
 
     dns_forward("-A", ipaddr, inetsim_ip)
     forward_enable(machinery_iface, machinery_iface, ipaddr)
 
-    run(s.iptables, "-t", "nat", "-A", "POSTROUTING", "--source", ipaddr,
+    run_iptables(
+        "-t", "nat", "-A", "POSTROUTING", "--source", ipaddr,
         "-o", machinery_iface, "--destination", inetsim_ip, "-j", "MASQUERADE")
 
-    run(s.iptables, "-A", "OUTPUT", "-s", ipaddr, "-j", "DROP")
+    run_iptables("-A", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
 def inetsim_disable(ipaddr, inetsim_ip, machinery_iface, resultserver_port,
                     ports):
     """Enable hijacking of all traffic and send it to InetSim."""
     inetsim_redirect_port("-D", ipaddr, inetsim_ip, ports)
 
-    run(
-        s.iptables, "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
+    run_iptables(
+        "-D", "PREROUTING", "-t", "nat", "--source", ipaddr,
         "-p", "tcp", "--syn", "!", "--dport", resultserver_port, "-j", "DNAT",
         "--to-destination", inetsim_ip
     )
-    run(
-        s.iptables, "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
+    run_iptables(
+        "-t", "nat", "-D", "PREROUTING", "--source", ipaddr,
         "-p", "udp", "-j", "DNAT", "--to-destination", inetsim_ip
     )
 
-    run(
-        s.iptables, "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
+    run_iptables(
+        "-D", "OUTPUT", "-m", "conntrack", "--ctstate",
         "INVALID", "-j", "DROP"
     )
 
-    run(
-        s.iptables, "-D", "OUTPUT", "-m", "state", "--state",
+    run_iptables(
+        "-D", "OUTPUT", "-m", "state", "--state",
         "INVALID", "-j", "DROP"
     )
 
     dns_forward("-D", ipaddr, inetsim_ip)
     forward_disable(machinery_iface, machinery_iface, ipaddr)
 
-    run(s.iptables, "-t", "nat", "-D", "POSTROUTING", "--source", ipaddr,
+    run_iptables(
+        "-t", "nat", "-D", "POSTROUTING", "--source", ipaddr,
         "-o", machinery_iface, "--destination", inetsim_ip, "-j", "MASQUERADE")
 
-    run(s.iptables, "-D", "OUTPUT", "-s", ipaddr, "-j", "DROP")
+    run_iptables("-D", "OUTPUT", "-s", ipaddr, "-j", "DROP")
 
 def tor_toggle(action, vm_ip, resultserver_ip, dns_port, proxy_port):
     """Toggle Tor iptables routing rules."""
     dns_forward(action, vm_ip, resultserver_ip, dns_port)
 
-    run(
-        s.iptables, "-t", "nat", action, "PREROUTING", "-p", "tcp",
+    run_iptables(
+        "-t", "nat", action, "PREROUTING", "-p", "tcp",
         "--source", vm_ip, "!", "--destination", resultserver_ip,
         "-j", "DNAT", "--to-destination",
         "%s:%s" % (resultserver_ip, proxy_port)
     )
 
-    run(
-        s.iptables, "-t", "nat", action, "PREROUTING", "-p", "udp",
+    run_iptables(
+        "-t", "nat", action, "PREROUTING", "-p", "udp",
         "--source", vm_ip, "!", "--destination", resultserver_ip,
         "-j", "DNAT", "--to-destination",
         "%s:%s" % (resultserver_ip, proxy_port)
     )
-    run(s.iptables, action, "OUTPUT", "-s", vm_ip, "-j", "DROP")
+    run_iptables(action, "OUTPUT", "-s", vm_ip, "-j", "DROP")
 
 def tor_enable(vm_ip, resultserver_ip, dns_port, proxy_port):
     """Enable hijacking of all traffic and send it to TOR."""
@@ -304,25 +339,20 @@ def tor_disable(vm_ip, resultserver_ip, dns_port, proxy_port):
 
 def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
     """Toggle iptables to allow internal Cuckoo traffic."""
-    run(
-        s.iptables, action, "INPUT", "--source", vm_ip, "-p", "tcp",
+    run_iptables(
+        action, "INPUT", "--source", vm_ip, "-p", "tcp",
         "--destination", resultserver_ip, "--dport", "%s" % resultserver_port,
         "-j", "ACCEPT"
     )
 
-    run(
-        s.iptables, action, "OUTPUT", "--source", resultserver_ip,
+    run_iptables(
+        action, "OUTPUT", "--source", resultserver_ip,
         "-p", "tcp", "--destination", vm_ip, "--dport", "%s" % agent_port,
         "-j", "ACCEPT"
     )
 
-    run(
-        s.iptables, action, "INPUT", "--source", vm_ip, "-j", "DROP"
-    )
-
-    run(
-        s.iptables, action, "OUTPUT", "--source", vm_ip, "-j", "DROP"
-    )
+    run_iptables(action, "INPUT", "--source", vm_ip, "-j", "DROP")
+    run_iptables(action, "OUTPUT", "--source", vm_ip, "-j", "DROP")
 
 def drop_enable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     """Enable complete dropping of all non-Cuckoo traffic by default."""
@@ -415,14 +445,33 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
     # Initialize global variables.
     s.service = service
     s.iptables = iptables
+    s.iptables_save = "/sbin/iptables-save"
+    s.iptables_restore = "/sbin/iptables-restore"
     s.ip = ip
 
-    while True:
+    # Simple object to allow a signal handler to stop the rooter loop
+    class Run(object):
+        def __init__(self):
+            self.run = True
+    do = Run()
+
+    def handle_sigterm(sig, f):
+        do.run = False
+        server.shutdown(socket.SHUT_RDWR)
+        server.close()
+        cleanup_rooter()
+
+    signal.signal(signal.SIGTERM, handle_sigterm)
+
+    while do.run:
         try:
             command, addr = server.recvfrom(4096)
         except socket.error as e:
             if e.errno == errno.EINTR:
                 continue
+            elif e.errno == errno.EBADF and not do.run:
+                continue
+
             raise e
 
         try:
