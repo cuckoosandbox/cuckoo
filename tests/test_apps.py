@@ -77,12 +77,14 @@ class TestAppsWithCWD(object):
             p.assert_called_once_with("localhost", 8090, False)
 
     if is_linux():
+        @mock.patch("cuckoo.main.cleanup_rooter")
         @mock.patch("cuckoo.main.cuckoo_rooter")
-        def test_rooter_abort(self, p, capsys):
+        def test_rooter_abort(self, p, mr, capsys):
             p.side_effect = KeyboardInterrupt
             main.main(("--cwd", cwd(), "rooter"), standalone_mode=False)
             out, _ = capsys.readouterr()
             assert "Aborting the Cuckoo Rooter" in out
+            mr.assert_called_once()
 
     def test_community(self):
         with mock.patch("cuckoo.main.fetch_community") as p:
