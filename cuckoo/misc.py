@@ -33,7 +33,7 @@ _raw = None
 
 # Normalized Cuckoo version (i.e., "2.0.5.3" in setup is "2.0.5" here). This
 # because we use StrictVersion() later on which doesn't accept "2.0.5.3".
-version = "2.0.6"
+version = "2.0.7"
 
 def set_cwd(path, raw=None):
     global _root, _raw
