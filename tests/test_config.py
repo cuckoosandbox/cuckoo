@@ -1160,7 +1160,7 @@ enabled = yes
     assert cfg["virtualbox"]["controlports"] == "5000-5050"
     assert cfg["routing"]["inetsim"]["ports"] is None
 
-def test_migration_206_210():
+def test_migration_206_207():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
 
@@ -1179,7 +1179,7 @@ machines = cuckoo1
 interface = virbr0
     """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
-    cfg = migrate(cfg, "2.0.6", "2.1.0")
+    cfg = migrate(cfg, "2.0.6", "2.0.7")
 
     assert cfg["auxiliary"]["replay"]["certificate"] == "bin/cert.p12"
     assert cfg["cuckoo"]["cuckoo"]["api_token"] is None
