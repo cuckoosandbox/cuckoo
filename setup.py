@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2016-2018 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - https://cuckoosandbox.org/.
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -149,7 +149,7 @@ def do_setup(**kwargs):
 
 do_setup(
     name="Cuckoo",
-    version="2.0.7a1",
+    version="2.0.7",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[
