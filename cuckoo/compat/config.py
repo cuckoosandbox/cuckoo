@@ -718,6 +718,13 @@ def _206_207(c):
     c["cuckoo"]["cuckoo"]["web_secret"] = None
     c["kvm"]["kvm"]["dsn"] = "qemu:///system"
     c["processing"]["irma"]["probes"] = None
+    c["reporting"]["misp"]["distribution"] = 0
+    c["reporting"]["misp"]["analysis"] = 0
+    c["reporting"]["misp"]["threat_level"] = 4
+    c["reporting"]["misp"]["min_malscore"] = 0
+    c["reporting"]["misp"]["tag"] = "Cuckoo"
+    c["reporting"]["misp"]["upload_sample"] = False
+
     return c
 
 migrations = {
