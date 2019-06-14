@@ -1178,6 +1178,9 @@ def test_migration_206_207():
 machines = cuckoo1
 interface = virbr0
     """)
+    Files.create(cwd("conf"), "reporting.conf", """
+[misp]
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.6", "2.0.7")
 
@@ -1186,6 +1189,12 @@ interface = virbr0
     assert cfg["cuckoo"]["cuckoo"]["web_secret"] is None
     assert cfg["processing"]["irma"]["probes"] is None
     assert cfg["kvm"]["kvm"]["dsn"] == "qemu:///system"
+    assert cfg["reporting"]["misp"]["distribution"] == 0
+    assert cfg["reporting"]["misp"]["analysis"] == 0
+    assert cfg["reporting"]["misp"]["threat_level"] == 4
+    assert cfg["reporting"]["misp"]["min_malscore"] == 0
+    assert cfg["reporting"]["misp"]["tag"] == "Cuckoo"
+    assert cfg["reporting"]["misp"]["upload_sample"] is False
 
 
 class FullMigration(object):
