@@ -209,7 +209,7 @@ def cuckoo_init(level, ctx, cfg=None):
             "pretty important!"
         )
         log.warning(
-            "You'll be able to fetch all the latest Cuckoo Signaturs, Yara "
+            "You'll be able to fetch all the latest Cuckoo Signatures, Yara "
             "rules, and more goodies by running the following command:"
         )
         log.info("$ %s", green(format_command("community")))
