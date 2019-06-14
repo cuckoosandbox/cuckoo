@@ -1,9 +1,3 @@
--- MySQL dump 10.13  Distrib 5.5.53, for debian-linux-gnu (x86_64)
---
--- Host: localhost    Database: cuckoo
--- ------------------------------------------------------
--- Server version	5.5.53-0ubuntu0.14.04.1
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -191,3 +185,9 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2016-11-17  2:47:52
+
+-- MySQL dump 10.13  Distrib 5.5.53, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: cuckoo
+-- ------------------------------------------------------
+-- Server version	5.5.53-0ubuntu0.14.04.1

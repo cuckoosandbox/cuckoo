@@ -1,9 +1,3 @@
--- MySQL dump 10.14  Distrib 5.5.47-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: localhost    Database: cuckoo11
--- ------------------------------------------------------
--- Server version	5.5.47-MariaDB-1ubuntu0.14.04.1
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -290,3 +284,8 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2017-02-07 12:41:40
+-- MySQL dump 10.14  Distrib 5.5.47-MariaDB, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: cuckoo11
+-- ------------------------------------------------------
+-- Server version	5.5.47-MariaDB-1ubuntu0.14.04.1
