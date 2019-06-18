@@ -111,7 +111,7 @@ def test_platforms():
     assert sys.platform in ("win32", "linux2", "darwin")
 
 def test_popen():
-    """Ensures that Popen is working properly."""
+    """Ensure that Popen is working properly."""
     with mock.patch("subprocess.Popen") as p:
         p.return_value = None
         Popen(["foo", "bar"])

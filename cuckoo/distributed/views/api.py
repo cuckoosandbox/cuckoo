@@ -220,6 +220,10 @@ def task_list():
             enforce_timeout=task.enforce_timeout,
             task_id=task.task_id,
             node_id=task.node_id,
+            submitted=task.submitted,
+            delegated=task.delegated,
+            started=task.started,
+            completed=task.completed,
         )
     return jsonify(success=True, tasks=tasks)
 

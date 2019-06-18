@@ -180,6 +180,8 @@
       flex-basis: 50%;
       padding: 10px;
       margin-left: -5px;
+      &.fill { flex-basis: 100%; }
+      & > fieldset:last-child { margin-bottom: 0; }
     }
 
     textarea,
@@ -212,6 +214,8 @@
         font-style: italic;
         font-weight: 400;
         transition: all 150ms ease-in-out;
+
+        .input-message { float: right; }
       }
 
       input {
@@ -260,7 +264,7 @@
 
     }
 
-    button[type="submit"] {
+    button.modal-submit {
       @extend .button--lg;
       background-color: #A1EEA3;
       border: 1px solid shade(#A1EEA3, 10%);

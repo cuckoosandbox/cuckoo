@@ -26,7 +26,7 @@ from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
-from cuckoo.common.whitelist import is_whitelisted_domain
+from cuckoo.common.whitelist import is_whitelisted_domain, is_whitelisted_ip
 from cuckoo.misc import mkdir
 
 # Be less verbose about httpreplay logging messages.
@@ -42,7 +42,7 @@ class Pcap(object):
     ssl_ports = 443,
 
     def __init__(self, filepath, options):
-        """Creates a new instance.
+        """Create a new instance.
         @param filepath: path to PCAP file
         @param options: config options
         """
@@ -93,7 +93,7 @@ class Pcap(object):
         self.dns_servers = []
 
     def _is_whitelisted(self, conn, hostname):
-        """Checks if whitelisting conditions are met"""
+        """Check if whitelisting conditions are met"""
         # Is whitelistng enabled?
         if not self.whitelist_enabled:
             return False
@@ -217,7 +217,7 @@ class Pcap(object):
             pass
 
     def _tcp_dissect(self, conn, data):
-        """Runs all TCP dissectors.
+        """Run all TCP dissectors.
         @param conn: connection.
         @param data: payload data.
         """
@@ -237,7 +237,7 @@ class Pcap(object):
             self._https_identify(conn, data)
 
     def _udp_dissect(self, conn, data):
-        """Runs all UDP dissectors.
+        """Run all UDP dissectors.
         @param conn: connection.
         @param data: payload data.
         """
@@ -247,7 +247,7 @@ class Pcap(object):
                 self._add_dns(conn, data)
 
     def _check_icmp(self, icmp_data):
-        """Checks for ICMP traffic.
+        """Check for ICMP traffic.
         @param icmp_data: ICMP data flow.
         """
         try:
@@ -257,7 +257,7 @@ class Pcap(object):
             return False
 
     def _icmp_dissect(self, conn, data):
-        """Runs all ICMP dissectors.
+        """Run all ICMP dissectors.
         @param conn: connection.
         @param data: payload data.
         """
@@ -282,7 +282,7 @@ class Pcap(object):
             self.icmp_requests.append(entry)
 
     def _check_dns(self, udpdata):
-        """Checks for DNS traffic.
+        """Check for DNS traffic.
         @param udpdata: UDP data flow.
         """
         try:
@@ -293,7 +293,7 @@ class Pcap(object):
         return True
 
     def _add_dns(self, conn, udpdata):
-        """Adds a DNS data flow.
+        """Add a DNS data flow.
         @param udpdata: UDP data flow.
         """
         dns = dpkt.dns.DNS(udpdata)
@@ -443,7 +443,7 @@ class Pcap(object):
                                     "ip": self._dns_gethostbyname(domain)})
 
     def _check_http(self, tcpdata):
-        """Checks for HTTP traffic.
+        """Check for HTTP traffic.
         @param tcpdata: TCP data flow.
         """
         try:
@@ -459,7 +459,7 @@ class Pcap(object):
         return True
 
     def _add_http(self, tcpdata, dport):
-        """Adds an HTTP flow.
+        """Add an HTTP flow.
         @param tcpdata: TCP data flow.
         @param dport: destination port.
         """
@@ -562,7 +562,7 @@ class Pcap(object):
 
     def _check_irc(self, tcpdata):
         """
-        Checks for IRC traffic.
+        Check for IRC traffic.
         @param tcpdata: tcp data flow
         """
         try:
@@ -574,7 +574,7 @@ class Pcap(object):
 
     def _add_irc(self, tcpdata):
         """
-        Adds an IRC communication.
+        Add an IRC communication.
         @param tcpdata: TCP data in flow
         @param dport: destination port
         """
@@ -633,6 +633,9 @@ class Pcap(object):
                                                          ip.dst)
                 else:
                     offset = file.tell()
+                    continue
+
+                if is_whitelisted_ip(connection["dst"]):
                     continue
 
                 self._add_hosts(connection)
@@ -729,7 +732,7 @@ class Pcap(object):
         return self.results
 
 class Pcap2(object):
-    """Interprets the PCAP file through the httpreplay library which parses
+    """Interpret the PCAP file through the httpreplay library which parses
     the various protocols, decrypts and decodes them, and then provides us
     with the high level representation of it."""
 
@@ -764,6 +767,9 @@ class Pcap2(object):
         l = sorted(r.process(), key=lambda x: x[1])
         for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
+
+            if is_whitelisted_ip(dstip):
+                continue
 
             if protocol == "smtp":
                 results["smtp_ex"].append({
@@ -958,7 +964,7 @@ def conn_from_flowtuple(ft):
 # it for the temp files
 # this code is mostly taken from some SO post, can't remember the url though
 def batch_sort(input_iterator, output_path, output_class):
-    """batch sort helper with temporary files, supports sorting large stuff"""
+    """Batch sort helper with temporary files, supports sorting large stuff."""
     chunks = []
     try:
         while True:
@@ -1037,7 +1043,7 @@ class SortCap(object):
         return Keyed((flowtuple, ts, self.ctr), rpkt)
 
 def sort_pcap(inpath, outpath):
-    """Use SortCap class together with batch_sort to sort a pcap"""
+    """Use SortCap class together with batch_sort to sort a pcap."""
     inc = SortCap(inpath)
     batch_sort(
         inc, outpath, lambda path: SortCap(path, linktype=inc.linktype)
@@ -1045,7 +1051,7 @@ def sort_pcap(inpath, outpath):
     return 0
 
 def flowtuple_from_raw(raw, linktype=1):
-    """Parse a packet from a pcap just enough to gain a flow description tuple"""
+    """Parse a packet from a pcap just enough to gain a flow description tuple."""
     ip = iplayer_from_raw(raw, linktype)
 
     if isinstance(ip, dpkt.ip.IP):

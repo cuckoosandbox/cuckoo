@@ -14,7 +14,7 @@ from cuckoo.common.files import Files
 log = logging.getLogger(__name__)
 
 class Irma(Processing):
-    """Gets antivirus signatures from IRMA for various results.
+    """Get antivirus signatures from IRMA for various results.
 
     Currently obtains IRMA results for the target sample.
     """
@@ -60,6 +60,8 @@ class Irma(Processing):
         params = {
             "force": force,
         }
+        if self.options.get("probes"):
+            params["probes"] = self.options.get("probes")
         url = urlparse.urljoin(
             self.url, "/api/v1.1/scans/%s/launch" % init.get("id")
         )
@@ -95,7 +97,7 @@ class Irma(Processing):
         )
 
     def run(self):
-        """Runs IRMA processing
+        """Run IRMA processing
         @return: full IRMA report.
         """
         self.key = "irma"
@@ -121,16 +123,27 @@ class Irma(Processing):
             self._scan_file(self.file_path, self.force)
             results = self._get_results(sha256) or {}
 
-        """ FIXME! could use a proper fix here
-        that probably needs changes on IRMA side aswell
-        --
-        related to  https://github.com/elastic/elasticsearch/issues/15377
-        entropy value is sometimes 0 and sometimes like  0.10191042566270775
-        other issue is that results type changes between string and object :/
-        """
+        # FIXME! could use a proper fix here
+        # that probably needs changes on IRMA side aswell
+        # --
+        # related to  https://github.com/elastic/elasticsearch/issues/15377
+        # entropy value is sometimes 0 and sometimes like  0.10191042566270775
+        # other issue is that results type changes between string and object :/
+        
         for idx, result in enumerate(results["probe_results"]):
             if result["name"] == "PE Static Analyzer":
                 log.debug("Ignoring PE results at index {0}".format(idx))
                 results["probe_results"][idx]["results"] = "... scrapped ..."
+
+            """ When VT results comes back with 'detected by 0/58' then it gets
+            cached as malicious with signature due to the fact that the result
+            exists. This is a workaround to override that tragedy and make it
+            compatible with other results.
+            """
+            if result["name"] == "VirusTotal" \
+                    and results["probe_results"][idx]["results"].startswith("detected by 0/"):
+                log.debug("Fixing empty match from VT")
+                results["probe_results"][idx]["status"] = 0
+                results["probe_results"][idx]["results"] = None
 
         return results

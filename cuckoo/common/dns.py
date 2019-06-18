@@ -36,9 +36,9 @@ def set_timeout_value(value):
 # standard gethostbyname in thread
 # http://code.activestate.com/recipes/473878/
 def with_timeout(func, args=(), kwargs={}):
-    """This function will spawn a thread and run the given function
-    using the args, kwargs and return the given default value if the
-    timeout_duration is exceeded.
+    """Spawn a thread and run the given function using the args,
+    kwargs and return the given default value if the timeout_duration
+    is exceeded.
     """
     class ResultThread(threading.Thread):
         daemon = True

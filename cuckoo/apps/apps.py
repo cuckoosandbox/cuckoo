@@ -99,7 +99,7 @@ def fetch_community(branch="master", force=False, filepath=None):
             open(filepath, "wb").write(t.extractfile(member).read())
 
 def enumerate_files(path, pattern):
-    """Yields all filepaths from a directory."""
+    """Yield all filepaths from a directory."""
     if os.path.isfile(path):
         yield path
     elif os.path.isdir(path):
@@ -306,12 +306,28 @@ def process_task_range(tasks):
         if os.path.isdir(cwd(analysis=task_id)):
             process_task(Dictionary(task))
 
-def process_tasks(instance, maxcount):
+def process_check_stop(count, maxcount, endtime):
+    """Check if we need to stop processing.
+     Options passed by maxcount (-m) or calculated endtime (-t)
+    """
+    if maxcount and count >= maxcount:
+        return False
+
+    if endtime and int(time.time()) > endtime:
+        return False
+
+    return True
+
+def process_tasks(instance, maxcount, timeout):
     count = 0
+    endtime = 0
     db = Database()
 
+    if timeout:
+        endtime = int(time.time() + timeout)
+
     try:
-        while not maxcount or count != maxcount:
+        while process_check_stop(count, maxcount, endtime):
             task_id = db.processing_get_task(instance)
 
             # Wait a small while before trying to fetch a new task.
@@ -330,7 +346,7 @@ def process_tasks(instance, maxcount):
 
 def cuckoo_clean():
     """Clean up cuckoo setup.
-    It deletes logs, all stored data from file system and configured
+    Delete logs, all stored data from file system and configured
     databases (SQL and MongoDB).
     """
     # Init logging (without writing to file).
@@ -428,7 +444,7 @@ def cuckoo_machine(vmname, action, ip, platform, options, tags,
             resultserver_port = int(resultserver_port)
         else:
             resultserver_ip = cfg["cuckoo"]["resultserver"]["ip"]
-            resultserver_port = cfg["cuckoo"]["resultserver"]["port"]
+            resultserver_port = 0
 
         machines.append(vmname)
         cfg[machinery][vmname] = {
@@ -493,6 +509,12 @@ def migrate_cwd():
         shutil.copytree(
             cwd("..", "data", "whitelist", private=True), cwd("whitelist")
         )
+    else:
+        data_wl = cwd("..", "data", "whitelist", private=True)
+        for wl_file in os.listdir(data_wl):
+            cwd_wl = cwd("whitelist", wl_file)
+            if not os.path.isfile(cwd_wl):
+                shutil.copy(os.path.join(data_wl, wl_file), cwd_wl)
 
     # Create the new $CWD/yara/dumpmem/ directory.
     if not os.path.exists(cwd("yara", "dumpmem")):

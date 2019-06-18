@@ -66,7 +66,7 @@ class Disguise(Auxiliary):
     ]
 
     def change_productid(self):
-        """Randomizes Windows ProductId.
+        """Randomize Windows ProductId.
         The Windows ProductId is occasionally used by malware
         to detect public setups of Cuckoo, e.g., Malwr.com.
         """

@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2017 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -74,13 +74,14 @@ class Screenshots(threading.Thread, Auxiliary):
             tmpio.seek(0)
 
             # now upload to host from the StringIO
-            nf = NetlogFile()
-            nf.init("shots/%04d.jpg" % img_counter)
+            try:
+                nf = NetlogFile()
+                nf.init("shots/%04d.jpg" % img_counter)
 
-            for chunk in tmpio:
-                nf.sock.sendall(chunk)
-
-            nf.close()
+                for chunk in tmpio:
+                    nf.sock.sendall(chunk)
+            finally:
+                nf.close()
 
             img_last = img_current
 

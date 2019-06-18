@@ -19,10 +19,10 @@ def default(obj):
     raise TypeError("%r is not JSON serializable" % obj)
 
 class JsonDump(Report):
-    """Saves analysis results in JSON format."""
+    """Save analysis results in JSON format."""
 
     def erase_calls(self, results):
-        """Temporarily removes calls from the report by replacing them with
+        """Temporarily remove calls from the report by replacing them with
         empty lists."""
         if self.calls:
             self.calls = None
@@ -34,7 +34,7 @@ class JsonDump(Report):
             process["calls"] = []
 
     def restore_calls(self, results):
-        """Restores calls that were temporarily removed in the report by
+        """Restore calls that were temporarily removed in the report by
         replacing the calls with the original values."""
         if not self.calls:
             return
@@ -55,7 +55,6 @@ class JsonDump(Report):
             self.calls = self.options.get("calls", True)
 
         self.erase_calls(results)
-
         try:
             filepath = os.path.join(self.reports_path, "report.json")
             with open(filepath, "wb", buffering=1024*1024) as report:

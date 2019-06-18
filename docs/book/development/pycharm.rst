@@ -48,7 +48,7 @@ JavaScript transpiling
 .. CAUTION::
    Transpiling JavaScript through Pycharm file watchers is not recommended. The recommended way is explained in the 'Frontend' section of the documentation.
 
-The Javascript code in Cuckoo web is developed in ECMASript 6. For browser compatibility, this will need to be transpiled back to ECMAScript 5.
+The Javascript code in Cuckoo web is developed in ECMAScript 6. For browser compatibility, this will need to be transpiled back to ECMAScript 5.
 
 Firstly, make Pycharm regonize and understand the ECMAScript 6 syntax. Go to ``File->Settings->Languages & Frameworks->Javascript`` and pick 'ECMAScript 6' from the 'Javascript language version' dropdown. Hit ``Apply``.
 
@@ -94,7 +94,7 @@ Finally; a mock ``manage.py`` file needs to be created in order for Pycharm to s
       execute_from_command_line(sys.argv)
 
 
-Go to File->Settings->Langauges & Frameworks->Django and;
+Go to File->Settings->Languages & Frameworks->Django and;
 
 - **Django Project root** - ``cuckoo/web``
 - **Settings** - ``web/settings.py``

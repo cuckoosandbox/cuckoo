@@ -1,4 +1,4 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -134,7 +134,7 @@ def test_route_inetsim(p):
     assert am.interface is None
     assert am.rt_table is None
     p.assert_called_once_with(
-        "inetsim_enable", "1.2.3.4", "2.3.4.5", "vboxnet0", "2042"
+        "inetsim_enable", "1.2.3.4", "2.3.4.5", "vboxnet0", "2042", ""
     )
     am.db.set_route.assert_called_once_with(1234, "inetsim")
 

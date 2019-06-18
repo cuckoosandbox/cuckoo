@@ -33,7 +33,7 @@ _raw = None
 
 # Normalized Cuckoo version (i.e., "2.0.5.3" in setup is "2.0.5" here). This
 # because we use StrictVersion() later on which doesn't accept "2.0.5.3".
-version = "2.0.6"
+version = "2.0.7"
 
 def set_cwd(path, raw=None):
     global _root, _raw
@@ -41,7 +41,7 @@ def set_cwd(path, raw=None):
     _raw = raw
 
 def cwd(*args, **kwargs):
-    """Returns absolute path to this file in the Cuckoo Working Directory or
+    """Return absolute path to this file in the Cuckoo Working Directory or
     optionally - when private=True has been passed along - to our private
     Cuckoo Working Directory which is not configurable."""
     if kwargs.get("private"):
@@ -62,7 +62,7 @@ def cwd(*args, **kwargs):
         return os.path.join(_root, *args)
 
 def decide_cwd(cwd=None, exists=False):
-    """Decides and sets the CWD, optionally checks if it's a valid CWD."""
+    """Decide and set the CWD, optionally check if it's a valid CWD."""
     if not cwd:
         cwd = os.environ.get("CUCKOO_CWD")
 
@@ -104,7 +104,7 @@ def getuser():
     return ""
 
 def load_signatures():
-    """Loads additional Signatures from the Cuckoo Working Directory.
+    """Load additional Signatures from the Cuckoo Working Directory.
 
     This method is quite hacky in the sense that it magically imports
     Signatures from an arbitrary directory - one that doesn't belong to the
@@ -188,7 +188,7 @@ def is_macosx():
     return sys.platform == "darwin"
 
 def Popen(*args, **kwargs):
-    """Drops the close_fds argument on Windows platforms in certain situations
+    """Drop the close_fds argument on Windows platforms in certain situations
     where it'd otherwise cause an exception from the subprocess module."""
     if is_windows() and "close_fds" in kwargs:
         if "stdin" in kwargs or "stdout" in kwargs or "stderr" in kwargs:
@@ -197,7 +197,7 @@ def Popen(*args, **kwargs):
     return subprocess.Popen(*args, **kwargs)
 
 def drop_privileges(username):
-    """Drops privileges to selected user.
+    """Drop privileges to selected user.
     @param username: drop privileges to this username
     """
     if not HAVE_PWD:
@@ -225,7 +225,7 @@ class Pidfile(object):
         self.pid = None
 
     def create(self):
-        """Creates pidfile for the current process."""
+        """Create pidfile for the current process."""
         with open(self.filepath, "wb") as f:
             f.write(str(os.getpid()))
 
@@ -249,7 +249,7 @@ class Pidfile(object):
         return self.pid
 
     def proc_exists(self, pid):
-        """Returns boolean if the process exists or None when unsupported."""
+        """Return boolean of process existence, or None when unsupported."""
         if not pid:
             return False
 

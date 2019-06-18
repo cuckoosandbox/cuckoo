@@ -43,24 +43,15 @@ class SubmissionTaskTable {
 
 		this.setStatusText('Getting status...');
 
-		$.ajax({
-			url: '/analysis/api/tasks/info/',
-			type: 'POST',
-			dataType: 'json',
-			contentType: "application/json; charset=utf-8",
-			data: JSON.stringify({
-				"task_ids": self.task_ids
-			}),
-			success: function(response) {
-				self._data(response);
-				self.request_pending = false;
-			},
-			error: function(err) {
-				self._clear();
-				self.setStatusText('There was an error!');
-			}
+		CuckooWeb.api_post('/analysis/api/tasks/info/', {
+			"task_ids": self.task_ids
+		}, function(response) {
+			self._data(response);
+			self.request_pending = false;
+		}, function(err) {
+			self._clear();
+			self.setStatusText('There was an error!');
 		});
-
 	}
 
 	// processes the data

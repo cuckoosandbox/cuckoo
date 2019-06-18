@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -25,7 +25,7 @@ from cuckoo.core.guest import GuestManager
 from cuckoo.core.plugins import RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
 from cuckoo.core.log import task_log_start, task_log_stop, logger
-from cuckoo.core.resultserver import ResultServer
+from cuckoo.core.resultserver import ResultServer, RESULT_DIRECTORIES
 from cuckoo.core.rooter import rooter
 from cuckoo.misc import cwd
 
@@ -36,6 +36,7 @@ machine_lock = None
 latest_symlink_lock = threading.Lock()
 
 active_analysis_count = 0
+
 
 class AnalysisManager(threading.Thread):
     """Analysis Manager.
@@ -62,6 +63,9 @@ class AnalysisManager(threading.Thread):
         self.route = None
         self.interface = None
         self.rt_table = None
+        self.unrouted_network = False
+        self.stopped_aux = False
+        self.rs_port = config("cuckoo:resultserver:port")
 
     def init(self):
         """Initialize the analysis."""
@@ -76,8 +80,10 @@ class AnalysisManager(threading.Thread):
 
         # If we're not able to create the analysis storage folder, we have to
         # abort the analysis.
+        # Also create all directories that the ResultServer can use for file
+        # uploads.
         try:
-            Folders.create(self.storage)
+            Folders.create(self.storage, RESULT_DIRECTORIES)
         except CuckooOperationalError:
             log.error("Unable to create analysis folder %s", self.storage)
             return False
@@ -138,7 +144,7 @@ class AnalysisManager(threading.Thread):
         return True
 
     def store_task_info(self):
-        """grab latest task from db (if available) and update self.task"""
+        """Grab latest task from db (if available) and update self.task"""
         dbtask = self.db.view_task(self.task.id)
         self.task = dbtask.to_dict()
 
@@ -205,7 +211,7 @@ class AnalysisManager(threading.Thread):
 
         options["id"] = self.task.id
         options["ip"] = self.machine.resultserver_ip
-        options["port"] = self.machine.resultserver_port
+        options["port"] = self.rs_port
         options["category"] = self.task.category
         options["target"] = self.task.target
         options["package"] = self.task.package
@@ -297,7 +303,7 @@ class AnalysisManager(threading.Thread):
             rooter(
                 "drop_enable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
-                str(config("cuckoo:resultserver:port"))
+                str(self.rs_port)
             )
 
         if self.route == "inetsim":
@@ -306,7 +312,8 @@ class AnalysisManager(threading.Thread):
                 "inetsim_enable", self.machine.ip,
                 config("routing:inetsim:server"),
                 config("%s:%s:interface" % (machinery, machinery)),
-                str(config("cuckoo:resultserver:port"))
+                str(self.rs_port),
+                config("routing:inetsim:ports") or ""
             )
 
         if self.route == "tor":
@@ -344,11 +351,11 @@ class AnalysisManager(threading.Thread):
                 "srcroute_disable", self.rt_table, self.machine.ip
             )
 
-        if self.route != "none":
+        if self.route == "drop" or self.route == "internet":
             rooter(
                 "drop_disable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
-                str(config("cuckoo:resultserver:port"))
+                str(self.rs_port)
             )
 
         if self.route == "inetsim":
@@ -357,7 +364,8 @@ class AnalysisManager(threading.Thread):
                 "inetsim_disable", self.machine.ip,
                 config("routing:inetsim:server"),
                 config("%s:%s:interface" % (machinery, machinery)),
-                str(config("cuckoo:resultserver:port"))
+                str(self.rs_port),
+                config("routing:inetsim:ports") or ""
             )
 
         if self.route == "tor":
@@ -367,6 +375,8 @@ class AnalysisManager(threading.Thread):
                 str(config("routing:tor:dnsport")),
                 str(config("routing:tor:proxyport"))
             )
+
+        self.unrouted_network = True
 
     def wait_finish(self):
         """Some VMs don't have an actual agent. Mainly those that are used as
@@ -441,6 +451,8 @@ class AnalysisManager(threading.Thread):
             })
             return False
 
+        self.rs_port = self.machine.resultserver_port or ResultServer().port
+
         # At this point we can tell the ResultServer about it.
         try:
             ResultServer().add_task(self.task, self.machine)
@@ -470,9 +482,10 @@ class AnalysisManager(threading.Thread):
             try:
                 machinery.enable_remote_control(self.machine.label)
             except NotImplementedError:
-                raise CuckooMachineError(
-                    "Remote control support has not been implemented "
-                    "for this machinery."
+                log.error(
+                    "Remote control support has not been implemented for the "
+                    "configured machinery module: %s",
+                    config("cuckoo:cuckoo:machinery")
                 )
 
         try:
@@ -507,9 +520,10 @@ class AnalysisManager(threading.Thread):
                     )
                     self.db.set_machine_rcparams(self.machine.label, params)
                 except NotImplementedError:
-                    raise CuckooMachineError(
-                        "Remote control support has not been implemented "
-                        "for this machinery."
+                    log.error(
+                        "Remote control support has not been implemented for the "
+                        "configured machinery module: %s",
+                        config("cuckoo:cuckoo:machinery")
                     )
 
             # Enable network routing.
@@ -579,7 +593,9 @@ class AnalysisManager(threading.Thread):
             })
         finally:
             # Stop Auxiliary modules.
-            self.aux.stop()
+            if not self.stopped_aux:
+                self.stopped_aux = True
+                self.aux.stop()
 
             # Take a memory dump of the machine before shutting it off.
             if self.cfg.cuckoo.memory_dump or self.task.memory:
@@ -643,9 +659,10 @@ class AnalysisManager(threading.Thread):
                 try:
                     machinery.disable_remote_control(self.machine.label)
                 except NotImplementedError:
-                    raise CuckooMachineError(
-                        "Remote control support has not been implemented "
-                        "for this machinery."
+                    log.error(
+                        "Remote control support has not been implemented for the "
+                        "configured machinery module: %s",
+                        config("cuckoo:cuckoo:machinery")
                     )
 
             # Mark the machine in the database as stopped. Unless this machine
@@ -658,7 +675,8 @@ class AnalysisManager(threading.Thread):
             ResultServer().del_task(self.task, self.machine)
 
             # Drop the network routing rules if any.
-            self.unroute_network()
+            if not self.unrouted_network:
+                self.unroute_network()
 
             try:
                 # Release the analysis machine. But only if the machine has
@@ -791,6 +809,25 @@ class AnalysisManager(threading.Thread):
             task_log_stop(self.task.id)
             active_analysis_count -= 1
 
+    def cleanup(self):
+        # In case the analysis manager crashes, the network cleanup
+        # should still be performed.
+        if not self.unrouted_network:
+            self.unroute_network()
+
+        if not self.stopped_aux:
+            self.stopped_aux = True
+            self.aux.stop()
+
+    def force_stop(self):
+        # Make the guest manager stop the status checking loop and return
+        # to the main analysis manager routine.
+        if self.db.guest_get_status(self.task.id):
+            self.db.guest_set_status(self.task.id, "stopping")
+
+        self.guest_manager.stop()
+        log.debug("Force stopping task #%s", self.task.id)
+
 class Scheduler(object):
     """Tasks Scheduler.
 
@@ -807,6 +844,7 @@ class Scheduler(object):
         self.db = Database()
         self.maxcount = maxcount
         self.total_analysis_count = 0
+        self.analysis_managers = set()
 
     def initialize(self):
         """Initialize the machine manager."""
@@ -895,8 +933,37 @@ class Scheduler(object):
     def stop(self):
         """Stop scheduler."""
         self.running = False
+
+        # Force stop all analysis managers.
+        for am in self.analysis_managers:
+            try:
+                am.force_stop()
+            except Exception as e:
+                log.exception("Error force stopping analysis manager: %s", e)
+
         # Shutdown machine manager (used to kill machines that still alive).
         machinery.shutdown()
+
+        # Remove network rules if any are present and stop auxiliary modules
+        for am in self.analysis_managers:
+            try:
+                am.cleanup()
+            except Exception as e:
+                log.exception(
+                    "Error while cleaning up analysis manager: %s", e
+                )
+
+    def _cleanup_managers(self):
+        cleaned = set()
+        for am in self.analysis_managers:
+            if not am.isAlive():
+                try:
+                    am.cleanup()
+                except Exception as e:
+                    log.exception("Error in analysis manager cleanup: %s", e)
+
+                cleaned.add(am)
+        return cleaned
 
     def start(self):
         """Start scheduler."""
@@ -914,6 +981,10 @@ class Scheduler(object):
         # This loop runs forever.
         while self.running:
             time.sleep(1)
+
+            # Run cleanup on finished analysis managers and untrack them
+            for am in self._cleanup_managers():
+                self.analysis_managers.discard(am)
 
             # Wait until the machine lock is not locked. This is only the case
             # when all machines are fully running, rather that about to start
@@ -1022,6 +1093,7 @@ class Scheduler(object):
                 analysis = AnalysisManager(task.id, errors)
                 analysis.daemon = True
                 analysis.start()
+                self.analysis_managers.add(analysis)
 
             # Deal with errors.
             try:

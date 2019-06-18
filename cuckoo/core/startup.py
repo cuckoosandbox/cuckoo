@@ -3,22 +3,25 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import errno
 import logging
 import logging.handlers
 import os
 import requests
 import socket
+import sys
 import yara
 
-from distutils.version import StrictVersion
+from distutils.version import StrictVersion, LooseVersion
 
 import cuckoo
 
-from cuckoo.common.colors import red, green, yellow
+from cuckoo.common.colors import red, green, yellow, bold, color
 from cuckoo.common.config import Config, config, config2
 from cuckoo.common.exceptions import CuckooStartupError, CuckooFeedbackError
 from cuckoo.common.files import temppath
 from cuckoo.common.objects import File
+from cuckoo.common.utils import cmp_version
 from cuckoo.core.database import (
     Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
 )
@@ -27,7 +30,7 @@ from cuckoo.core.feedback import CuckooFeedbackObject
 from cuckoo.core.log import init_logger
 from cuckoo.core.plugins import RunSignatures
 from cuckoo.core.rooter import rooter
-from cuckoo.misc import cwd, version, getuser, mkdir
+from cuckoo.misc import cwd, version, mkdir
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +51,7 @@ def check_specific_config(filename):
             )
 
 def check_configs():
-    """Checks if config files exist.
+    """Check if config files exist.
     @raise CuckooStartupError: if config files do not exist.
     """
     configs = (
@@ -93,10 +96,14 @@ def check_configs():
             )
     return True
 
-def check_version():
-    """Checks version of Cuckoo."""
+def check_version(ignore_vuln=False):
+    """Check version of Cuckoo."""
     if not config("cuckoo:cuckoo:version_check"):
         return
+
+    ignore_vuln = ignore_vuln or config("cuckoo:cuckoo:ignore_vulnerabilities")
+
+    import pkg_resources
 
     print(" Checking for updates...")
 
@@ -116,6 +123,89 @@ def check_version():
     except ValueError:
         old = True
 
+    warnings = []
+    for deptype, vulns in r.get("vulnerable", {}).iteritems():
+        for dep in vulns:
+            compare = dep.get("highest") or dep.get("lowest")
+
+            # Check if any of the mentioned Python dependencies are installed
+            if deptype == "pydep":
+                try:
+                    v = pkg_resources.get_distribution(
+                        dep["name"]).parsed_version
+                except (pkg_resources.DistributionNotFound, ValueError):
+                    continue
+
+            # See if the mentioned virtualization software is used
+            elif deptype == "machinery":
+                if config("cuckoo:cuckoo:machinery") != dep["name"]:
+                    continue
+
+                # If the version number cannot be determined, raise a warning
+                # to be sure. Virtualization vulnerabilities can potentially
+                # cause a lot of damage
+                v = cuckoo.machinery.plugins[dep["name"]].version()
+                if not v:
+                    warnings.append(
+                        bold(red(
+                            "Potentially vulnerable %s version installed. "
+                            "Failed to retrieve its version. Update if version"
+                            " is: %s" % (dep["name"], compare))))
+                    continue
+
+            else:
+                continue
+
+            warn = False
+            # If a range is specified, check if the current version falls
+            # within the range.
+            if dep.get("highest") and dep.get("lowest"):
+                lv = LooseVersion(str(v))
+                if (lv >= LooseVersion(dep["lowest"]) and
+                        lv <= LooseVersion(dep["highest"])):
+                    warn = True
+
+            # If no range is specified, use the specified operator to see if
+            # the installed version is
+            # 'if <operator> highest/lowest specified'
+            elif cmp_version(str(v), compare, dep["op"]):
+                warn = True
+
+            # Warn the user the dependency must be updated/
+            if warn:
+                info = dep.get("info")
+                message = "Vulnerable version of %s installed (%s). It is " \
+                          "highly recommended to update. Please update and " \
+                          "restart Cuckoo." % (dep["name"], v)
+
+                if deptype == "pydep":
+                    message += " 'pip install %s%s'" % (
+                        dep["name"], dep["recommended"]
+                    )
+
+                else:
+                    message += " Recommended version: %s" % dep["recommended"]
+
+                message = bold(red(message))
+
+                if info:
+                    message += yellow("\nAdditional information: %s" % info)
+
+                warnings.append(message)
+
+    if warnings:
+        print(color(bold(red("Vulnerable dependencies found\n")), 5))
+    for warning in warnings:
+        print("--> %s\n" % color(warning, 4))
+
+    if warnings and not ignore_vuln:
+        print(
+            "This check can be disabled by enabling "
+            "'ignore_vulnerabilities' in cuckoo.conf under the "
+            "[cuckoo] section"
+        )
+        sys.exit(1)
+
     if old:
         msg = "Cuckoo Sandbox version %s is available now." % r["version"]
         print(red(" Outdated! ") + msg)
@@ -131,14 +221,14 @@ def check_version():
     return r
 
 def init_logging(level):
-    """Initializes logging."""
+    """Initialize logging."""
     logging.getLogger().setLevel(logging.DEBUG)
     init_logger("cuckoo.log", level)
     init_logger("cuckoo.json")
     init_logger("task")
 
 def init_console_logging(level=logging.INFO):
-    """Initializes logging only to console and database."""
+    """Initialize logging only to console and database."""
     logging.getLogger().setLevel(logging.DEBUG)
     init_logger("console", level)
     init_logger("database")
@@ -170,7 +260,7 @@ def init_tasks():
         db.set_status(task.id, TASK_FAILED_ANALYSIS)
 
 def init_modules():
-    """Initializes plugins."""
+    """Initialize plugins."""
     log.debug("Imported modules...")
 
     categories = (
@@ -415,7 +505,7 @@ def init_routing():
             rooter("init_rttable", rt_table, interface)
 
 def ensure_tmpdir():
-    """Verifies if the current user can read and create files in the
+    """Verify if the current user can read and create files in the
     cuckoo temporary directory (and creates it, if needed)."""
     try:
         if not os.path.isdir(temppath()):

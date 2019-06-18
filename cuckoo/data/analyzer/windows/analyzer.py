@@ -31,8 +31,9 @@ from lib.core.config import Config
 from lib.core.ioctl import zer0m0n
 from lib.core.packages import choose_package
 from lib.core.pipe import PipeServer, PipeForwarder, PipeDispatcher
+from lib.core.pipe import disconnect_pipes
 from lib.core.privileges import grant_privilege
-from lib.core.startup import init_logging, set_clock
+from lib.core.startup import init_logging, disconnect_logger, set_clock
 from modules import auxiliary
 
 log = logging.getLogger("analyzer")
@@ -46,11 +47,11 @@ class Files(object):
         self.dumped = []
 
     def is_protected_filename(self, file_name):
-        """Do we want to inject into a process with this name?"""
+        """Return whether or not to inject into a process with this name."""
         return file_name.lower() in self.PROTECTED_NAMES
 
     def add_pid(self, filepath, pid, verbose=True):
-        """Tracks a process identifier for this file."""
+        """Track a process identifier for this file."""
         if not pid or filepath.lower() not in self.files:
             return
 
@@ -150,7 +151,7 @@ class ProcessList(object):
             self.add_pid(pids)
 
     def has_pid(self, pid, notrack=True):
-        """Is this process identifier being tracked?"""
+        """Return whether or not this process identifier being tracked."""
         if int(pid) in self.pids:
             return True
 
@@ -435,7 +436,7 @@ class Analyzer(object):
         self.reboot = []
 
     def get_pipe_path(self, name):
-        """Returns \\\\.\\PIPE on Windows XP and \\??\\PIPE elsewhere."""
+        """Return \\\\.\\PIPE on Windows XP and \\??\\PIPE elsewhere."""
         version = sys.getwindowsversion()
         if version.major == 5 and version.minor == 1:
             return "\\\\.\\PIPE\\%s" % name
@@ -509,7 +510,7 @@ class Analyzer(object):
             self.target = self.config.target
 
     def stop(self):
-        """Allows an auxiliary module to stop the analysis."""
+        """Allow an auxiliary module to stop the analysis."""
         self.do_run = False
 
     def complete(self):
@@ -518,11 +519,9 @@ class Analyzer(object):
         self.command_pipe.stop()
         self.log_pipe_server.stop()
 
-        # Dump all the notified files.
-        self.files.dump_files()
-
-        # Hell yeah.
-        log.info("Analysis completed.")
+        # Cleanly close remaining connections
+        disconnect_pipes()
+        disconnect_logger()
 
     def run(self):
         """Run analysis.
@@ -636,6 +635,9 @@ class Analyzer(object):
                           module.__name__)
                 aux_enabled.append(aux)
 
+        # Inform zer0m0n of the ResultServer address.
+        zer0m0n.resultserver(self.config.ip, self.config.port)
+
         # Forward the command pipe and logpipe names on to zer0m0n.
         zer0m0n.cmdpipe(self.config.pipe)
         zer0m0n.channel(self.config.logpipe)
@@ -646,6 +648,9 @@ class Analyzer(object):
 
         # Initialize zer0m0n with our compiled Yara rules.
         zer0m0n.yarald("bin/rules.yarac")
+
+        # Propagate the requested dump interval, if set.
+        zer0m0n.dumpint(int(self.config.options.get("dumpint", "0")))
 
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
@@ -784,8 +789,11 @@ class Analyzer(object):
                 log.warning("Exception running finish callback of auxiliary "
                             "module %s: %s", aux.__class__.__name__, e)
 
-        # Let's invoke the completion procedure.
-        self.complete()
+        # Dump all the notified files.
+        self.files.dump_files()
+
+        # Hell yeah.
+        log.info("Analysis completed.")
         return True
 
 if __name__ == "__main__":
@@ -826,11 +834,24 @@ if __name__ == "__main__":
             "description": error_exc,
         }
     finally:
+        try:
+            # Let's invoke the completion procedure.
+            analyzer.complete()
+        except Exception as e:
+            complete_excp = traceback.format_exc()
+            data["status"] = "exception"
+            if "description" in data:
+                data["description"] += "%s\n%s" % (
+                    data["description"], complete_excp
+                )
+            else:
+                data["description"] = complete_excp
+
         # Report that we're finished. First try with the XML RPC thing and
         # if that fails, attempt the new Agent.
         try:
             server = xmlrpclib.Server("http://127.0.0.1:8000")
             server.complete(success, error, "unused_path")
-        except xmlrpclib.ProtocolError:
+        except Exception as e:
             urllib2.urlopen("http://127.0.0.1:8000/status",
                             urllib.urlencode(data)).read()

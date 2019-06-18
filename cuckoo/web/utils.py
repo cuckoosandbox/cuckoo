@@ -12,7 +12,6 @@ import StringIO
 from django.core.servers.basehttp import FileWrapper
 from django.http import StreamingHttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from cuckoo.common.mongo import mongo
@@ -47,7 +46,7 @@ def _api_post(func):
         return func(request, *args, **kwargs)
     return inner
 
-api_post = lambda func: staticmethod(_api_post(csrf_exempt(require_http_methods(["POST"])(func))))
+api_post = lambda func: staticmethod(_api_post(require_http_methods(["POST"])(func)))
 
 def _api_get(func):
     @functools.wraps(func)
@@ -120,6 +119,16 @@ def dropped_filepath(task_id, sha1):
     for dropped in record["dropped"]:
         if dropped["sha1"] == sha1:
             return dropped["path"]
+
+def binary_filepath(task_id):
+    record = mongo.db.analysis.find_one({
+        "info.id": int(task_id)
+    })
+
+    if not record or not record["target"]["file"]:
+        return
+
+    return record["target"]["file"]["path"]
 
 def normalize_task(task):
     if task["category"] == "file":

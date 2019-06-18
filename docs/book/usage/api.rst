@@ -20,6 +20,15 @@ those values, you can use the following syntax::
     $ cuckoo api --host 0.0.0.0 --port 1337
     $ cuckoo api -H 0.0.0.0 -p 1337
 
+To allow only authenticated access to the API, the ``api_token`` in
+``cuckoo.conf`` must be set to a secret value. In new Cuckoo installations,
+a random token is automatically generated for you.
+To access the API, you must send the ``Authorization: Bearer <token>`` header
+with all your requests using the token defined in the configuration.
+Note that if you want to access the API over an insecure network such as the
+Internet, you should run the API server behind `nginx`_ described in the
+next section and enable HTTPS.
+
 Web deployment
 --------------
 
@@ -150,6 +159,8 @@ each one. For details click on the resource name.
 | ``GET`` :ref:`tasks_report`         | Returns the report generated out of the analysis of the task associated with the specified ID.                   |
 |                                     | You can optionally specify which report format to return, if none is specified the JSON report will be returned. |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_summary`        | Returns a condensed report in JSON format.                                                                       |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_shots`          | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_rereport`       | Re-run reporting for task associated with a given analysis task ID.                                              |
@@ -188,7 +199,7 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 
 **Example request**::
 
-    curl -F file=@/path/to/file http://localhost:8090/tasks/create/file
+    curl -H "Authorization: Bearer S4MPL3" -F file=@/path/to/file http://localhost:8090/tasks/create/file
 
 **Example request using Python**..
 
@@ -198,10 +209,11 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 
     REST_URL = "http://localhost:8090/tasks/create/file"
     SAMPLE_FILE = "/path/to/malwr.exe"
+    HEADERS = {"Authorization": "Bearer S4MPL3"}
 
     with open(SAMPLE_FILE, "rb") as sample:
         files = {"file": ("temp_file_name", sample)}
-        r = requests.post(REST_URL, files=files)
+        r = requests.post(REST_URL, headers=HEADERS, files=files)
 
     # Add your code to error checking for r.status_code.
 
@@ -252,7 +264,7 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 
 .. code-block:: bash
 
-    curl -F url="http://www.malicious.site" http://localhost:8090/tasks/create/url
+    curl -H "Authorization: Bearer S4MPL3" -F url="http://www.malicious.site" http://localhost:8090/tasks/create/url
 
 **Example request using Python**.
 
@@ -262,9 +274,10 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 
     REST_URL = "http://localhost:8090/tasks/create/url"
     SAMPLE_URL = "http://example.org/malwr.exe"
+    HEADERS = {"Authorization": "Bearer S4MPL3"}
 
     data = {"url": SAMPLE_URL}
-    r = requests.post(REST_URL, data=data)
+    r = requests.post(REST_URL, headers=HEADERS, data=data)
 
     # Add your code to error checking for r.status_code.
 
@@ -316,13 +329,13 @@ submit ID as well as the task IDs of the newly created task(s).
 .. code-block:: bash
 
     # Submit two executables.
-    curl http://localhost:8090/tasks/create/submit -F files=@1.exe -F files=@2.exe
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/create/submit -F files=@1.exe -F files=@2.exe
 
     # Submit http://google.com
-    curl http://localhost:8090/tasks/create/submit -F strings=google.com
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/create/submit -F strings=google.com
 
     # Submit http://google.com & http://facebook.com
-    curl http://localhost:8090/tasks/create/submit -F strings=$'google.com\nfacebook.com'
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/create/submit -F strings=$'google.com\nfacebook.com'
 
 **Example request using Python**.
 
@@ -330,11 +343,13 @@ submit ID as well as the task IDs of the newly created task(s).
 
     import requests
 
+    HEADERS = {"Authorization": "Bearer S4MPL3"}
+
     # Submit one or more files.
     r = requests.post("http://localhost:8090/tasks/create/submit", files=[
         ("files", open("1.exe", "rb")),
         ("files", open("2.exe", "rb")),
-    ])
+    ], headers=HEADERS)
 
     # Add your code to error checking for r.status_code.
 
@@ -350,6 +365,7 @@ submit ID as well as the task IDs of the newly created task(s).
     ]
     r = requests.post(
         "http://localhost:8090/tasks/create/submit",
+        headers=HEADERS,
         data={"strings": "\n".join(urls)}
     )
 
@@ -395,7 +411,7 @@ Returns list of tasks.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/list
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/list
 
 **Example response**.
 
@@ -475,7 +491,7 @@ Returns list of tasks for sample.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/sample/1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/sample/1
 
 **Example response**.
 
@@ -532,7 +548,7 @@ Returns details on the task associated with the specified ID.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/view/1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/view/1
 
 **Example response**.
 
@@ -596,7 +612,7 @@ is 1).
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/reschedule/1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/reschedule/1
 
 **Example response**.
 
@@ -629,7 +645,7 @@ Removes the given task from the database and deletes the results.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/delete/1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/delete/1
 
 **Parameters**:
 
@@ -654,7 +670,7 @@ Returns the report associated with the specified task ID.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/report/1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/report/1
 
 **Parameters**:
 
@@ -665,6 +681,30 @@ Returns the report associated with the specified task ID.
 
 * ``200`` - no error
 * ``400`` - invalid report format
+* ``404`` - report not found
+
+.. _tasks_summary:
+
+/tasks/summary
+--------------
+
+**GET /tasks/summary/** *(int: id)*
+
+Returns a condensed report associated with the specified task ID in JSON format.
+
+**Example request**.
+
+.. code-block:: bash
+
+    curl http://localhost:8090/tasks/summary/1
+
+**Parameters**:
+
+* ``id`` *(required)* *(int)* - ID of the task to get the report for
+
+**Status codes**:
+
+* ``200`` - no error
 * ``404`` - report not found
 
 .. _tasks_shots:
@@ -704,7 +744,7 @@ Re-run reporting for task associated with the specified task ID.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/rereport/1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/rereport/1
 
 **Example response**.
 
@@ -736,7 +776,7 @@ Add a reboot task to database from an existing analysis ID.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/tasks/reboot/1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/reboot/1
 
 **Example response**.
 
@@ -820,7 +860,7 @@ Returns details on the file matching either the specified MD5 hash, SHA256 hash 
 
 .. code-block:: bash
 
-    curl http://localhost:8090/files/view/id/1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/files/view/id/1
 
 **Example response**.
 
@@ -865,7 +905,7 @@ Returns details on the file matching either the specified MD5 hash, SHA256 hash 
 
 .. code-block:: bash
 
-    curl http://localhost:8090/files/get/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 > sample.exe
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/files/get/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 > sample.exe
 
 **Status codes**:
 
@@ -885,7 +925,7 @@ Returns the content of the PCAP associated with the given task.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/pcap/get/1 > dump.pcap
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/pcap/get/1 > dump.pcap
 
 **Status codes**:
 
@@ -905,7 +945,7 @@ Returns a list with details on the analysis machines available to Cuckoo.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/machines/list
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/machines/list
 
 **Example response**.
 
@@ -952,7 +992,7 @@ Returns details on the analysis machine associated with the given name.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/machines/view/cuckoo1
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/machines/view/cuckoo1
 
 **Example response**.
 
@@ -1016,7 +1056,7 @@ Unix!)
 
 .. code-block:: bash
 
-    curl http://localhost:8090/cuckoo/status
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/cuckoo/status
 
 **Example response**.
 
@@ -1074,7 +1114,7 @@ Returns VPN status.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/vpn/status
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/vpn/status
 
 **Status codes**:
 
@@ -1094,7 +1134,7 @@ Shuts down the server if in debug mode and using the werkzeug server.
 
 .. code-block:: bash
 
-    curl http://localhost:8090/exit
+    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/exit
 
 **Status codes**:
 

@@ -30,8 +30,10 @@ have to be installed as well::
 
     $ sudo apt-get install postgresql libpq-dev
 
-`Yara`_ and `Pydeep`_ are *optional* plugins but will have to be installed
-manually, so please refer to their websites.
+`Pydeep`_ is an *optional* plugin that can be installed manually. A Link is provided for convenience:
+* `pydeep install`_ - note: the ``libfuzzy-dev`` package is required for
+  pydeep but at the time of writing, was not listed in the official
+  documentation.
 
 If you want to use KVM as machinery module you will have to install KVM::
 
@@ -43,11 +45,17 @@ If you want to use XenServer you'll have to install the *XenAPI* Python package:
 
 If you want to use the *mitm* auxiliary module (to intercept SSL/TLS generated
 traffic), you need to install `mitmproxy`_. Please refer to its website for
-installation instructions.
+installation instructions. Please note that the latest version of
+``mitmproxy`` requires Python 3.6 or higher and therefore it's required to
+install it within a separate ``virtualenv`` to isolate it and its requirements
+from Cuckoo's Python 2.7 environment. After installing mitmproxy in a separate
+virtualenv, include its binary path in the Cuckoo configuration, e.g.,
+``/tmp/mitmproxy3/bin/mitmdump`` if the virtualenv is ``/tmp/mitmproxy3``.
 
 .. _Yara: https://github.com/plusvic/yara
 .. _Pydeep: https://github.com/kbandla/pydeep
 .. _mitmproxy: https://mitmproxy.org/
+.. _pydeep install: https://github.com/kbandla/pydeep/blob/master/INSTALL
 
 Installing Python libraries (on Mac OS X)
 =========================================
@@ -91,12 +99,12 @@ before reaching out to us with questions on how to set Cuckoo up.
 Assuming you decide to go for VirtualBox, you can get the proper package for
 your distribution at the `official download page`_. Please find following the
 commands to install the latest version of VirtualBox on your Ubuntu LTS
-machine. Note that Cuckoo supports VirtualBox 4.3, 5.0, and 5.1::
+machine. Note that Cuckoo supports VirtualBox 4.3, 5.0, 5.1, and 5.2::
 
     $ echo deb http://download.virtualbox.org/virtualbox/debian xenial contrib | sudo tee -a /etc/apt/sources.list.d/virtualbox.list
     $ wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo apt-key add -
     $ sudo apt-get update
-    $ sudo apt-get install virtualbox-5.1
+    $ sudo apt-get install virtualbox-5.2
 
 For more information on VirtualBox, please refer to the
 `official documentation`_.
@@ -132,6 +140,9 @@ command will suffice to install `tcpdump`_::
 Tcpdump requires root privileges, but since you don't want Cuckoo to run as
 root you'll have to set specific Linux capabilities to the binary::
 
+    $ sudo groupadd pcap
+    $ sudo usermod -a -G pcap cuckoo
+    $ sudo chgrp pcap /usr/sbin/tcpdump
     $ sudo setcap cap_net_raw,cap_net_admin=eip /usr/sbin/tcpdump
 
 You can verify the results of the last command with::

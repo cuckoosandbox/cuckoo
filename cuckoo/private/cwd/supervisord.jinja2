@@ -17,6 +17,7 @@ command = {{ cuckoo_path }} -d -m 10000
 user = {{ username }}
 startsecs = 30
 autorestart = true
+stderr_logfile = {{ cwd("supervisord", "cuckoostderr.log") }}
 
 [program:cuckoo-process]
 command = {{ cuckoo_path }} process p%(process_num)d

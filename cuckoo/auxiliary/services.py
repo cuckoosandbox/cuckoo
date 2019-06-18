@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 db = Database()
 
 class Services(Auxiliary):
-    """Allows one or more additional VMs to be run next to an analysis. Either
+    """Allow one or more additional VMs to be run next to an analysis. Either
     as global services (which are generally never rebooted) or on a
     per-analysis basis."""
 

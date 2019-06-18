@@ -16,7 +16,7 @@ from cuckoo.core.startup import init_rooter, init_routing
 SIOCGIFADDR = 0x8915
 
 def get_ip_address(interface):
-    """Retrieves the local IP address of a network interface."""
+    """Retrieve the local IP address of a network interface."""
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     buf = fcntl.ioctl(s.fileno(), SIOCGIFADDR, struct.pack("256s", interface))
     return socket.inet_ntoa(buf[20:24])

@@ -65,6 +65,11 @@ looks roughly as follows::
     (venv)$ pip install -U pip setuptools
     (venv)$ pip install -U cuckoo
 
+.. note::
+    Depending on how you have set up your environment (virtualenvs etc.) you
+    may need to specify the version of ``pip`` to use. Just replace ``pip``
+    in the commands above with ``pip2``.
+
 Some reasons for using a ``virtualenv``:
 
 * Cuckoo's dependencies may not be entirely up-to-date, but instead pin to a

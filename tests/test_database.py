@@ -17,7 +17,7 @@ from cuckoo.main import main, cuckoo_create
 from cuckoo.misc import set_cwd, cwd, mkdir
 
 class DatabaseEngine(object):
-    """Tests database stuff."""
+    """Test database stuff."""
     URI = None
 
     def setup_class(self):
@@ -275,7 +275,7 @@ class TestMySQL(DatabaseEngine):
 
 @pytest.mark.skipif("sys.platform != 'linux2'")
 class DatabaseMigrationEngine(object):
-    """Tests database migration(s)."""
+    """Test database migration(s)."""
     URI = None
     SRC = None
 

@@ -30,7 +30,7 @@ class ApkInfo(Processing):
         return False
 
     def _apk_files(self, apk):
-        """Returns a list of files in the APK."""
+        """Return a list of files in the APK."""
         ret = []
         for fname, filetype in apk.get_files_types().items():
             buf = apk.zip.read(fname)

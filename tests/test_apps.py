@@ -45,10 +45,12 @@ class TestAppsWithCWD(object):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create()
 
+    @mock.patch("cuckoo.machinery.virtualbox.VirtualBox.version")
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.cuckoo_main")
-    def test_main(self, p, q):
+    def test_main(self, p, q, vb):
         p.side_effect = SystemExit(0)
+        vb.return_value = "9999"
 
         # Ensure that the "latest" binary value makes sense so that the
         # "run community command" exception is not thrown.
@@ -56,9 +58,11 @@ class TestAppsWithCWD(object):
         main.main(("--cwd", cwd(), "-d", "--nolog"), standalone_mode=False)
         q.assert_called_once()
 
+    @mock.patch("cuckoo.machinery.virtualbox.VirtualBox.version")
     @mock.patch("cuckoo.main.load_signatures")
     @mock.patch("cuckoo.main.log")
-    def test_main_exception(self, p, q):
+    def test_main_exception(self, p, q, vb):
+        vb.return_value = "9999"
         q.side_effect = Exception("this is a test")
         with pytest.raises(SystemExit):
             main.main(
@@ -73,12 +77,14 @@ class TestAppsWithCWD(object):
             p.assert_called_once_with("localhost", 8090, False)
 
     if is_linux():
+        @mock.patch("cuckoo.main.cleanup_rooter")
         @mock.patch("cuckoo.main.cuckoo_rooter")
-        def test_rooter_abort(self, p, capsys):
+        def test_rooter_abort(self, p, mr, capsys):
             p.side_effect = KeyboardInterrupt
             main.main(("--cwd", cwd(), "rooter"), standalone_mode=False)
             out, _ = capsys.readouterr()
             assert "Aborting the Cuckoo Rooter" in out
+            mr.assert_called_once()
 
     def test_community(self):
         with mock.patch("cuckoo.main.fetch_community") as p:
@@ -407,13 +413,14 @@ class TestProcessingTasks(object):
             ("--cwd", cwd(), "process", "instance"),
             standalone_mode=False
         )
-        p.assert_called_once_with("instance", 0)
+        p.assert_called_once_with("instance", 0, 0)
         q.assert_called_once()
 
     @mock.patch("cuckoo.apps.apps.Database")
     @mock.patch("cuckoo.apps.apps.process")
     @mock.patch("cuckoo.apps.apps.logger")
     def test_logger(self, p, q, r):
+        mkdir(cwd(analysis=123))
         process_task({
             "id": 123,
             "target": "foo",
@@ -499,6 +506,7 @@ def test_process_dodelete(r, s, p):
 def test_process_log_taskid(p, q):
     set_cwd(tempfile.mkdtemp())
     cuckoo_create()
+    mkdir(cwd(analysis=12345))
 
     init_console_logging(logging.DEBUG)
     init_logfile("process-p0.json")
@@ -715,9 +723,9 @@ class TestMigrateCWD(object):
         # TODO Move this to its own 2.0.3 -> 2.0.4 migration handler.
         assert os.path.exists(cwd("stuff"))
         assert os.path.exists(cwd("whitelist"))
-        assert open(cwd("whitelist", "domain.txt"), "rb").read().strip() == (
-            "# You can add whitelisted domains here."
-        )
+
+        wl = open(cwd("whitelist", "domain.txt"), "rb").read().split("\n")
+        assert wl[0] == "# You can add whitelisted domains here."
         assert os.path.exists(cwd("yara", "dumpmem"))
         assert not os.path.exists(cwd("yara", "index_binaries.yar"))
 
@@ -754,6 +762,7 @@ class TestCommunitySuggestion(object):
     def ctx(self):
         class context(object):
             log = False
+            ignore_vuln = True
         return context
 
     @mock.patch("cuckoo.main.green")

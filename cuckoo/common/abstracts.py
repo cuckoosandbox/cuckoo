@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,15 +7,14 @@ import logging
 import os
 import re
 import time
-
 import xml.etree.ElementTree as ET
 
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooCriticalError
+from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.exceptions import CuckooMachineError
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.exceptions import CuckooReportError
-from cuckoo.common.exceptions import CuckooDependencyError
 from cuckoo.common.files import Folders
 from cuckoo.common.objects import Dictionary
 from cuckoo.core.database import Database
@@ -35,7 +34,7 @@ class Configuration(object):
     )
     # Single entry values.
     keywords1 = (
-        "type", "version", "magic",
+        "type", "version", "magic", "campaign",
     )
     # Multiple entry values.
     keywords2 = (
@@ -99,6 +98,15 @@ class Configuration(object):
             elif value not in family["extra"][key]:
                 family["extra"][key].append(value)
 
+    def get(self, family, *keys):
+        r = self.families.get(family, {})
+        for key in keys:
+            r = r.get(key, {})
+        return r or None
+
+    def family(self, name):
+        return self.families.get(name) or {}
+
     def results(self):
         ret = []
         for family in self.order:
@@ -158,7 +166,7 @@ class Machinery(object):
         pass
 
     def pcap_path(self, task_id):
-        """Returns the .pcap path for this task id."""
+        """Return the .pcap path for this task id."""
         return cwd("storage", "analyses", "%s" % task_id, "dump.pcap")
 
     def set_options(self, options):
@@ -220,7 +228,7 @@ class Machinery(object):
             )
 
     def _initialize_check(self):
-        """Runs checks against virtualization software when a machine manager
+        """Run checks against virtualization software when a machine manager
         is initialized.
         @note: in machine manager modules you may override or superclass
                his method.
@@ -263,7 +271,7 @@ class Machinery(object):
         return self.db.list_machines()
 
     def availables(self):
-        """How many machines are free.
+        """Return how many machines are free.
         @return: free machines count.
         """
         return self.db.count_machines_available()
@@ -289,13 +297,13 @@ class Machinery(object):
         self.db.unlock_machine(label)
 
     def running(self):
-        """Returns running virtual machines.
+        """Return running virtual machines.
         @return: running virtual machines list.
         """
         return self.db.list_machines(locked=True)
 
     def shutdown(self):
-        """Shutdown the machine manager. Kills all alive machines.
+        """Shutdown the machine manager and kill all alive machines.
         @raise CuckooMachineError: if unable to stop machine.
         """
         if len(self.running()) > 0:
@@ -331,13 +339,13 @@ class Machinery(object):
         raise NotImplementedError
 
     def _list(self):
-        """Lists virtual machines configured.
+        """List virtual machines configured.
         @raise NotImplementedError: this method is abstract.
         """
         raise NotImplementedError
 
     def dump_memory(self, label, path):
-        """Takes a memory dump of a machine.
+        """Take a memory dump of a machine.
         @param path: path to where to store the memory dump.
         """
         raise NotImplementedError
@@ -364,7 +372,7 @@ class Machinery(object):
         raise NotImplementedError
 
     def _wait_status(self, label, *states):
-        """Waits for a vm status.
+        """Wait for a vm status.
         @param label: virtual machine name.
         @param state: virtual machine status, accepts multiple states as list.
         @raise CuckooMachineError: if default waiting timeout expire.
@@ -387,6 +395,11 @@ class Machinery(object):
             time.sleep(1)
             waitme += 1
             current = self._status(label)
+
+    @staticmethod
+    def version():
+        """Return the version of the virtualization software"""
+        return None
 
 class LibVirtMachinery(Machinery):
     """Libvirt based machine manager.
@@ -420,7 +433,7 @@ class LibVirtMachinery(Machinery):
         super(LibVirtMachinery, self).initialize(module)
 
     def _initialize_check(self):
-        """Runs all checks when a machine manager is initialized.
+        """Run all checks when a machine manager is initialized.
         @raise CuckooMachineError: if libvirt version is not supported.
         """
         # Version checks.
@@ -436,7 +449,7 @@ class LibVirtMachinery(Machinery):
         super(LibVirtMachinery, self)._initialize_check()
 
     def start(self, label, task):
-        """Starts a virtual machine.
+        """Start a virtual machine.
         @param label: virtual machine name.
         @param task: task object.
         @raise CuckooMachineError: if unable to start virtual machine.
@@ -489,7 +502,7 @@ class LibVirtMachinery(Machinery):
         self._wait_status(label, self.RUNNING)
 
     def stop(self, label):
-        """Stops a virtual machine. Kill them all.
+        """Stop a virtual machine. Kill them all.
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to stop virtual machine.
         """
@@ -523,7 +536,7 @@ class LibVirtMachinery(Machinery):
         self.vms = None
 
     def dump_memory(self, label, path):
-        """Takes a memory dump.
+        """Take a memory dump.
         @param path: path to where to store the memory dump.
         """
         log.debug("Dumping memory for machine %s", label)
@@ -542,7 +555,7 @@ class LibVirtMachinery(Machinery):
             self._disconnect(conn)
 
     def _status(self, label):
-        """Gets current status of a vm.
+        """Get current status of a vm.
         @param label: virtual machine name.
         @return: status string.
         """
@@ -587,7 +600,7 @@ class LibVirtMachinery(Machinery):
                                      "{0}".format(label))
 
     def _connect(self):
-        """Connects to libvirt subsystem.
+        """Connect to libvirt subsystem.
         @raise CuckooMachineError: when unable to connect to libvirt.
         """
         # Check if a connection string is available.
@@ -601,7 +614,7 @@ class LibVirtMachinery(Machinery):
             raise CuckooMachineError("Cannot connect to libvirt")
 
     def _disconnect(self, conn):
-        """Disconnects to libvirt subsystem.
+        """Disconnect from libvirt subsystem.
         @raise CuckooMachineError: if cannot disconnect from libvirt.
         """
         try:
@@ -824,6 +837,7 @@ class Signature(object):
     enabled = True
     minimum = None
     maximum = None
+    ttp = []
 
     # Maximum amount of marks to record.
     markcount = 50
@@ -831,11 +845,6 @@ class Signature(object):
     # Basic filters to reduce the amount of events sent to this signature.
     filter_apinames = []
     filter_categories = []
-
-    # If no on_call() handler is present and this field has been set, then
-    # dispatch on a per-API basis to the accompanying API. That is, rather
-    # than calling the generic on_call(), call, e.g., on_call_CreateFile().
-    on_call_dispatch = False
 
     def __init__(self, caller):
         """
@@ -856,7 +865,7 @@ class Signature(object):
         pass
 
     def _check_value(self, pattern, subject, regex=False, all=False):
-        """Checks a pattern against a given subject.
+        """Check a pattern against a given subject.
         @param pattern: string or expression to check for.
         @param subject: target of the check.
         @param regex: boolean representing if the pattern is a regular
@@ -981,7 +990,7 @@ class Signature(object):
 
     def check_file(self, pattern, regex=False, actions=None, pid=None,
                    all=False):
-        """Checks for a file being opened.
+        """Check for a file being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
@@ -1004,7 +1013,7 @@ class Signature(object):
 
     def check_dll_loaded(self, pattern, regex=False, actions=None, pid=None,
                          all=False):
-        """Checks for DLLs being loaded.
+        """Check for DLLs being loaded.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
@@ -1018,7 +1027,7 @@ class Signature(object):
                                  all=all)
 
     def check_command_line(self, pattern, regex=False, all=False):
-        """Checks for a command line being opened.
+        """Check for a command line being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
@@ -1031,7 +1040,7 @@ class Signature(object):
 
     def check_key(self, pattern, regex=False, actions=None, pid=None,
                   all=False):
-        """Checks for a registry key being accessed.
+        """Check for a registry key being accessed.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
@@ -1059,7 +1068,7 @@ class Signature(object):
         return self.get_summary_generic(pid, ["mutex"])
 
     def check_mutex(self, pattern, regex=False, all=False):
-        """Checks for a mutex being opened.
+        """Check for a mutex being opened.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
@@ -1071,11 +1080,11 @@ class Signature(object):
                                  all=all)
 
     def get_command_lines(self):
-        """Retrieves all command lines used."""
+        """Retrieve all command lines used."""
         return self.get_summary("command_line")
 
     def get_wmi_queries(self):
-        """Retrieves all executed WMI queries."""
+        """Retrieve all executed WMI queries."""
         return self.get_summary("wmi_query")
 
     def get_net_generic(self, subtype):
@@ -1086,68 +1095,68 @@ class Signature(object):
         return self.get_results("network", {}).get(subtype, [])
 
     def get_net_hosts(self):
-        """Returns a list of all hosts."""
+        """Return a list of all hosts."""
         return self.get_net_generic("hosts")
 
     def get_net_domains(self):
-        """Returns a list of all domains."""
+        """Return a list of all domains."""
         return self.get_net_generic("domains")
 
     def get_net_http(self):
-        """Returns a list of all http data."""
+        """Return a list of all http data."""
         return self.get_net_generic("http")
 
     def get_net_http_ex(self):
-        """Returns a list of all http data."""
+        """Return a list of all http data."""
         return \
             self.get_net_generic("http_ex") + self.get_net_generic("https_ex")
 
     def get_net_udp(self):
-        """Returns a list of all udp data."""
+        """Return a list of all udp data."""
         return self.get_net_generic("udp")
 
     def get_net_icmp(self):
-        """Returns a list of all icmp data."""
+        """Return a list of all icmp data."""
         return self.get_net_generic("icmp")
 
     def get_net_irc(self):
-        """Returns a list of all irc data."""
+        """Return a list of all irc data."""
         return self.get_net_generic("irc")
 
     def get_net_smtp(self):
-        """Returns a list of all smtp data."""
+        """Return a list of all smtp data."""
         return self.get_net_generic("smtp")
 
     def get_net_smtp_ex(self):
-        """"Returns a list of all smtp data"""
+        """"Return a list of all smtp data"""
         return self.get_net_generic("smtp_ex")
 
     def get_virustotal(self):
-        """Returns the information retrieved from virustotal."""
+        """Return the information retrieved from virustotal."""
         return self.get_results("virustotal", {})
 
     def get_volatility(self, module=None):
-        """Returns the data that belongs to the given module."""
+        """Return the data that belongs to the given module."""
         volatility = self.get_results("memory", {})
         return volatility if module is None else volatility.get(module, {})
 
     def get_apkinfo(self, section=None, default={}):
-        """Returns the apkinfo results for this analysis."""
+        """Return the apkinfo results for this analysis."""
         apkinfo = self.get_results("apkinfo", {})
         return apkinfo if section is None else apkinfo.get(section, default)
 
     def get_droidmon(self, section=None, default={}):
-        """Returns the droidmon results for this analysis."""
+        """Return the droidmon results for this analysis."""
         droidmon = self.get_results("droidmon", {})
         return droidmon if section is None else droidmon.get(section, default)
 
     def get_googleplay(self, section=None, default={}):
-        """Returns the Google Play results for this analysis."""
+        """Return the Google Play results for this analysis."""
         googleplay = self.get_results("googleplay", {})
         return googleplay if section is None else googleplay.get(section, default)
 
     def check_ip(self, pattern, regex=False, all=False):
-        """Checks for an IP address being contacted.
+        """Check for an IP address being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
@@ -1159,7 +1168,7 @@ class Signature(object):
                                  all=all)
 
     def check_domain(self, pattern, regex=False, all=False):
-        """Checks for a domain being contacted.
+        """Check for a domain being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
@@ -1175,7 +1184,7 @@ class Signature(object):
                                  all=all)
 
     def check_url(self, pattern, regex=False, all=False):
-        """Checks for a URL being contacted.
+        """Check for a URL being contacted.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
@@ -1265,7 +1274,7 @@ class Signature(object):
         self.marks.append(mark)
 
     def has_marks(self, count=None):
-        """Returns true if this signature has one or more marks."""
+        """Return true if this signature has one or more marks."""
         if count is not None:
             return len(self.marks) >= count
         return not not self.marks
@@ -1279,10 +1288,6 @@ class Signature(object):
         @param call: logged API call.
         @param process: proc object.
         """
-        # Dispatch this call to a per-API specific handler.
-        if self.on_call_dispatch:
-            return getattr(self, "on_call_%s" % call["api"])(call, process)
-
         raise NotImplementedError
 
     def on_signature(self, signature):
@@ -1321,15 +1326,27 @@ class Signature(object):
     def on_complete(self):
         """Signature is notified when all API calls have been processed."""
 
+    def extend_ttp(self):
+        """Find the short and long descriptions for the TTPs of a signature"""
+        d = {}
+        for t in self.ttp:
+            d[t] = self._caller.ttp_descriptions.get(t)
+        return d
+
     def results(self):
         """Turn this signature into actionable results."""
         return dict(name=self.name,
+                    ttp=self.extend_ttp(),
                     description=self.description,
                     severity=self.severity,
                     families=self.families,
                     references=self.references,
                     marks=self.marks[:self.markcount],
                     markcount=len(self.marks))
+
+    @property
+    def cfgextr(self):
+        return self._caller.c
 
 class Report(object):
     """Base abstract class for reporting module."""
@@ -1410,17 +1427,29 @@ class BehaviorHandler(object):
         behavior[self.key]."""
         raise NotImplementedError
 
+
 class ProtocolHandler(object):
     """Abstract class for protocol handlers coming out of the analysis."""
-    def __init__(self, handler, version=None):
-        self.handler = handler
+    def __init__(self, task_id, ctx, version=None):
+        self.task_id = task_id
+        self.handler = ctx
+        self.fd = None
         self.version = version
 
-    def init(self):
-        pass
+    def __enter__(self):
+        self.init()
+
+    def __exit__(self, type, value, traceback):
+        self.close()
 
     def close(self):
-        pass
+        if self.fd:
+            self.fd.close()
+            self.fd = None
+
+    def handle(self):
+        raise NotImplementedError
+
 
 class Extractor(object):
     """One piece in a series of recursive extractors & unpackers."""

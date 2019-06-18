@@ -1,0 +1,12 @@
+# Domains that should not be reported to MISP should be added here
+www.msftncsi.com
+dns.msftncsi.com
+teredo.ipv6.microsoft.com
+time.windows.com
+www.msftconnecttest.com
+v10.vortex-win.data.microsoft.com
+settings-win.data.microsoft.com
+win10.ipv6.microsoft.com
+sls.update.microsoft.com
+fs.microsoft.com
+ctldl.windowsupdate.com

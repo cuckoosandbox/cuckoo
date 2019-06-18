@@ -425,3 +425,14 @@ version release (i.e., ``2.1.0`` or later).
 We've decided that it's better to sling a little bit of confusion regarding a
 non-existing version than not mentioning any new versions to our users
 altogether. So please bear with us and install the latest version :-)
+
+
+No handlers could be found for logger X in UWSGI log
+----------------------------------------------------
+
+If you see this message, it means Cuckoo is throwing an error before its loggers are initialized. 
+This might happen if database migration or CWD updates are required.
+
+Start the development web server to see the error::
+
+    $ cuckoo web

@@ -102,7 +102,7 @@ class AnalysisApi(object):
     @api_get
     def task_delete(request, task_id):
         """
-        Deletes a task
+        Delete a task.
         :param body: required: task_id
         :return:
         """
@@ -126,7 +126,7 @@ class AnalysisApi(object):
     @api_get
     def tasks_reschedule(request, task_id, priority=None):
         """
-        Reschedules a task
+        Reschedule a task.
         :param body: required: task_id, priority
         :return: new task_id
         """
@@ -363,7 +363,7 @@ class AnalysisApi(object):
     @api_post
     def tasks_stats(request, body):
         """
-        Fetches the number of analysis over a
+        Fetch the number of analysis over a
         given period for the "failed" and
         "successful" states. Values are
         returned in months.

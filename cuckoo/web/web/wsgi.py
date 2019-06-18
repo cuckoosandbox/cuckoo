@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -24,6 +24,7 @@ import sys
 
 import cuckoo
 
+from cuckoo.core.startup import ensure_tmpdir, init_console_logging
 from cuckoo.misc import decide_cwd
 
 if os.environ.get("CUCKOO_APP") == "web":
@@ -33,6 +34,8 @@ if os.environ.get("CUCKOO_APP") == "web":
     sys.path.insert(0, ".")
 
     cuckoo.core.database.Database().connect()
+    init_console_logging()
+    ensure_tmpdir()
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "web.settings")
 

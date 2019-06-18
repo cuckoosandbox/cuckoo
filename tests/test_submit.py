@@ -38,7 +38,7 @@ class TestSubmitManager(object):
         self.submit_manager = SubmitManager()
 
     def test_pre_file(self):
-        """Tests the submission of a plaintext file"""
+        """Test the submission of a plaintext file"""
         assert self.submit_manager.pre(submit_type="files", data=[{
             "name": "foo.txt",
             "data": open("tests/files/foo.txt", "rb").read()
@@ -54,7 +54,7 @@ class TestSubmitManager(object):
         assert filedata == open("tests/files/foo.txt", "rb").read()
 
     def test_pre_url(self):
-        """Tests the submission of URLs (http/https)"""
+        """Test the submission of URLs (http/https)"""
         assert self.submit_manager.pre(submit_type="strings", data=[
             "http://theguardian.com/",
             "https://news.ycombinator.com/",
@@ -83,7 +83,7 @@ class TestSubmitManager(object):
 
     @responses.activate
     def test_pre_hash(self):
-        """Tests the submission of a VirusTotal hash."""
+        """Test the submission of a VirusTotal hash."""
         with responses.RequestsMock(assert_all_requests_are_fired=True) as rsps:
             rsps.add(
                 responses.GET, VirusTotalAPI.HASH_DOWNLOAD, body="A"*1024*1024
@@ -418,6 +418,14 @@ def test_option_translations_from():
         "remotecontrol": "yes",
     }
 
+    assert sm.translate_options_from({}, {
+        "simulated-human-interaction": False,
+        "function": "DoStuff",
+        "json.calls": "0"
+    }) == {
+        "human": 0, "function": "DoStuff", "json.calls": "0"
+    }
+
 def test_option_translations_to():
     sm = SubmitManager()
 
@@ -439,4 +447,12 @@ def test_option_translations_to():
         "remotecontrol": "yes",
     }) == {
         "remote-control": True,
+    }
+
+    assert sm.translate_options_to({
+        "human": "0", "function": "DoStuff", "json.calls": "0"
+    }) == {
+        "simulated-human-interaction": False,
+        "function": "DoStuff",
+        "json.calls": "0"
     }

@@ -4,10 +4,19 @@
    see the file 'docs/LICENSE' for copying permission.
  */
 
- // external 3rd party imports
- @import "bourbon"; // <== sass utility framework
- @import "font-awesome"; // <== icon kit
- @import "roboto"; // <== application-wide font
+$fa-font-path: "/static/fonts";
+
+// external 3rd party imports
+@import "bourbon"; // <== sass utility framework
+@import "font-awesome"; // <== icon kit
+@import "roboto"; // <== application-wide font
+
+// fontawesome v5.x
+@import "plugins/fontawesome/fontawesome";
+@import "plugins/fontawesome/brands";
+@import "plugins/fontawesome/solid";
+@import "plugins/fontawesome/regular";
+@import "plugins/fontawesome/light";
 
 // import variables and mixins files [exposed globally]
 @import "variables";
@@ -15,7 +24,7 @@
 
 // general css on the body and the html
 html { background: #1c1c1c; }
-body {
+body:not(.no-padding) {
 	padding-top: 50px;
 }
 
@@ -85,6 +94,7 @@ body#analysis {
 @import "components/list-panel";
 @import "components/modal";
 @import "components/rdp";
+@import "components/secret";
 
 // custom plugin css overrides
 @import "plugins/jstree";

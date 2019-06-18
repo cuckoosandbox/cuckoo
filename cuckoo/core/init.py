@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2017 Cuckoo Foundation.
+# Copyright (C) 2016-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,10 +7,11 @@ import os
 
 from cuckoo.common.config import Config
 from cuckoo.common.exceptions import CuckooConfigurationError
+from cuckoo.common.utils import random_token
 from cuckoo.misc import cwd
 
 def write_supervisor_conf(username):
-    """Writes supervisord.conf configuration file if it does not exist yet."""
+    """Write supervisord.conf configuration file if it does not exist yet."""
     # TODO Handle updates?
     if os.path.exists(cwd("supervisord.conf")):
         return
@@ -91,6 +92,10 @@ def write_cuckoo_conf(cfg=None):
                         raw_value = cfg[filename][entry][key]
 
                     raw[filename][entry][key] = value.emit(raw_value)
+
+    # Not the most beautiful, but create a random API token here.
+    cfg["cuckoo"]["cuckoo"]["api_token"] = random_token()
+    raw["cuckoo"]["cuckoo"]["api_token"] = random_token()
 
     def _config(s):
         filename, section, key = s.split(":")

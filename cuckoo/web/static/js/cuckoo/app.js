@@ -38,6 +38,54 @@ var CuckooWeb = function () {
             return bytes.toFixed(1) + ' ' + units[u];
         }
     }, {
+        key: 'csrf_token',
+        value: function csrf_token() {
+            var token = Cookies.get("csrftoken");
+            if (!token) {
+                // Fallback. Maybe there is a form on the page?
+                var field = $("input[name=csrfmiddlewaretoken]");
+                if (field && field.val()) {
+                    token = field.val();
+                }
+            }
+            return token;
+        }
+
+        // Wrapper that adds support for CSRF tokens
+
+    }, {
+        key: 'ajax',
+        value: function ajax(args) {
+            if (args.type !== "get") {
+                var token = CuckooWeb.csrf_token();
+                if (!token) {
+                    console.warn("Request to " + args.url + " on page without CSRF token");
+                }
+                var beforeSend = args.beforeSend;
+                args.beforeSend = function (request) {
+                    if (token) request.setRequestHeader("X-CSRFToken", token);
+                    if (beforeSend) beforeSend(request);
+                };
+            }
+            return $.ajax(args);
+        }
+
+        // Form
+
+    }, {
+        key: 'post',
+        value: function post(url, data, success) {
+            return CuckooWeb.ajax({
+                url: url,
+                type: "post",
+                data: data,
+                success: success
+            });
+        }
+
+        // JSON
+
+    }, {
         key: 'api_post',
         value: function api_post(url, params, callback, errback, beforesend) {
             var silent = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
@@ -45,7 +93,7 @@ var CuckooWeb = function () {
 
             var data = JSON.stringify(params);
 
-            $.ajax({
+            CuckooWeb.ajax({
                 type: "post",
                 contentType: "application/json",
                 url: url,
@@ -672,33 +720,22 @@ var DashboardTable = function () {
             var _this = this;
             var limit = parseInt(this.options.limit);
 
-            $.ajax({
-                type: "POST",
-                url: "/analysis/api/tasks/recent/",
-                contentType: "application/json",
-                dataType: "json",
-                data: JSON.stringify({
-                    cats: [],
-                    limit: isNaN(limit) ? 3 : limit,
-                    offset: 0,
-                    packs: [],
-                    score: ""
-                }),
-                success: function success(response) {
-
-                    if (response.tasks && $.isArray(response.tasks)) {
-
-                        response = response.tasks.map(function (item) {
-                            if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
-                            return item;
-                        });
-                    } else {
-
-                        response = [];
-                    }
-
-                    _this.afterLoad(response);
+            CuckooWeb.api_post("/analysis/api/tasks/recent/", {
+                cats: [],
+                limit: isNaN(limit) ? 3 : limit,
+                offset: 0,
+                packs: [],
+                score: ""
+            }, function (response) {
+                if (response.tasks && $.isArray(response.tasks)) {
+                    response = response.tasks.map(function (item) {
+                        if (item.added_on) item.added_on = moment(item.added_on).format('DD/MM/YYYY');
+                        return item;
+                    });
+                } else {
+                    response = [];
                 }
+                _this.afterLoad(response);
             });
         }
     }, {

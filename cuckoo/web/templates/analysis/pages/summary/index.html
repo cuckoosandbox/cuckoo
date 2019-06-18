@@ -86,6 +86,12 @@
                                 <h3 class="panel-title">{{ cfgextr.family }}</h3>
                             </div>
                             <ul class="list-group">
+                                {% if cfgextr.campaign %}
+                                <li class="list-group-item">
+                                    <span class="item-label">Campaign</span>
+                                    <p>{{ cfgextr.campaign }}</p>
+                                </li>
+                                {% endif %}
                                 {% if cfgextr.cnc %}
                                 <li class="list-group-item">
                                     <span class="item-label">CnC</span>

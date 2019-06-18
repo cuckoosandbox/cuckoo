@@ -19,7 +19,7 @@ def mongo_id(value):
 
 @register.filter
 def is_dict(value):
-    """Checks if value is an instance of dict"""
+    """Check if value is an instance of dict"""
     return isinstance(value, dict)
 
 @register.filter

@@ -72,11 +72,11 @@
 			border: 1px solid $cuckoo_border_color;
 			border-right-width: 0;
 
-			&:first-child { 
+			&:first-child {
 				border-top-left-radius: 8px;
 				border-bottom-left-radius: 8px;
 			}
-			&:last-child { 
+			&:last-child {
 				border-top-right-radius: 8px;
 				border-bottom-right-radius: 8px;
 				border-right-width: 1px;
@@ -98,8 +98,8 @@
 				vertical-align: middle;
 			}
 
-			&.active { 
-				border-color: darken($cuckoo_secundary_color, 10); 
+			&.active {
+				border-color: darken($cuckoo_secundary_color, 10);
 				border-right-width: 1px;
 
 				& + button,
@@ -311,11 +311,32 @@
 		}
 	}
 
+	&.variation-blue {
+		background-color: #6297F8;
+		border: 1px solid #528fff;
+		box-shadow: 0px 1px 0px #4F7CCF;
+		color: #fff;
+	}
+
+	&.variation-grey {
+		background-color: #FFFFFF;
+		border: 1px solid #EBEBEB;
+		box-shadow: 0px 1px 0px #C5C5C5;
+		color: #757575;
+	}
+
 	.fa {
 		margin-right: 5px;
 	}
 
 	@include cuckoo-theme('cyborg') {
-		color: #fff; 
+		color: #fff;
 	}
+
+	&-nav {
+		display: flex;
+		& > * { flex-basis: 100%; }
+		&__right { text-align: right; }
+	}
+
 }

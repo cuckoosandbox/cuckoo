@@ -60,7 +60,7 @@ class TestInit(object):
         write_supervisor_conf(None)
 
     def test_cuckoo_init(self):
-        """Tests that 'cuckoo init' works with a new CWD."""
+        """Test that 'cuckoo init' works with a new CWD."""
         with pytest.raises(SystemExit):
             main.main(
                 ("--cwd", cwd(), "--nolog", "init"),
@@ -77,7 +77,7 @@ class TestInit(object):
         assert os.path.exists(os.path.join(cwd(), "storage", "baseline"))
 
     def test_cuckoo_init_main(self):
-        """Tests that 'cuckoo' works with a new CWD."""
+        """Test that 'cuckoo' works with a new CWD."""
         main.main(
             ("--cwd", cwd(), "--nolog"),
             standalone_mode=False
@@ -94,8 +94,9 @@ class TestInit(object):
         assert os.path.exists(os.path.join(cwd(), "stuff", "mitm.py"))
         p.assert_not_called()
 
-    def test_cuckoo_init_no_resultserver(self):
-        """Tests that 'cuckoo init' doesn't launch the ResultServer."""
+    @mock.patch("cuckoo.main.check_version")
+    def test_cuckoo_init_no_resultserver(self, cv):
+        """Test that 'cuckoo init' doesn't launch the ResultServer."""
         with pytest.raises(SystemExit):
             main.main(
                 ("--cwd", cwd(), "--nolog", "init"),
@@ -371,6 +372,12 @@ def test_all_config_written():
         p.Template = Template
         write_cuckoo_conf(cfg)
 
+    print cfg["cuckoo"]
+    # Force port was removed/now unused for backwards compatibility
+    cfg["cuckoo"]["resultserver"].pop("force_port", None)
+
+    # Pool size is a hidden option for now
+    cfg["cuckoo"]["resultserver"].pop("pool_size", None)
     for key, value in cfg.items():
         for key2, value2 in value.items():
             for key3, value3 in value2.items():

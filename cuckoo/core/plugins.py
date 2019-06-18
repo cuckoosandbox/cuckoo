@@ -1,16 +1,19 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import os
 import importlib
 import inspect
+import json
 import logging
+import os
+import pkgutil
+import sys
 
 import cuckoo
 
-from cuckoo.common.abstracts import Configuration
+from cuckoo.common.abstracts import Configuration, Signature
 from cuckoo.common.config import config2
 from cuckoo.common.exceptions import (
     CuckooConfigurationError, CuckooProcessingError, CuckooReportError,
@@ -34,18 +37,14 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     if os.path.isfile(dirpath):
         dirpath = os.path.dirname(dirpath)
 
-    for fname in os.listdir(dirpath):
-        if fname.endswith(".py") and not fname.startswith("__init__"):
-            module_name, _ = os.path.splitext(fname)
-            try:
-                importlib.import_module(
-                    "%s.%s" % (module_prefix, module_name)
-                )
-            except ImportError as e:
-                raise CuckooOperationalError(
-                    "Unable to load the Cuckoo plugin at %s: %s. Please "
-                    "review its contents and/or validity!" % (fname, e)
-                )
+    for _, module_name, _ in pkgutil.iter_modules([dirpath], module_prefix+"."):
+        try:
+            importlib.import_module(module_name)
+        except ImportError as e:
+            raise CuckooOperationalError(
+                "Unable to load the Cuckoo plugin at %s: %s. Please "
+                "review its contents and/or validity!" % (module_name, e)
+            )
 
     subclasses = class_.__subclasses__()[:]
 
@@ -59,9 +58,9 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
         subclasses.extend(subclass.__subclasses__())
 
         # Check whether this subclass belongs to the module namespace that
-        # we're currently importing. It should be noted that parent and child
+        # we're currently importing. It should be noted that parent
         # namespaces should fail the following if-statement.
-        if module_prefix != ".".join(subclass.__module__.split(".")[:-1]):
+        if not subclass.__module__.startswith(module_prefix):
             continue
 
         namespace[subclass.__name__] = subclass
@@ -73,7 +72,8 @@ def enumerate_plugins(dirpath, module_prefix, namespace, class_,
     if as_dict:
         ret = {}
         for plugin in plugins:
-            ret[plugin.__module__.split(".")[-1]] = plugin
+            plugin_module = plugin.__module__[len(module_prefix) + 1:]
+            ret[plugin_module] = plugin
         return ret
 
     return sorted(plugins, key=lambda x: x.__name__.lower())
@@ -158,6 +158,7 @@ class RunAuxiliary(object):
         self.enabled = enabled
 
     def stop(self):
+        stopped = []
         for module in self.enabled:
             try:
                 module.stop()
@@ -172,6 +173,10 @@ class RunAuxiliary(object):
             else:
                 log.debug("Stopped auxiliary module: %s",
                           module.__class__.__name__)
+            stopped.append(module)
+
+        for s in stopped:
+            self.enabled.remove(s)
 
 class RunProcessing(object):
     """Analysis Results Processing Engine.
@@ -326,6 +331,7 @@ class RunSignatures(object):
     """Run Signatures."""
     available_signatures = []
     version = cuckoo_version
+    ttp_descriptions = {}
 
     def __init__(self, results):
         self.results = results
@@ -337,8 +343,40 @@ class RunSignatures(object):
             if self.should_enable_signature(signature):
                 self.signatures.append(signature(self))
 
-        # Signatures to call per API name.
+        # Cache of signatures to call per API name.
         self.api_sigs = {}
+
+        # Prebuild a list of signatures that *may* be interested
+        self.call_always = set()
+        self.call_for_api = {}
+        self.call_for_cat = {}
+        for sig in self.signatures:
+            # Direct dispatch per API call
+            for n in dir(sig):
+                if n.startswith("on_call_"):
+                    self.call_for_api.setdefault(n[8:], set()).add(sig)
+            if not self._on_call_defined(sig):
+                # Not implemented...
+                continue
+            if not sig.filter_apinames and not sig.filter_categories:
+                self.call_always.add(sig)
+                continue
+            for api in sig.filter_apinames:
+                self.call_for_api.setdefault(api, set()).add(sig)
+            for cat in sig.filter_categories:
+                self.call_for_cat.setdefault(cat, set()).add(sig)
+
+    def _on_call_defined(self, sig):
+        """Test if on_call is defined.  This is not pretty, but it allows
+        on_call to be defined in `abstracts` for documentation purposes.
+        """
+
+        # In Python 3, we can just use a simple check
+        if sys.version_info[0] >= 3:
+            return sig.on_call is not Signature.on_call
+
+        # Check where the method was defined
+        return sig.on_call.__func__.__module__ != Signature.on_call.__func__.__module__
 
     @classmethod
     def init_once(cls):
@@ -351,6 +389,16 @@ class RunSignatures(object):
 
         # Sort Signatures by their order.
         cls.available_signatures.sort(key=lambda sig: sig.order)
+
+        cwd_ttps = cwd("stuff", "ttp_descriptions.json")
+        if os.path.exists(cwd_ttps):
+            with open(cwd_ttps, "rb") as fp:
+                cls.ttp_descriptions = json.load(fp)
+        else:
+            log.warning(
+                "Missing TTP descriptions file. No TTP descriptions will be "
+                "added to matched Cuckoo signatures."
+            )
 
     @classmethod
     def should_load_signature(cls, signature):
@@ -415,8 +463,6 @@ class RunSignatures(object):
                 signature.matched = True
                 for sig in self.signatures:
                     self.call_signature(sig, sig.on_signature, signature)
-        except NotImplementedError:
-            return False
         except:
             task_id = self.results.get("info", {}).get("id")
             log.exception(
@@ -426,37 +472,27 @@ class RunSignatures(object):
             )
         return True
 
-    def init_api_sigs(self, apiname, category):
-        """Initialize a list of signatures for which we should trigger its
-        on_call method for this particular API name and category."""
-        self.api_sigs[apiname] = []
-
-        for sig in self.signatures:
-            if sig.filter_apinames and apiname not in sig.filter_apinames:
-                continue
-
-            if sig.filter_categories and category not in sig.filter_categories:
-                continue
-
-            self.api_sigs[apiname].append(sig)
-
     def yield_calls(self, proc):
         """Yield calls of interest to each interested signature."""
         for idx, call in enumerate(proc.get("calls", [])):
-
-            # Initialize a list of signatures to call for this API call.
-            if call["api"] not in self.api_sigs:
-                self.init_api_sigs(call["api"], call.get("category"))
-
-            # See the following SO answer on why we're using reversed() here.
-            # http://stackoverflow.com/a/10665800
-            for sig in reversed(self.api_sigs[call["api"]]):
+            api = call.get("api")
+            sigs = self.api_sigs.get(api)
+            if sigs is None:
+                # Build interested signatures
+                cat = call.get("category")
+                sigs = self.call_always.union(
+                    self.call_for_api.get(api, set()),
+                    self.call_for_cat.get(cat, set())
+                )
+                self.api_sigs[api] = sigs
+            name = "on_call_" + api
+            for sig in sigs:
                 sig.cid, sig.call = idx, call
-                if self.call_signature(sig, sig.on_call, call, proc) is False:
-                    self.api_sigs[call["api"]].remove(sig)
+                func = getattr(sig, name, sig.on_call)
+                self.call_signature(sig, func, call, proc)
 
     def process_yara_matches(self):
-        """Yields any Yara matches to each signature."""
+        """Yield any Yara matches to each signature."""
         def loop_yara(category, filepath, matches):
             for match in matches:
                 match = YaraMatch(match, category)
@@ -520,15 +556,15 @@ class RunSignatures(object):
         # Iterate through all Extracted matches.
         self.process_extracted()
 
+        # TODO This logic should certainly be moved elsewhere.
+        self.c = Configuration()
+        for extracted in self.results.get("extracted", []):
+            if extracted["category"] == "config":
+                self.c.add(extracted["info"])
+
         # Yield completion events to each signature.
         for sig in self.signatures:
             self.call_signature(sig, sig.on_complete)
-
-        # TODO This logic should certainly be moved elsewhere.
-        c = Configuration()
-        for extracted in self.results.get("extracted", []):
-            if extracted["category"] == "config":
-                c.add(extracted["info"])
 
         score, configs = 0, []
         for signature in self.signatures:
@@ -547,7 +583,7 @@ class RunSignatures(object):
 
             for mark in signature.marks:
                 if mark["type"] == "config":
-                    c.add(mark["config"])
+                    self.c.add(mark["config"])
 
         # Sort the matched signatures by their severity level and put them
         # into the results dictionary.
@@ -558,10 +594,10 @@ class RunSignatures(object):
 
         # If malware configuration has been extracted, simplify its
         # accessibility in the analysis report.
-        if c.results():
+        if self.c.results():
             # TODO Should this be included elsewhere?
             if "metadata" in self.results:
-                self.results["metadata"]["cfgextr"] = c.results()
+                self.results["metadata"]["cfgextr"] = self.c.results()
             if "info" in self.results:
                 self.results["info"]["score"] = 10
 
@@ -640,7 +676,7 @@ class RunReporting(object):
             )
 
     def run(self):
-        """Generates all reports.
+        """Generate all reports.
         @raise CuckooReportError: if a report module fails.
         """
         # In every reporting module you can specify a numeric value that

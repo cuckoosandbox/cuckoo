@@ -7,13 +7,14 @@ import hashlib
 import tempfile
 import ntpath
 import shutil
+import errno
 
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.misc import getuser
 
 def temppath():
-    """Returns the true temporary directory."""
+    """Return the true temporary directory."""
     tmppath = config("cuckoo:cuckoo:tmppath")
 
     # Backwards compatibility with older configuration.
@@ -23,6 +24,16 @@ def temppath():
         )
 
     return tmppath
+
+def open_exclusive(path, mode='wb', bufsize=-1):
+    """Open a file with O_EXCL, failing if it already exists
+    [In Python 3, use open with x]"""
+    fd = os.open(path, os.O_CREAT|os.O_EXCL|os.O_WRONLY, 0644)
+    try:
+        return os.fdopen(fd, mode, bufsize)
+    except:
+        os.close(fd)
+        raise
 
 class Storage(object):
     @staticmethod
@@ -37,7 +48,7 @@ class Storage(object):
 class Folders(Storage):
     @staticmethod
     def create(root=".", folders=None):
-        """Creates a directory or multiple directories.
+        """Create a directory or multiple directories.
         @param root: root path.
         @param folders: folders list to be created.
         @raise CuckooOperationalError: if fails to create folder.
@@ -56,7 +67,10 @@ class Folders(Storage):
             if not os.path.isdir(folder_path):
                 try:
                     os.makedirs(folder_path)
-                except OSError:
+                except OSError as e:
+                    if e.errno == errno.EEXIST:
+                        # Race condition, ignore
+                        continue
                     raise CuckooOperationalError(
                         "Unable to create folder: %s" % folder_path
                     )
@@ -149,7 +163,7 @@ class Files(Storage):
 
     @staticmethod
     def hash_file(method, filepath):
-        """Calculates an hash on a file by path.
+        """Calculate a hash on a file by path.
         @param method: callable hashing method
         @param path: file path
         @return: computed hash string

@@ -1,28 +1,30 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import datetime
 import hashlib
 import io
+import logging
 import multiprocessing
 import os
 import socket
 import tarfile
 import zipfile
 
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, abort, json
 
 from cuckoo.common.config import config, parse_options
 from cuckoo.common.files import Files, Folders
-from cuckoo.common.utils import parse_bool
+from cuckoo.common.utils import parse_bool, constant_time_compare
 from cuckoo.core.database import Database, Task
 from cuckoo.core.database import TASK_REPORTED, TASK_COMPLETED, TASK_RUNNING
 from cuckoo.core.rooter import rooter
 from cuckoo.core.submit import SubmitManager
 from cuckoo.misc import cwd, version, decide_cwd, Pidfile
 
+log = logging.getLogger(__name__)
 db = Database()
 sm = SubmitManager()
 
@@ -36,7 +38,7 @@ def json_error(status_code, message):
     return r
 
 def shutdown_server():
-    """Shutdown API werkzeug server"""
+    """Shutdown API werkzeug server."""
     shutdown = request.environ.get("werkzeug.server.shutdown")
     if shutdown:
         shutdown()
@@ -378,12 +380,48 @@ def tasks_report(task_id, report_format="json"):
     if not os.path.exists(report_path):
         return json_error(404, "Report not found")
 
-    if report_format == "json":
-        response = make_response(open(report_path, "rb").read())
+    elements = request.args.get("elements")
+    if report_format.lower() == "json":
+        report_content = open(report_path, "rb").read()
+        if elements is not None:
+            elements_content = json.loads(report_content).get(elements)
+            if elements_content is None:
+                return json_error(404, "'{0}' not found".format(elements))
+            else:
+                response = make_response(json.dumps(elements_content))
+                response.headers["Content-Type"] = "application/json"
+                return response
+
+        response = make_response(report_content)
         response.headers["Content-Type"] = "application/json"
         return response
     else:
+        if elements is not None:
+            return json_error(404, "Get specific field is not available in HTML format,"\
+                              " try again with JSON format")
         return open(report_path, "rb").read()
+
+@app.route("/tasks/summary/<int:task_id>")
+def tasks_summary(task_id):
+    report_path = cwd("reports", "report.json", analysis=task_id)
+    if not os.path.exists(report_path):
+        return json_error(404, "Report not found")
+
+    with open(report_path, "rb") as report_file:
+        report = json.load(report_file)
+
+    try:
+        del report["procmemory"]
+        del report["behavior"]["generic"]
+        del report["behavior"]["apistats"]
+        del report["behavior"]["processes"]
+        del report["debug"]
+        del report["screenshots"]
+        del report["metadata"]
+    except KeyError:
+        pass
+
+    return jsonify(report)
 
 @app.route("/tasks/screenshots/<int:task_id>")
 @app.route("/v1/tasks/screenshots/<int:task_id>")
@@ -457,7 +495,11 @@ def files_view(md5=None, sha256=None, sample_id=None):
     if not sample:
         return json_error(404, "File not found")
 
+    tasks = sorted(
+        list(map(lambda t: t.id, db.list_tasks(sample_id=sample.id)))
+    )
     response["sample"] = sample.to_dict()
+    response["sample"]["tasks"] = tasks
     return jsonify(response)
 
 @app.route("/files/get/<sha256>")
@@ -634,8 +676,8 @@ def vpn_status():
 
 @app.route("/exit")
 def exit_api():
-    """Shuts down the server if in debug mode and
-    using the werkzeug server"""
+    """Shut down the server if in debug mode and
+    using the werkzeug server."""
     if not app.debug:
         return json_error(403, "This call can only be used in debug mode")
 
@@ -646,9 +688,34 @@ def exit_api():
     else:
         return jsonify(message="Server stopped")
 
+@app.errorhandler(401)
+def api_auth_required(error):
+    return json_error(
+        401, "Authentication in the form of an "
+        "'Authorization: Bearer <TOKEN>' header is required"
+    )
+
+@app.before_request
+def check_authentication():
+    token = config("cuckoo:cuckoo:api_token")
+    if token:
+        expect = "Bearer " + token
+        auth = request.headers.get("Authorization")
+        if not constant_time_compare(auth, expect):
+            abort(401)
+
 def cuckoo_api(hostname, port, debug):
+    if not config("cuckoo:cuckoo:api_token"):
+        log.warning(
+            "It is strongly recommended to enable API authentication to "
+            "protect against unauthorized access and CSRF attacks."
+        )
+        log.warning("Please check the API documentation for more information.")
     app.run(host=hostname, port=port, debug=debug)
 
 if os.environ.get("CUCKOO_APP") == "api":
+    from cuckoo.core.startup import ensure_tmpdir, init_console_logging
     decide_cwd(exists=True)
     Database().connect()
+    init_console_logging()
+    ensure_tmpdir()

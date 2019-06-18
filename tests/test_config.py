@@ -121,7 +121,7 @@ max_analysis_count = 0
 rooter = /tmp/cuckoo-rooter
 tmppath =
 [resultserver]
-force_port = no
+port = 1234
 [database]
 connection =
 timeout =
@@ -169,7 +169,7 @@ class TestConfigType:
         """Testing the boolean parsing in the configuration file parsing."""
         assert self.cuckoo.get("cuckoo")["version_check"] is True
         assert self.cuckoo.get("cuckoo")["max_analysis_count"] is not False
-        assert self.cuckoo.get("resultserver")["force_port"] is False
+        assert self.cuckoo.get("resultserver")["port"] == 1234
 
     def test_path_parse(self):
         """Testing the Path parsing in the configuration file parsing."""
@@ -876,7 +876,7 @@ interface = hehe
     assert cfg["auxiliary"]["reboot"]["enabled"] is True
     assert cfg["cuckoo"]["routing"]["rt_table"] == "main"
     assert cfg["cuckoo"]["routing"]["auto_rt"] is True
-    assert cfg["cuckoo"]["resultserver"]["force_port"] is False
+    assert cfg["cuckoo"]["resultserver"]["port"] == 2042
     assert cfg["cuckoo"]["timeouts"]["critical"] == 60
     assert cfg["processing"]["misp"]["enabled"] is False
     assert cfg["processing"]["misp"]["url"] is None
@@ -1132,6 +1132,9 @@ def test_migration_205_206():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
 
+    Files.create(cwd("conf"), "auxiliary.conf", """
+[mitm]
+    """)
     Files.create(cwd("conf"), "cuckoo.conf", """
 [database]
     """)
@@ -1141,14 +1144,49 @@ machines = vbox1
 [vbox1]
 mode = headless
     """)
+    Files.create(cwd("conf"), "routing.conf", """
+[inetsim]
+enabled = yes
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     cfg = migrate(cfg, "2.0.5", "2.0.6")
 
-    assert cfg["cuckoo"]["remotecontrol"]["enabled"] == False
+    assert cfg["auxiliary"]["replay"]["enabled"] is True
+    assert cfg["auxiliary"]["replay"]["mitmdump"] == "/usr/local/bin/mitmdump"
+    assert cfg["auxiliary"]["replay"]["port_base"] == 51000
+    assert cfg["cuckoo"]["remotecontrol"]["enabled"] is False
     assert cfg["cuckoo"]["remotecontrol"]["guacd_host"] == "localhost"
     assert cfg["cuckoo"]["remotecontrol"]["guacd_port"] == 4822
-
     assert cfg["virtualbox"]["controlports"] == "5000-5050"
+    assert cfg["routing"]["inetsim"]["ports"] is None
+
+def test_migration_206_210():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+
+    Files.create(cwd("conf"), "cuckoo.conf", """
+[cuckoo]
+    """)
+    Files.create(cwd("conf"), "processing.conf", """
+[irma]
+    """)
+    Files.create(cwd("conf"), "auxiliary.conf", """
+[replay]
+    """)
+    Files.create(cwd("conf"), "kvm.conf", """
+[kvm]
+machines = cuckoo1
+interface = virbr0
+    """)
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.6", "2.1.0")
+
+    assert cfg["auxiliary"]["replay"]["certificate"] == "bin/cert.p12"
+    assert cfg["cuckoo"]["cuckoo"]["api_token"] is None
+    assert cfg["cuckoo"]["cuckoo"]["web_secret"] is None
+    assert cfg["processing"]["irma"]["probes"] is None
+    assert cfg["kvm"]["kvm"]["dsn"] == "qemu:///system"
+
 
 class FullMigration(object):
     DIRPATH = None

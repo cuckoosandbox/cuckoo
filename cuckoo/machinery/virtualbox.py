@@ -1,5 +1,5 @@
 # Copyright (C) 2011-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,6 +7,8 @@ import logging
 import os
 import re
 import subprocess
+import thread
+import threading
 import time
 
 from cuckoo.common.abstracts import Machinery
@@ -19,6 +21,43 @@ from cuckoo.misc import Popen
 
 log = logging.getLogger(__name__)
 
+class IgnoreLock(object):
+    """Behaves like a Lock object. Always allows the creating thread to
+    ignore the lock. The lock is used to prevent Virtualbox start/stop race
+    conditions. In the event of Cuckoo stopping, the scheduler should always
+    be able to perform the stopping operation."""
+
+    def __init__(self):
+        self.parent = thread.get_ident()
+        self._takers = []
+        self._ev = threading.Event()
+
+    def acquire(self):
+        th_ident = thread.get_ident()
+        self._takers.append(th_ident)
+
+        if th_ident == self.parent:
+            return True
+
+        while self._takers[0] != th_ident:
+            self._ev.wait(timeout=0.1)
+
+        self._ev.clear()
+
+        return True
+
+    def release(self):
+        self._takers.remove(thread.get_ident())
+        self._ev.set()
+
+    def __enter__(self):
+        self.acquire()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.release()
+
+_power_lock = IgnoreLock()
+
 class VirtualBox(Machinery):
     """Virtualization layer for VirtualBox."""
 
@@ -30,7 +69,7 @@ class VirtualBox(Machinery):
     ERROR = "machete"
 
     def _initialize_check(self):
-        """Runs all checks when a machine manager is initialized.
+        """Run all checks when a machine manager is initialized.
         @raise CuckooMachineError: if VBoxManage is not found.
         """
         if not self.options.virtualbox.path:
@@ -128,10 +167,12 @@ class VirtualBox(Machinery):
                 self.options.virtualbox.path, "startvm", label,
                 "--type", self.options.virtualbox.mode
             ]
-            _, err = Popen(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                close_fds=True
-            ).communicate()
+
+            with _power_lock:
+                _, err = Popen(
+                    args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    close_fds=True
+                ).communicate()
             if err:
                 raise OSError(err)
         except OSError as e:
@@ -182,7 +223,7 @@ class VirtualBox(Machinery):
             return
 
     def stop(self, label):
-        """Stops a virtual machine.
+        """Stop a virtual machine.
         @param label: virtual machine name.
         @raise CuckooMachineError: if unable to stop.
         """
@@ -207,10 +248,12 @@ class VirtualBox(Machinery):
             args = [
                 self.options.virtualbox.path, "controlvm", label, "poweroff"
             ]
-            proc = Popen(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                close_fds=True
-            )
+
+            with _power_lock:
+                proc = Popen(
+                    args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    close_fds=True
+                )
 
             # Sometimes VBoxManage stucks when stopping vm so we needed
             # to add a timeout and kill it after that.
@@ -224,9 +267,12 @@ class VirtualBox(Machinery):
                     proc.terminate()
 
             if proc.returncode != 0 and stop_me < vm_state_timeout:
+                _, err = proc.communicate()
                 log.debug(
-                    "VBoxManage exited with error powering off the machine"
+                    "VBoxManage exited with error powering off the "
+                    "machine: %s", err
                 )
+                raise OSError(err)
         except OSError as e:
             raise CuckooMachineError(
                 "VBoxManage failed powering off the machine: %s" % e
@@ -235,7 +281,7 @@ class VirtualBox(Machinery):
         self._wait_status(label, self.POWEROFF, self.ABORTED, self.SAVED)
 
     def _list(self):
-        """Lists virtual machines installed.
+        """List virtual machines installed.
         @return: virtual machine names list.
         """
         try:
@@ -268,8 +314,8 @@ class VirtualBox(Machinery):
         return machines
 
     def vminfo(self, label, field):
-        """Returns False if invoking vboxmanage fails. Otherwise the VM
-        information value, if any."""
+        """Return False if invoking vboxmanage fails. Otherwise return the
+        VM information value, if any."""
         try:
             args = [
                 self.options.virtualbox.path,
@@ -314,7 +360,7 @@ class VirtualBox(Machinery):
                 return line.split("=", 1)[1]
 
     def _status(self, label):
-        """Gets current status of a vm.
+        """Get current status of a vm.
         @param label: virtual machine name.
         @return: status string.
         """
@@ -332,7 +378,7 @@ class VirtualBox(Machinery):
         )
 
     def dump_memory(self, label, path):
-        """Takes a memory dump.
+        """Take a memory dump.
         @param path: path to where to store the memory dump.
         """
 
@@ -357,8 +403,8 @@ class VirtualBox(Machinery):
                 "VBoxManage failed to return its version: %s" % e
             )
 
-        # VirtualBox version 4 and 5.
-        if output.startswith("5"):
+        # VirtualBox version 4, 5 and 6
+        if output.startswith(("5", "6")):
             dumpcmd = "dumpvmcore"
         else:
             dumpcmd = "dumpguestcore"
@@ -481,3 +527,29 @@ class VirtualBox(Machinery):
         )
         _, _ = proc.communicate()
         return proc
+
+    @staticmethod
+    def version():
+        """Get the version for the installed Virtualbox"""
+        try:
+            proc = Popen(
+                [config("virtualbox:virtualbox:path"), "--version"],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True
+            )
+            output, err = proc.communicate()
+        except OSError:
+            return None
+
+        output = output.strip()
+        version = ""
+        for c in output:
+            if not c.isdigit() and c != ".":
+                break
+            version += c
+
+        # A 3 digit version number is expected. If it has none or fewer, return
+        # None because we are unsure what we have.
+        if len(version.split(".", 2)) < 3:
+            return None
+
+        return version

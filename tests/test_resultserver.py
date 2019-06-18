@@ -1,85 +1,256 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2018 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
-import logging
+from __future__ import print_function
+
+# Testing TODO:
+# - Socket timeout, cleanup
+# - Task cleanup
+# - Invalid path tests
+# - Double LOG command
+
+import errno
+import json
 import mock
+import platform
 import pytest
+import shutil
+import socket
 import tempfile
 
 from cuckoo.common.exceptions import CuckooOperationalError
-from cuckoo.core.log import task_log_start, task_log_stop
-from cuckoo.core.resultserver import ResultHandler, FileUpload
-from cuckoo.core.startup import init_logging
+from cuckoo.common.files import Folders
+from cuckoo.core.resultserver import FileUpload, LogHandler, BsonStore
+from cuckoo.core.resultserver import GeventResultServerWorker
+from cuckoo.core.resultserver import HandlerContext, netlog_sanitize_fname
+from cuckoo.core.resultserver import RESULT_DIRECTORIES, MAX_NETLOG_LINE
 from cuckoo.main import cuckoo_create
-from cuckoo.misc import mkdir, set_cwd, cwd
+from cuckoo.misc import set_cwd, cwd
 
-@mock.patch("cuckoo.core.resultserver.select")
-def test_open_process_log_unicode(p):
-    set_cwd(tempfile.mkdtemp())
+@pytest.fixture(scope='module')
+def cuckoo_cwd():
+    """Create a temporary Cuckoo working directory"""
+    path = tempfile.mkdtemp()
+    print('Temporary path:', path)
+    set_cwd(path)
     cuckoo_create()
-    mkdir(cwd(analysis=1))
-    mkdir(cwd("logs", analysis=1))
+    anal_path = cwd(analysis=1)
+    Folders.create(anal_path, RESULT_DIRECTORIES)
+    yield path
+    shutil.rmtree(path)
 
-    request = server = mock.MagicMock()
+def mock_handler_context(klass, path, lines, data, version=None):
+    class FakeContext:
+        storagepath = path
+        buf = ''
+        task_id = 1
 
-    class Handler(ResultHandler):
-        storagepath = cwd(analysis=1)
+        def read_newline(self):
+            if not lines:
+                raise EOFError
+            return lines.pop(0)
 
-        def handle(self):
-            pass
+        def read(self, size=None):
+            if not data:
+                raise EOFError
+            return data.pop(0)
 
-    init_logging(logging.DEBUG)
+        def copy_to_fd(self, fd, max_size=None):
+            while True:
+                try:
+                    fd.write(self.read())
+                except EOFError:
+                    break
 
-    try:
-        task_log_start(1)
-        Handler(request, (None, None), server).open_process_log({
-            "pid": 1, "ppid": 2, "process_name": u"\u202e", "track": True,
-        })
-    finally:
-        task_log_stop(1)
+    ctx = FakeContext()
+    ctx.sock = mock.Mock()
+    h = klass(1, ctx, version)
+    h.init()
+    h.handle()
+    h.close()
+    return h
 
+class TestHandlerContext(object):
+    def test_pointless_busywork(self):
+        sock = mock.Mock()
+        h = HandlerContext(1, 'does-not-exist', sock)
+        assert repr(h) == '<Context for None>'
+
+        h.cancel()
+        sock.shutdown.assert_called_with(socket.SHUT_RD)
+
+        # Should not raise
+        sock.shutdown.side_effect = socket.error()
+        h.cancel()
+
+        err = socket.error()
+        err.errno = errno.ECONNRESET
+        sock.recv.side_effect = err
+        assert h.read() == ''
+
+        err = socket.error()
+        err.errno = errno.EPIPE
+        sock.recv.side_effect = err
+        with pytest.raises(socket.error) as e:
+            h.read()
+
+    def test_long_line(self):
+        sock = mock.Mock()
+        h = HandlerContext(1, 'does-not-exist', sock)
+        sock.recv.return_value = 'A' * (MAX_NETLOG_LINE + 1)
+        with pytest.raises(CuckooOperationalError) as e:
+            h.read_newline()
+        assert h.buf is sock.recv.return_value
+
+    def test_line_eof(self):
+        sock = mock.Mock()
+        h = HandlerContext(1, 'does-not-exist', sock)
+        sock.recv.return_value = ''
+        with pytest.raises(EOFError) as e:
+            h.read_newline()
+
+    def test_buffer(self):
+        sock = mock.Mock()
+        h = HandlerContext(1, 'does-not-exist', sock)
+        sock.recv.return_value = 'first\nsecond\nthird'
+        assert h.read_newline() == 'first'
+        assert h.buf == 'second\nthird'
+        assert h.drain_buffer() == 'second\nthird'
+        assert h.buf is None
+
+    def test_copy_limited(self):
+        sock = mock.Mock()
+        fd = mock.Mock()
+        h = HandlerContext(1, 'does-not-exist', sock)
+        sock.recv.side_effect = ['A' * 64, '']
+        h.copy_to_fd(fd, 32)
+        fd.write.assert_has_calls([mock.call('A' * 32),
+                                   mock.call('... (truncated)')])
+        assert fd.flush.called
+
+@pytest.mark.usefixtures('cuckoo_cwd')
 class TestFileUpload(object):
-    def fileupload(self, handler):
-        set_cwd(tempfile.mkdtemp())
-        cuckoo_create()
-        mkdir(cwd(analysis=1))
-        mkdir(cwd("logs", analysis=1))
+    @pytest.mark.order1
+    def test_success_noversion(self):
+        fu = mock_handler_context(FileUpload,
+                                  cwd(analysis=1),
+                                  ['files/1.exe'],
+                                  ['this', 'is', 'a', 'test'])
 
-        handler.storagepath = cwd(analysis=1)
-        fu = FileUpload(handler, None)
-        fu.init()
-        for x in fu:
-            pass
-        fu.close()
-
-    def test_success(self):
-        class Handler(object):
-            reads = [
-                "this", "is", "a", "test", None
-            ]
-
-            def read_newline(self, strip):
-                return "logs/1.log"
-
-            def read_any(self):
-                return self.reads.pop(0)
-
-        self.fileupload(Handler())
-
-        with open(cwd("logs", "1.log", analysis=1), "rb") as f:
+        with open(cwd("files", "1.exe", analysis=1), "rb") as f:
             assert f.read() == "thisisatest"
 
-    def invalid_path(self, path):
-        class Handler(object):
-            def read_newline(self, strip):
-                return path
+        with open(fu.filelog) as f:
+            lines = f.readlines()
+            blob = json.loads(lines[-1])
+            assert blob['filepath'] is None
+            assert blob['path'] == "files/1.exe"
+            assert blob["pids"] == []
 
+    @pytest.mark.order2
+    def test_overwrite(self):
         with pytest.raises(CuckooOperationalError) as e:
-            self.fileupload(Handler())
+            mock_handler_context(FileUpload,
+                                 cwd(analysis=1),
+                                 ['files/1.exe'],
+                                 [])
+        e.match("overwrite an existing file")
+
+    @mock.patch('cuckoo.core.resultserver.open_exclusive')
+    def test_open_error(self, open_exclusive):
+        err = OSError()
+        err.errno = errno.EACCES
+        open_exclusive.side_effect = err
+        with pytest.raises(OSError):
+            mock_handler_context(FileUpload,
+                                 cwd(analysis=1),
+                                 ['files/any.exe'],
+                                 [])
+
+    def test_success_v2(self):
+        fu = mock_handler_context(FileUpload,
+                                  cwd(analysis=1),
+                                  ['files/2.exe', 'C:\\RealFilename.exe',
+                                   '11 12'],
+                                  ['second', 'test'],
+                                  2)
+
+        with open(cwd("files", "2.exe", analysis=1), "rb") as f:
+            assert f.read() == "secondtest"
+
+        with open(fu.filelog) as f:
+            lines = f.readlines()
+            blob = json.loads(lines[-1])
+            assert blob['filepath'] == 'C:\\RealFilename.exe'
+            assert blob['path'] == "files/2.exe"
+            assert blob["pids"] == [11, 12]
+
+    def invalid_path(self, path):
+        with pytest.raises(CuckooOperationalError) as e:
+            mock_handler_context(FileUpload, cwd(analysis=1), [path], [])
         e.match("banned path")
 
     def test_invalid_paths(self):
+        self.invalid_path("dummy")
+        self.invalid_path("notallowed/path.exe")
+        self.invalid_path("shots/notallowed/path.jpg")
+        self.invalid_path("reports/report.json")
         self.invalid_path("/tmp/foobar")
         self.invalid_path("../hello")
         self.invalid_path("../../foobar")
+
+    def test_banned_names(self):
+        assert netlog_sanitize_fname("files/file1.exe") == "files/file1.exe"
+        assert netlog_sanitize_fname("files/p\x00ath.exe") == "files/pXath.exe"
+        assert netlog_sanitize_fname("files/path.exe:$DATA") == "files/path.exeX$DATA"
+        assert netlog_sanitize_fname("files/file.\x00.exe:$DATA") == "files/file.X.exeX$DATA"
+
+@pytest.mark.usefixtures('cuckoo_cwd')
+class TestLogHandler(object):
+    @pytest.mark.order1
+    def test_success(self):
+        mock_handler_context(LogHandler,
+                             cwd(analysis=1),
+                             [],
+                             ['first\n', 'second\n'])
+
+        with open(cwd("analysis.log", analysis=1), "rb") as f:
+            if platform.system() == "Windows":
+                assert f.read() == "first\r\nsecond\r\n"
+            else:
+                assert f.read() == "first\nsecond\n"
+
+@pytest.mark.usefixtures('cuckoo_cwd')
+class TestBsonStore(object):
+    def test_success(self):
+        mock_handler_context(BsonStore,
+                             cwd(analysis=1),
+                             [],
+                             ['\x01\x00\x00\x00', 'a'],
+                             1)
+
+        with open(cwd("logs/1.bson", analysis=1), "rb") as f:
+            assert f.read() == "\x01\x00\x00\x00a"
+
+    def test_unversioned(self):
+        h = mock_handler_context(BsonStore, cwd(analysis=1), [], [], None)
+        assert h.fd is None
+
+# Work in progress
+@pytest.mark.usefixtures('cuckoo_cwd')
+class TestWorkerServer(object):
+    def test_unregistered(self):
+        g = GeventResultServerWorker(('127.0.0.1', 1))
+        sock = mock.Mock()
+        sock.recv.side_effect = IOError
+        g.handle(sock, ('127.0.0.1', 41337))
+        # <no effect>
+
+    def test_negotiate(self):
+        g = GeventResultServerWorker(('127.0.0.1', 1))
+        g.add_task(1, '127.0.0.1')
+        assert g.tasks == {'127.0.0.1': 1}
+        sock = mock.Mock()
+        sock.recv.side_effect = ["FILE\n", "files/example.txt\n", "hello", ""]
+        g.handle(sock, ('127.0.0.1', 41337))

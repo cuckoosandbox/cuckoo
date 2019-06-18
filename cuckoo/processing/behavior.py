@@ -19,7 +19,7 @@ from .platform.linux import LinuxSystemTap
 log = logging.getLogger(__name__)
 
 class Summary(BehaviorHandler):
-    """Generates overview summary information (not split by process)."""
+    """Generate overview summary information (not split by process)."""
 
     key = "summary"
     event_types = ["generic"]
@@ -294,7 +294,7 @@ class BehaviorAnalysis(Processing):
             ApiStats(self),
 
             # platform specific stuff
-            WindowsMonitor(self),
+            WindowsMonitor(self, task_id=self.task["id"]),
             LinuxSystemTap(self),
 
             # Reboot information.

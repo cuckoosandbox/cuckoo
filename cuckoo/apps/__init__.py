@@ -12,4 +12,4 @@ from .api import cuckoo_api
 from .distributed import cuckoo_distributed, cuckoo_distributed_instance
 from .dnsserve import cuckoo_dnsserve
 from .import_ import import_cuckoo
-from .rooter import cuckoo_rooter
+from .rooter import cuckoo_rooter, cleanup_rooter

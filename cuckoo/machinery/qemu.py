@@ -116,7 +116,7 @@ class QEMU(Machinery):
         self.state = {}
 
     def _initialize_check(self):
-        """Runs all checks when a machine manager is initialized.
+        """Run all checks when a machine manager is initialized.
         @raise CuckooMachineError: if QEMU binary is not found.
         """
         # VirtualBox specific checks.
@@ -205,7 +205,7 @@ class QEMU(Machinery):
             raise CuckooMachineError("QEMU failed starting the machine: %s" % e)
 
     def stop(self, label):
-        """Stops a virtual machine.
+        """Stop a virtual machine.
         @param label: virtual machine label.
         @raise CuckooMachineError: if unable to stop.
         """
@@ -235,7 +235,7 @@ class QEMU(Machinery):
         self.state[vm_info.name] = None
 
     def _status(self, name):
-        """Gets current status of a vm.
+        """Get current status of a vm.
         @param name: virtual machine name.
         @return: status string.
         """

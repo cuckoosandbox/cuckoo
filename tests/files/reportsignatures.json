@@ -1,0 +1,4131 @@
+[
+  {
+    "families": [], 
+    "description": "Command line console output was observed", 
+    "ttp": {}, 
+    "name": "console_output", 
+    "markcount": 76, 
+    "references": [], 
+    "marks": [
+      {
+        "pid": 2896, 
+        "cid": 30, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The operation completed successfully.\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.094, 
+          "tid": 2900, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2932, 
+        "cid": 30, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The operation completed successfully.\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.10925, 
+          "tid": 2936, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2992, 
+        "cid": 30, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The operation completed successfully.\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.188125, 
+          "tid": 2996, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 182, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.219, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 184, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "echo", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.219, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 186, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " WScript.Sleep(50) ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.219, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 190, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp/file.vbs ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.219, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 220, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.219, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 222, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "cscript", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.219, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 224, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " C:\\Users\\ADMINI~1\\AppData\\Local\\Temp/file.vbs ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.219, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 273, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.609, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 275, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "del", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.609, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 277, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " /F /Q file.js ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.609, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 293, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "Could Not Find C:\\Users\\Administrator\\AppData\\Local\\Temp\\file.js\r\n", 
+            "console_handle": "0x0000000b"
+          }, 
+          "time": 1558483088.625, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 310, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.641, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 312, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "del", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.641, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 314, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " /F /Q \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe\" ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.641, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 330, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.703, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 336, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The process cannot access the file because it is being used by another process.\r\n", 
+            "console_handle": "0x0000000b"
+          }, 
+          "time": 1558483088.703, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 355, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.703, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 357, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "del", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.719, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 359, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " /F /Q \"C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\YygokMcY.bat\" ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.719, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2112, 
+        "cid": 378, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The batch file cannot be found.\r\n", 
+            "console_handle": "0x0000000b"
+          }, 
+          "time": 1558483088.766, 
+          "tid": 2088, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2216, 
+        "cid": 41, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "Microsoft (R) Windows Script Host Version 5.8\r\nCopyright (C) Microsoft Corporation. All rights reserved.\r\n\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.438125, 
+          "tid": 2228, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2556, 
+        "cid": 30, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The operation completed successfully.\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.79725, 
+          "tid": 2552, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2588, 
+        "cid": 30, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The operation completed successfully.\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.90575, 
+          "tid": 2592, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2624, 
+        "cid": 30, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The operation completed successfully.\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483088.93775, 
+          "tid": 2620, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 181, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.20325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 183, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "echo", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.20325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 185, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " WScript.Sleep(50) ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.20325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 189, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp/file.vbs ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.20325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 221, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.20325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 223, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "cscript", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.20325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 225, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " C:\\Users\\ADMINI~1\\AppData\\Local\\Temp/file.vbs ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.20325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 279, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.56325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 281, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "del", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.56325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 283, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " /F /Q file.js ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.56325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 299, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "Could Not Find C:\\Users\\Administrator\\AppData\\Local\\Temp\\file.js\r\n", 
+            "console_handle": "0x0000000b"
+          }, 
+          "time": 1558483089.56325, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 316, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.57825, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 318, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "del", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.57825, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 320, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " /F /Q \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe\" ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.57825, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 336, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.60925, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 342, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "Access is denied.\r\n", 
+            "console_handle": "0x0000000b"
+          }, 
+          "time": 1558483089.60925, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 360, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "C:\\Users\\Administrator\\AppData\\Local\\Temp>", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.60925, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 362, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "del", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.60925, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 364, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": " /F /Q \"C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\PeUwoMwM.bat\" ", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.60925, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2956, 
+        "cid": 383, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The batch file cannot be found.\r\n", 
+            "console_handle": "0x0000000b"
+          }, 
+          "time": 1558483089.64125, 
+          "tid": 2964, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2148, 
+        "cid": 50, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "Microsoft (R) Windows Script Host Version 5.8\r\nCopyright (C) Microsoft Corporation. All rights reserved.\r\n\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.4215, 
+          "tid": 2204, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 3056, 
+        "cid": 30, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The operation completed successfully.\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.6405, 
+          "tid": 2648, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2484, 
+        "cid": 30, 
+        "call": {
+          "category": "misc", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "WriteConsoleW", 
+          "return_value": 1, 
+          "arguments": {
+            "buffer": "The operation completed successfully.\r\n", 
+            "console_handle": "0x00000007"
+          }, 
+          "time": 1558483089.703375, 
+          "tid": 2468, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }
+    ], 
+    "severity": 1
+  }, 
+  {
+    "families": [], 
+    "description": "HTTP traffic contains suspicious features which may be indicative of malware related traffic", 
+    "ttp": {}, 
+    "name": "network_cnc_http", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "suspicious_features": "GET method with no useragent header", 
+        "type": "generic", 
+        "suspicious_request": "GET http://google.com/"
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Performs some HTTP requests", 
+    "ttp": {}, 
+    "name": "network_http", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "category": "request", 
+        "type": "ioc", 
+        "ioc": "GET http://google.com/", 
+        "description": null
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Allocates read-write-execute memory (usually to unpack itself)", 
+    "ttp": {}, 
+    "name": "allocates_rwx", 
+    "markcount": 327, 
+    "references": [], 
+    "marks": [
+      {
+        "pid": 2560, 
+        "cid": 212, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x003f0000", 
+            "allocation_type": 4096, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 213, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 1691648, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01f50000", 
+            "allocation_type": 4096, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 214, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x005b0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 215, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x005c0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 216, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 31457280, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x020f0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 217, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 131072, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x005d0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 218, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x005f0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 223, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x00600000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 224, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x00610000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 225, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x00620000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 226, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01e50000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 227, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01e60000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 228, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01e70000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 229, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01e80000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 230, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01e90000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 241, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01eb0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 242, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01ec0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.96925, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 255, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01ec0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 256, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01ed0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 259, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01ec0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 260, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01ed0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 261, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01ee0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 262, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01ef0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483086.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 266, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01f00000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 267, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041c0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 268, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041d0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 269, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041e0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 270, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041f0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 425, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041f0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 426, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04200000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 432, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041f0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 433, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04200000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 442, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041f0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 443, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04200000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 449, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041f0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 450, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 8192, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04200000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 458, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x041f0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 459, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04200000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 460, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04210000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 461, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04220000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 462, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04230000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.76625, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 481, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04240000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 482, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04250000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 483, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2560, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x04260000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.98425, 
+          "tid": 2564, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2652, 
+        "cid": 212, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2652, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x003f0000", 
+            "allocation_type": 4096, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.516375, 
+          "tid": 2656, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2652, 
+        "cid": 213, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2652, 
+            "region_size": 1691648, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x01ec0000", 
+            "allocation_type": 4096, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.516375, 
+          "tid": 2656, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2652, 
+        "cid": 214, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2652, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x005b0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.516375, 
+          "tid": 2656, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2652, 
+        "cid": 215, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2652, 
+            "region_size": 4096, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x005c0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.516375, 
+          "tid": 2656, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2652, 
+        "cid": 216, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2652, 
+            "region_size": 31457280, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x020d0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.516375, 
+          "tid": 2656, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2652, 
+        "cid": 217, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "NtAllocateVirtualMemory", 
+          "return_value": 0, 
+          "arguments": {
+            "process_identifier": 2652, 
+            "region_size": 131072, 
+            "stack_dep_bypass": 0, 
+            "stack_pivoted": 0, 
+            "heap_dep_bypass": 0, 
+            "protection": 64, 
+            "base_address": "0x005d0000", 
+            "allocation_type": 12288, 
+            "process_handle": "0xffffffff"
+          }, 
+          "time": 1558483087.516375, 
+          "tid": 2656, 
+          "flags": {
+            "protection": "PAGE_EXECUTE_READWRITE", 
+            "allocation_type": "MEM_COMMIT|MEM_RESERVE"
+          }
+        }, 
+        "type": "call"
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Creates a service", 
+    "ttp": {
+      "T1031": {
+        "short": "Modify Existing Service", 
+        "long": "Windows service configuration information, including the file path to the service's executable or recovery programs/commands, is stored in the Registry. Service configurations can be modified using utilities such as sc.exe and Reg."
+      }
+    }, 
+    "name": "creates_service", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "pid": 2560, 
+        "cid": 412, 
+        "call": {
+          "category": "services", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateServiceW", 
+          "return_value": 6645584, 
+          "arguments": {
+            "service_start_name": "", 
+            "start_type": 2, 
+            "password": "", 
+            "display_name": "UIgAUMzM", 
+            "filepath": "C:\\ProgramData\\JcgAIEgc\\uOYocMso.exe", 
+            "service_name": "UIgAUMzM", 
+            "filepath_r": "C:\\ProgramData\\JcgAIEgc\\uOYocMso.exe", 
+            "desired_access": 983103, 
+            "service_handle": "0x00656750", 
+            "error_control": 0, 
+            "service_type": 16, 
+            "service_manager_handle": "0x006567c8"
+          }, 
+          "time": 1558483087.45325, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Drops a binary and executes it", 
+    "ttp": {
+      "T1129": {
+        "short": "Execution through Module Load", 
+        "long": "The Windows module loader can be instructed to load DLLs from arbitrary local paths and arbitrary Universal Naming Convention (UNC) network paths. This functionality resides in NTDLL.dll and is part of the Windows Native API which is called from functions like CreateProcess(), LoadLibrary(), etc. of the Win32 API."
+      }
+    }, 
+    "name": "dropper", 
+    "markcount": 8, 
+    "references": [], 
+    "marks": [
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\eeokscog\\posooYos.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\ProgramData\\DUUAMwkg\\BeUQQcIE.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\uAgQwAUw.bat", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\YygokMcY.bat", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\CcYUMEMc.bat", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\SAUoIwsA.bat", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\YUMQIYMY.bat", 
+        "description": null
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Drops an executable to the user AppData folder", 
+    "ttp": {
+      "T1129": {
+        "short": "Execution through Module Load", 
+        "long": "The Windows module loader can be instructed to load DLLs from arbitrary local paths and arbitrary Universal Naming Convention (UNC) network paths. This functionality resides in NTDLL.dll and is part of the Windows Native API which is called from functions like CreateProcess(), LoadLibrary(), etc. of the Win32 API."
+      }
+    }, 
+    "name": "exe_appdata", 
+    "markcount": 30, 
+    "references": [], 
+    "marks": [
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\tMUy.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\FoUm.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\PUIk.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\tYki.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\gEYu.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\qAYm.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\vkIo.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\mMYq.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\aoQs.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\tEEi.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\Gwgg.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\RkAQ.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\ikEa.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\YskU.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\VkMk.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\aEwC.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\gcUw.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\FMck.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\nMkg.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\JAMG.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\wYAC.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\Kowa.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\gksC.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\CwQa.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\xUAW.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\FEQg.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\oIgG.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\jIQo.exe", 
+        "description": null
+      }, 
+      {
+        "category": "file", 
+        "type": "ioc", 
+        "ioc": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\lYEc.exe", 
+        "description": null
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "A process created a hidden window", 
+    "ttp": {
+      "T1143": {
+        "short": "Hidden Window", 
+        "long": "The configurations for how applications run on macOS and OS X are listed in property list (plist) files. One of the tags in these files can be apple.awt.UIElement, which allows for Java applications to prevent the application's icon from appearing in the Dock. A common use for this is when applications run in the system tray, but don't also want to show up in the Dock. However, adversaries can abuse this feature and hide their running window  ."
+      }
+    }, 
+    "name": "stealth_window", 
+    "markcount": 8, 
+    "references": [], 
+    "marks": [
+      {
+        "pid": 2560, 
+        "cid": 469, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateProcessInternalW", 
+          "return_value": 1, 
+          "arguments": {
+            "thread_identifier": 2812, 
+            "thread_handle": "0x00000100", 
+            "process_identifier": 2808, 
+            "current_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp", 
+            "filepath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\uAgQwAUw.bat", 
+            "track": 1, 
+            "command_line": "\"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391\"", 
+            "filepath_r": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\uAgQwAUw.bat", 
+            "stack_pivoted": 0, 
+            "creation_flags": 134217728, 
+            "inherit_handles": 0, 
+            "process_handle": "0x00000108"
+          }, 
+          "time": 1558483087.81325, 
+          "tid": 2564, 
+          "flags": {
+            "creation_flags": "CREATE_NO_WINDOW"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 487, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateProcessInternalW", 
+          "return_value": 1, 
+          "arguments": {
+            "thread_identifier": 2088, 
+            "thread_handle": "0x00000110", 
+            "process_identifier": 2112, 
+            "current_directory": "", 
+            "filepath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\YygokMcY.bat", 
+            "track": 1, 
+            "command_line": "\"\"C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\YygokMcY.bat\" \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe\"\"", 
+            "filepath_r": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\YygokMcY.bat", 
+            "stack_pivoted": 0, 
+            "creation_flags": 134217728, 
+            "inherit_handles": 0, 
+            "process_handle": "0x0000010c"
+          }, 
+          "time": 1558483088.03125, 
+          "tid": 2564, 
+          "flags": {
+            "creation_flags": "CREATE_NO_WINDOW"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 3048, 
+        "cid": 399, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateProcessInternalW", 
+          "return_value": 1, 
+          "arguments": {
+            "thread_identifier": 2348, 
+            "thread_handle": "0x00000124", 
+            "process_identifier": 2368, 
+            "current_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp", 
+            "filepath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\CcYUMEMc.bat", 
+            "track": 1, 
+            "command_line": "\"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391\"", 
+            "filepath_r": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\CcYUMEMc.bat", 
+            "stack_pivoted": 0, 
+            "creation_flags": 134217728, 
+            "inherit_handles": 0, 
+            "process_handle": "0x00000128"
+          }, 
+          "time": 1558483088.48375, 
+          "tid": 3052, 
+          "flags": {
+            "creation_flags": "CREATE_NO_WINDOW"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 3048, 
+        "cid": 417, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateProcessInternalW", 
+          "return_value": 1, 
+          "arguments": {
+            "thread_identifier": 2964, 
+            "thread_handle": "0x00000130", 
+            "process_identifier": 2956, 
+            "current_directory": "", 
+            "filepath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\PeUwoMwM.bat", 
+            "track": 1, 
+            "command_line": "\"\"C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\PeUwoMwM.bat\" \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe\"\"", 
+            "filepath_r": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\PeUwoMwM.bat", 
+            "stack_pivoted": 0, 
+            "creation_flags": 134217728, 
+            "inherit_handles": 0, 
+            "process_handle": "0x0000012c"
+          }, 
+          "time": 1558483088.93775, 
+          "tid": 3052, 
+          "flags": {
+            "creation_flags": "CREATE_NO_WINDOW"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2704, 
+        "cid": 396, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateProcessInternalW", 
+          "return_value": 1, 
+          "arguments": {
+            "thread_identifier": 2936, 
+            "thread_handle": "0x00000124", 
+            "process_identifier": 1368, 
+            "current_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp", 
+            "filepath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\SAUoIwsA.bat", 
+            "track": 1, 
+            "command_line": "\"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391\"", 
+            "filepath_r": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\SAUoIwsA.bat", 
+            "stack_pivoted": 0, 
+            "creation_flags": 134217728, 
+            "inherit_handles": 0, 
+            "process_handle": "0x00000128"
+          }, 
+          "time": 1558483089.28125, 
+          "tid": 2728, 
+          "flags": {
+            "creation_flags": "CREATE_NO_WINDOW"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2704, 
+        "cid": 414, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateProcessInternalW", 
+          "return_value": 1, 
+          "arguments": {
+            "thread_identifier": 2556, 
+            "thread_handle": "0x00000130", 
+            "process_identifier": 2552, 
+            "current_directory": "", 
+            "filepath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\kSIUwkcE.bat", 
+            "track": 1, 
+            "command_line": "\"\"C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\kSIUwkcE.bat\" \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe\"\"", 
+            "filepath_r": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\kSIUwkcE.bat", 
+            "stack_pivoted": 0, 
+            "creation_flags": 134217728, 
+            "inherit_handles": 0, 
+            "process_handle": "0x0000012c"
+          }, 
+          "time": 1558483089.60925, 
+          "tid": 2728, 
+          "flags": {
+            "creation_flags": "CREATE_NO_WINDOW"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2636, 
+        "cid": 399, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateProcessInternalW", 
+          "return_value": 1, 
+          "arguments": {
+            "thread_identifier": 2968, 
+            "thread_handle": "0x00000124", 
+            "process_identifier": 2952, 
+            "current_directory": "C:\\Users\\Administrator\\AppData\\Local\\Temp", 
+            "filepath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\YUMQIYMY.bat", 
+            "track": 1, 
+            "command_line": "\"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391\"", 
+            "filepath_r": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\YUMQIYMY.bat", 
+            "stack_pivoted": 0, 
+            "creation_flags": 134217728, 
+            "inherit_handles": 0, 
+            "process_handle": "0x00000128"
+          }, 
+          "time": 1558483090.10875, 
+          "tid": 2488, 
+          "flags": {
+            "creation_flags": "CREATE_NO_WINDOW"
+          }
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2636, 
+        "cid": 417, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "CreateProcessInternalW", 
+          "return_value": 1, 
+          "arguments": {
+            "thread_identifier": 2376, 
+            "thread_handle": "0x00000130", 
+            "process_identifier": 3056, 
+            "current_directory": "", 
+            "filepath": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\hyckYQMo.bat", 
+            "track": 1, 
+            "command_line": "\"\"C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\hyckYQMo.bat\" \"C:\\Users\\Administrator\\AppData\\Local\\Temp\\malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe\"\"", 
+            "filepath_r": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\hyckYQMo.bat", 
+            "stack_pivoted": 0, 
+            "creation_flags": 134217728, 
+            "inherit_handles": 0, 
+            "process_handle": "0x0000012c"
+          }, 
+          "time": 1558483090.35875, 
+          "tid": 2488, 
+          "flags": {
+            "creation_flags": "CREATE_NO_WINDOW"
+          }
+        }, 
+        "type": "call"
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Searches running processes potentially to identify processes for sandbox evasion, code injection or memory dumping", 
+    "ttp": {
+      "T1057": {
+        "short": "Process Discovery", 
+        "long": "Adversaries may attempt to get information about running processes on a system. Information obtained could be used to gain an understanding of common software running on systems within the network."
+      }
+    }, 
+    "name": "injection_process_search", 
+    "markcount": 40, 
+    "references": [], 
+    "marks": [
+      {
+        "pid": 2560, 
+        "cid": 272, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32FirstW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "[System Process]", 
+            "process_identifier": 0
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 273, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "System", 
+            "process_identifier": 4
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 274, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "smss.exe", 
+            "process_identifier": 268
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 275, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "csrss.exe", 
+            "process_identifier": 344
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 276, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "wininit.exe", 
+            "process_identifier": 376
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 277, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "csrss.exe", 
+            "process_identifier": 396
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 278, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "winlogon.exe", 
+            "process_identifier": 432
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 279, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "services.exe", 
+            "process_identifier": 476
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 280, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "lsass.exe", 
+            "process_identifier": 492
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 281, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "lsm.exe", 
+            "process_identifier": 500
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 282, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 608
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 283, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 684
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 284, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 764
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 285, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 816
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 286, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 860
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 287, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 892
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 288, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 292
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 289, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "spoolsv.exe", 
+            "process_identifier": 332
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 290, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 1052
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 291, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "taskhost.exe", 
+            "process_identifier": 1180
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 292, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "userinit.exe", 
+            "process_identifier": 1256
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 293, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "dwm.exe", 
+            "process_identifier": 1300
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 294, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "explorer.exe", 
+            "process_identifier": 1360
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 295, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "svchost.exe", 
+            "process_identifier": 1756
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 296, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "python.exe", 
+            "process_identifier": 1872
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 297, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "conhost.exe", 
+            "process_identifier": 1900
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 298, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "SearchIndexer.exe", 
+            "process_identifier": 1836
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 299, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "SearchProtocolHost.exe", 
+            "process_identifier": 672
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 300, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "SearchFilterHost.exe", 
+            "process_identifier": 776
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 301, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "SearchProtocolHost.exe", 
+            "process_identifier": 1948
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 302, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "mobsync.exe", 
+            "process_identifier": 2116
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 303, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "python.exe", 
+            "process_identifier": 2264
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 304, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "wsqmcons.exe", 
+            "process_identifier": 2308
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 305, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "sdclt.exe", 
+            "process_identifier": 2352
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 306, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "taskhost.exe", 
+            "process_identifier": 2404
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 307, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "malicious-40400b9c1a79189cae13bc79f0f1ee8e41b4bc6c0b07d3974dbfb08fd2adb391.exe", 
+            "process_identifier": 2560
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 308, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "schtasks.exe", 
+            "process_identifier": 2616
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 309, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e0", 
+            "process_name": "conhost.exe", 
+            "process_identifier": 2624
+          }, 
+          "time": 1558483087.18825, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 2560, 
+        "cid": 368, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000ec", 
+            "process_name": "posooYos.exe", 
+            "process_identifier": 2652
+          }, 
+          "time": 1558483087.29725, 
+          "tid": 2564, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }, 
+      {
+        "pid": 3048, 
+        "cid": 332, 
+        "call": {
+          "category": "process", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "Process32NextW", 
+          "return_value": 1, 
+          "arguments": {
+            "snapshot_handle": "0x000000e4", 
+            "process_name": "BeUQQcIE.exe", 
+            "process_identifier": 2692
+          }, 
+          "time": 1558483088.39075, 
+          "tid": 3052, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "The binary likely contains encrypted or compressed data indicative of a packer", 
+    "ttp": {
+      "T1045": {
+        "short": "Software Packing", 
+        "long": "Software packing is a method of compressing or encrypting an executable. Packing an executable changes the file signature in an attempt to avoid signature-based detection. Most decompression techniques decompress the executable code in memory."
+      }
+    }, 
+    "name": "packer_entropy", 
+    "markcount": 2, 
+    "references": [
+      "http://www.forensickb.com/2013/03/file-entropy-explained.html", 
+      "http://virii.es/U/Using%20Entropy%20Analysis%20to%20Find%20Encrypted%20and%20Packed%20Malware.pdf"
+    ], 
+    "marks": [
+      {
+        "type": "generic", 
+        "section": {
+          "size_of_data": "0x001a0c00", 
+          "virtual_address": "0x00001000", 
+          "entropy": 7.227448472154554, 
+          "name": ".text", 
+          "virtual_size": "0x001a0b93"
+        }, 
+        "entropy": 7.227448472154554, 
+        "description": "A section with a high entropy has been found"
+      }, 
+      {
+        "type": "generic", 
+        "entropy": 0.9973078073586599, 
+        "description": "Overall entropy of this PE file is high"
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Expresses interest in specific running processes", 
+    "ttp": {
+      "T1057": {
+        "short": "Process Discovery", 
+        "long": "Adversaries may attempt to get information about running processes on a system. Information obtained could be used to gain an understanding of common software running on systems within the network."
+      }
+    }, 
+    "name": "process_interest", 
+    "markcount": 2, 
+    "references": [], 
+    "marks": [
+      {
+        "category": "process", 
+        "type": "ioc", 
+        "ioc": "beuqqcie.exe", 
+        "description": null
+      }, 
+      {
+        "category": "process", 
+        "type": "ioc", 
+        "ioc": "posooyos.exe", 
+        "description": null
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Uses Windows utilities for basic Windows functionality", 
+    "ttp": {
+      "T1053": {
+        "short": "Scheduled Task", 
+        "long": "Utilities such as at and schtasks, along with the Windows Task Scheduler, can be used to schedule programs or scripts to be executed at a date and time. A task can also be scheduled on a remote system, provided the proper authentication is met to use RPC and file and printer sharing is turned on. Scheduling a task on a remote system typically required being a member of the Administrators group on the the remote system."
+      }
+    }, 
+    "name": "uses_windows_utilities", 
+    "markcount": 3, 
+    "references": [
+      "http://blog.jpcert.or.jp/2016/01/windows-commands-abused-by-attackers.html"
+    ], 
+    "marks": [
+      {
+        "category": "cmdline", 
+        "type": "ioc", 
+        "ioc": "reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced /f /v HideFileExt /t REG_DWORD /d 1", 
+        "description": null
+      }, 
+      {
+        "category": "cmdline", 
+        "type": "ioc", 
+        "ioc": "reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced /f /v Hidden /t REG_DWORD /d 2", 
+        "description": null
+      }, 
+      {
+        "category": "cmdline", 
+        "type": "ioc", 
+        "ioc": "reg add HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System /v EnableLUA /d 0 /t REG_DWORD /f", 
+        "description": null
+      }
+    ], 
+    "severity": 2
+  }, 
+  {
+    "families": [], 
+    "description": "Communicates with host for which no DNS query was performed", 
+    "ttp": {}, 
+    "name": "nolookup_communication", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "host": "200.87.164.69", 
+        "type": "generic"
+      }
+    ], 
+    "severity": 3
+  }, 
+  {
+    "families": [], 
+    "description": "Checks for the presence of known windows from debuggers and forensic tools", 
+    "ttp": {
+      "T1057": {
+        "short": "Process Discovery", 
+        "long": "Adversaries may attempt to get information about running processes on a system. Information obtained could be used to gain an understanding of common software running on systems within the network."
+      }
+    }, 
+    "name": "antidbg_windows", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "pid": 2652, 
+        "cid": 32216, 
+        "call": {
+          "category": "ui", 
+          "status": 1, 
+          "stacktrace": [], 
+          "api": "FindWindowA", 
+          "return_value": 65832, 
+          "arguments": {
+            "class_name": "ConsoleWindowClass", 
+            "window_name": ""
+          }, 
+          "time": 1558483102.703375, 
+          "tid": 2968, 
+          "flags": {}
+        }, 
+        "type": "call"
+      }
+    ], 
+    "severity": 3
+  }, 
+  {
+    "families": [], 
+    "description": "Installs itself for autorun at Windows startup", 
+    "ttp": {
+      "T1060": {
+        "short": "Registry Run Keys / Startup Folder", 
+        "long": "Adding an entry to the \"run keys\" in the Registry or startup folder will cause the program referenced to be executed when a user logs in.  These programs will be executed under the context of the user and will have the account's associated permissions level."
+      }, 
+      "T1053": {
+        "short": "Scheduled Task", 
+        "long": "Utilities such as at and schtasks, along with the Windows Task Scheduler, can be used to schedule programs or scripts to be executed at a date and time. A task can also be scheduled on a remote system, provided the proper authentication is met to use RPC and file and printer sharing is turned on. Scheduling a task on a remote system typically required being a member of the Administrators group on the the remote system."
+      }
+    }, 
+    "name": "persistence_autorun", 
+    "markcount": 5, 
+    "references": [], 
+    "marks": [
+      {
+        "type": "generic", 
+        "reg_key": "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\posooYos.exe", 
+        "reg_value": "C:\\Users\\Administrator\\eeokscog\\posooYos.exe"
+      }, 
+      {
+        "type": "generic", 
+        "reg_key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Run\\BeUQQcIE.exe", 
+        "reg_value": "C:\\ProgramData\\DUUAMwkg\\BeUQQcIE.exe"
+      }, 
+      {
+        "service_name": "UIgAUMzM", 
+        "type": "generic", 
+        "service_path": "C:\\ProgramData\\JcgAIEgc\\uOYocMso.exe"
+      }, 
+      {
+        "type": "generic", 
+        "reg_key": "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\posooYos.exe", 
+        "reg_value": "C:\\Users\\Administrator\\eeokscog\\posooYos.exe"
+      }, 
+      {
+        "type": "generic", 
+        "reg_key": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Run\\BeUQQcIE.exe", 
+        "reg_value": "C:\\ProgramData\\DUUAMwkg\\BeUQQcIE.exe"
+      }
+    ], 
+    "severity": 3
+  }, 
+  {
+    "families": [], 
+    "description": "Attempts to modify Explorer settings to prevent file extensions from being displayed", 
+    "ttp": {
+      "T1158": {
+        "short": "Hidden Files and Directories", 
+        "long": "To prevent normal users from accidentally changing special files on a system, most operating systems have the concept of a \u2018hidden\u2019 file. These files don\u2019t show up when a user browses the file system with a GUI or when using normal commands on the command line. Users must explicitly ask to show the hidden files either via a series of Graphical User Interface (GUI) prompts or with command line switches (dir /a for Windows and ls \u2013a for Linux and macOS)."
+      }, 
+      "T1054": {
+        "short": "Indicator Blocking", 
+        "long": "An adversary may attempt to block indicators or events typically captured by sensors from being gathered and analyzed. This could include modifying sensor settings stored in configuration files and/or Registry keys to disable or maliciously redirect event telemetry."
+      }
+    }, 
+    "name": "stealth_hidden_extension", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "category": "registry", 
+        "type": "ioc", 
+        "ioc": "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\HideFileExt", 
+        "description": null
+      }
+    ], 
+    "severity": 3
+  }, 
+  {
+    "families": [], 
+    "description": "Attempts to modify Explorer settings to prevent hidden files from being displayed", 
+    "ttp": {
+      "T1158": {
+        "short": "Hidden Files and Directories", 
+        "long": "To prevent normal users from accidentally changing special files on a system, most operating systems have the concept of a \u2018hidden\u2019 file. These files don\u2019t show up when a user browses the file system with a GUI or when using normal commands on the command line. Users must explicitly ask to show the hidden files either via a series of Graphical User Interface (GUI) prompts or with command line switches (dir /a for Windows and ls \u2013a for Linux and macOS)."
+      }, 
+      "T1054": {
+        "short": "Indicator Blocking", 
+        "long": "An adversary may attempt to block indicators or events typically captured by sensors from being gathered and analyzed. This could include modifying sensor settings stored in configuration files and/or Registry keys to disable or maliciously redirect event telemetry."
+      }
+    }, 
+    "name": "stealth_hiddenfile", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "category": "registry", 
+        "type": "ioc", 
+        "ioc": "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\Hidden", 
+        "description": null
+      }
+    ], 
+    "severity": 3
+  }, 
+  {
+    "families": [], 
+    "description": "Disables Windows Security features", 
+    "ttp": {
+      "T1089": {
+        "short": "Disabling Security Tools", 
+        "long": "Adversaries may disable security tools to avoid possible detection of their tools and activities. This can take the form of killing security software or event logging processes, deleting Registry keys so that tools do not start at run time, or other methods to interfere with security scanning or event reporting."
+      }, 
+      "T1112": {
+        "short": "Modify Registry", 
+        "long": "Adversaries may interact with the Windows Registry to hide configuration information within Registry keys, remove information as part of cleaning up, or as part of other techniques to aid in Persistence and Execution."
+      }
+    }, 
+    "name": "disables_security", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "type": "generic", 
+        "description": "attempts to disable user access control", 
+        "registry": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\EnableLUA"
+      }
+    ], 
+    "severity": 4
+  }, 
+  {
+    "families": [], 
+    "description": "Connects to an IP address that is no longer responding to requests (legitimate services will remain up-and-running usually)", 
+    "ttp": {}, 
+    "name": "dead_host", 
+    "markcount": 1, 
+    "references": [], 
+    "marks": [
+      {
+        "category": "dead_host", 
+        "type": "ioc", 
+        "ioc": "200.87.164.69:9999", 
+        "description": null
+      }
+    ], 
+    "severity": 5
+  }
+]

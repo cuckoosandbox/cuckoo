@@ -12,7 +12,7 @@ from cuckoo.common.abstracts import Processing
 log = logging.getLogger(__name__)
 
 class Baseline(Processing):
-    """Reduces Baseline results from gathered information."""
+    """Reduce Baseline results from gathered information."""
     order = 2
 
     def deep_tuple(self, o, bl=None):
@@ -39,9 +39,9 @@ class Baseline(Processing):
         return self.deep_tuple(o, plugins.get(plugin))
 
     def memory(self, baseline, report):
-        """Finds the differences between the analysis report and the baseline
-        report. Puts the differences into the baseline part of the report and
-        also marks the existing rows with a `class_` attribute."""
+        """Find the differences between the analysis report and the baseline
+        report. Put the differences into the baseline part of the report and
+        mark the existing rows with a `class_` attribute."""
         results = {}
 
         for plugin in baseline.keys() + report.keys():

@@ -6,6 +6,7 @@
 import logging
 import socket
 import threading
+import errno
 
 from ctypes import create_string_buffer, c_uint, byref, sizeof
 
@@ -19,10 +20,11 @@ from lib.common.defines import PIPE_ACCESS_DUPLEX, PIPE_READMODE_MESSAGE
 log = logging.getLogger(__name__)
 
 BUFSIZE = 0x10000
+open_handles = set()
 
 class PipeForwarder(threading.Thread):
-    """The Pipe Forwarder forwards all data received from a local pipe to
-    the Cuckoo server through a socket."""
+    """Forward all data received from a local pipe to the Cuckoo
+    server through a socket."""
     sockets = {}
     active = {}
 
@@ -30,6 +32,7 @@ class PipeForwarder(threading.Thread):
         threading.Thread.__init__(self)
         self.pipe_handle = pipe_handle
         self.destination = destination
+        self.do_run = True
 
     def run(self):
         buf = create_string_buffer(BUFSIZE)
@@ -63,24 +66,31 @@ class PipeForwarder(threading.Thread):
             return
 
         if pid.value:
-            if pid.value not in self.sockets:
-                self.sockets[pid.value] = (
-                    socket.create_connection(self.destination)
-                )
+            sock = self.sockets.get(pid.value)
+            if not sock:
+                sock = socket.create_connection(self.destination)
+                self.sockets[pid.value] = sock
 
-            sock = self.sockets[pid.value]
             self.active[pid.value] = True
         else:
             sock = socket.create_connection(self.destination)
 
-        while True:
+        open_handles.add(sock)
+
+        while self.do_run:
             success = KERNEL32.ReadFile(
                 self.pipe_handle, byref(buf), sizeof(buf),
                 byref(bytes_read), None
             )
 
             if success or KERNEL32.GetLastError() == ERROR_MORE_DATA:
-                sock.sendall(buf.raw[:bytes_read.value])
+                try:
+                    sock.sendall(buf.raw[:bytes_read.value])
+                except socket.error as e:
+                    if e.errno != errno.EBADF:
+                        log.warning("Failed socket operation: %s", e)
+                    break
+
             # If we get the broken pipe error then this pipe connection has
             # been terminated for one reason or another. So break from the
             # loop and make the socket "inactive", that is, another pipe
@@ -98,9 +108,12 @@ class PipeForwarder(threading.Thread):
         if pid.value:
             self.active[pid.value] = False
 
+    def stop(self):
+        self.do_run = False
+
 class PipeDispatcher(threading.Thread):
-    """Receives commands through a local pipe, forwards them to the
-    dispatcher, and returns the response."""
+    """Receive commands through a local pipe, forward them to the
+    dispatcher, and return the response."""
 
     def __init__(self, pipe_handle, dispatcher):
         threading.Thread.__init__(self)
@@ -145,9 +158,12 @@ class PipeDispatcher(threading.Thread):
 
         KERNEL32.CloseHandle(self.pipe_handle)
 
+    def stop(self):
+        self.do_run = False
+
 class PipeServer(threading.Thread):
-    """The Pipe Server accepts incoming pipe handlers and initializes
-    them in a new thread."""
+    """Accept incoming pipe handlers and initialize them in
+    a new thread."""
 
     def __init__(self, pipe_handler, pipe_name, message=False, **kwargs):
         threading.Thread.__init__(self)
@@ -156,6 +172,7 @@ class PipeServer(threading.Thread):
         self.message = message
         self.kwargs = kwargs
         self.do_run = True
+        self.handlers = set()
 
     def run(self):
         while self.do_run:
@@ -182,8 +199,23 @@ class PipeServer(threading.Thread):
                 handler = self.pipe_handler(pipe_handle, **self.kwargs)
                 handler.daemon = True
                 handler.start()
+                self.handlers.add(handler)
             else:
                 KERNEL32.CloseHandle(pipe_handle)
 
     def stop(self):
         self.do_run = False
+        for h in self.handlers:
+            try:
+                if h.isAlive():
+                    h.stop()
+            except:
+                pass
+
+def disconnect_pipes():
+    for sock in open_handles:
+        try:
+            sock.shutdown(socket.SHUT_RDWR)
+            sock.close()
+        except:
+            log.exception("Could not close socket")
