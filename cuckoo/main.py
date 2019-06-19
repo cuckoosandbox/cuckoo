@@ -530,6 +530,10 @@ def api(ctx, host, port, uwsgi, nginx):
 
     init_console_logging(level=ctx.parent.level)
     Database().connect()
+
+    if not ensure_tmpdir():
+        sys.exit(1)
+
     cuckoo_api(host, port, ctx.parent.level == logging.DEBUG)
 
 @main.command()
@@ -637,6 +641,9 @@ def web(ctx, args, host, port, uwsgi, nginx):
 
     init_console_logging(level=ctx.parent.level)
     Database().connect()
+
+    if not ensure_tmpdir():
+        sys.exit(1)
 
     try:
         execute_from_command_line(
