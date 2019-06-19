@@ -273,6 +273,14 @@ class TestPostgreSQL(DatabaseEngine):
 class TestMySQL(DatabaseEngine):
     URI = "mysql://cuckoo:cuckoo@localhost/cuckootest"
 
+def parse_mysql_dump(dump):
+    for c in dump.split(";"):
+        c = c.strip()
+
+        if c and not c.startswith("--"):
+            c = "%s;" % c
+            yield c
+
 @pytest.mark.skipif("sys.platform != 'linux2'")
 class DatabaseMigrationEngine(object):
     """Test database migration(s)."""
@@ -430,7 +438,8 @@ class TestDatabaseMigration060MySQL(DatabaseMigration060):
 
     @staticmethod
     def execute_script(cls, script):
-        cls.s.execute(script)
+        for command in parse_mysql_dump(script):
+            cls.s.execute(command)
 
     @staticmethod
     def migrate(cls):
@@ -510,7 +519,8 @@ class TestDatabaseMigration11MySQL(DatabaseMigration11):
 
     @staticmethod
     def execute_script(cls, script):
-        cls.s.execute(script)
+        for command in parse_mysql_dump(script):
+            cls.s.execute(command)
 
 @mock.patch("cuckoo.core.database.create_engine")
 @mock.patch("cuckoo.core.database.sessionmaker")

@@ -209,7 +209,7 @@ def cuckoo_init(level, ctx, cfg=None):
             "pretty important!"
         )
         log.warning(
-            "You'll be able to fetch all the latest Cuckoo Signaturs, Yara "
+            "You'll be able to fetch all the latest Cuckoo Signatures, Yara "
             "rules, and more goodies by running the following command:"
         )
         log.info("$ %s", green(format_command("community")))
@@ -530,6 +530,10 @@ def api(ctx, host, port, uwsgi, nginx):
 
     init_console_logging(level=ctx.parent.level)
     Database().connect()
+
+    if not ensure_tmpdir():
+        sys.exit(1)
+
     cuckoo_api(host, port, ctx.parent.level == logging.DEBUG)
 
 @main.command()
@@ -637,6 +641,9 @@ def web(ctx, args, host, port, uwsgi, nginx):
 
     init_console_logging(level=ctx.parent.level)
     Database().connect()
+
+    if not ensure_tmpdir():
+        sys.exit(1)
 
     try:
         execute_from_command_line(
