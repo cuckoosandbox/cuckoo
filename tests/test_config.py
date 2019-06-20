@@ -1160,7 +1160,7 @@ enabled = yes
     assert cfg["virtualbox"]["controlports"] == "5000-5050"
     assert cfg["routing"]["inetsim"]["ports"] is None
 
-def test_migration_206_210():
+def test_migration_206_207():
     set_cwd(tempfile.mkdtemp())
     Folders.create(cwd(), "conf")
 
@@ -1178,14 +1178,23 @@ def test_migration_206_210():
 machines = cuckoo1
 interface = virbr0
     """)
+    Files.create(cwd("conf"), "reporting.conf", """
+[misp]
+    """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
-    cfg = migrate(cfg, "2.0.6", "2.1.0")
+    cfg = migrate(cfg, "2.0.6", "2.0.7")
 
     assert cfg["auxiliary"]["replay"]["certificate"] == "bin/cert.p12"
     assert cfg["cuckoo"]["cuckoo"]["api_token"] is None
     assert cfg["cuckoo"]["cuckoo"]["web_secret"] is None
     assert cfg["processing"]["irma"]["probes"] is None
     assert cfg["kvm"]["kvm"]["dsn"] == "qemu:///system"
+    assert cfg["reporting"]["misp"]["distribution"] == 0
+    assert cfg["reporting"]["misp"]["analysis"] == 0
+    assert cfg["reporting"]["misp"]["threat_level"] == 4
+    assert cfg["reporting"]["misp"]["min_malscore"] == 0
+    assert cfg["reporting"]["misp"]["tag"] == "Cuckoo"
+    assert cfg["reporting"]["misp"]["upload_sample"] is False
 
 
 class FullMigration(object):

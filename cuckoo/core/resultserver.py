@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -37,7 +37,7 @@ BUFSIZE = 16 * 1024
 RESULT_UPLOADABLE = ("files", "shots", "buffer",  "extracted", "memory")
 RESULT_DIRECTORIES = RESULT_UPLOADABLE + ("reports", "logs")
 
-# Prevent malicious clients from using potentially dangerious filenames
+# Prevent malicious clients from using potentially dangerous filenames
 # E.g. C API confusion by using null, or using the colon on NTFS (Alternate
 # Data Streams); XXX: just replace illegal chars?
 BANNED_PATH_CHARS = b'\x00:'

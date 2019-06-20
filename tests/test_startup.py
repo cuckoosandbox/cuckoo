@@ -88,7 +88,6 @@ def test_init_modules(p, q, r, s):
     logs = "\n".join(logs)
     assert "KVM" in logs
     assert "Xen" in logs
-    assert "CreatesExe" in logs
     assert "SystemMetrics" in logs
 
 @mock.patch("cuckoo.core.startup.cuckoo")

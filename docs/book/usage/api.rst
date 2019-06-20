@@ -175,7 +175,7 @@ each one. For details click on the resource name.
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`files_get`            | Returns the content of the binary with the specified SHA256 hash.                                                |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| ``GET`` :ref:`pcap_get`             | Returns the content of the PCAP associated with the given task.                                                  |
+| ``GET`` :ref:`api_pcap_get`         | Returns the content of the PCAP associated with the given task.                                                  |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`machines_list`        | Returns the list of analysis machines available to Cuckoo.                                                       |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
@@ -912,7 +912,7 @@ Returns details on the file matching either the specified MD5 hash, SHA256 hash 
 * ``200`` - no error
 * ``404`` - file not found
 
-.. _pcap_get:
+.. _api_pcap_get:
 
 /pcap/get
 ---------
