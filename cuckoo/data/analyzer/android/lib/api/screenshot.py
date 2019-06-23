@@ -1,10 +1,14 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
 
 import math
 import filecmp
+import logging
+import subprocess
+
+from lib.common.exceptions import CuckooScreenshotError
 
 try:
     import ImageChops
@@ -17,6 +21,8 @@ except:
         HAVE_PIL = True
     except:
         HAVE_PIL = False
+
+log = logging.getLogger(__name__)
 
 class Screenshot:
     """Get screenshots."""
@@ -51,3 +57,19 @@ class Screenshot:
 
     def equal(self, img1, img2):
         return filecmp.cmp(img1, img2)
+
+    def take(self, img_path):
+        """Take a screenshot."""
+        args = [
+            "/system/bin/screencap", 
+            "-p", img_path
+        ]
+
+        try:
+            _, err = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            ).communicate()
+            if err:
+                raise OSError(err)
+        except OSError as e:
+            raise CuckooScreenshotError("Error running screencap: %s", e)

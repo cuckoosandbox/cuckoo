@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
@@ -31,6 +31,22 @@ def upload_to_host(file_path, dump_path):
         if nc:
             nc.close()
 
+def upload_from_buffer(buffer, dump_path):
+    nc = None
+    try:
+        nc = NetlogFile(dump_path)
+
+        bytes_sent = 0
+        while bytes_sent < len(buffer):
+            data = buffer[bytes_sent:BUFSIZE]
+            nc.send(data, retry=False)
+            bytes_sent += len(data)
+    except Exception as e:
+        log.error("Exception sending buffer to host: %s", e)
+    finally:
+        if nc:
+            nc.close()
+
 class NetlogConnection(object):
     def __init__(self, proto=""):
         config = Config(cfg="analysis.conf")
@@ -44,14 +60,18 @@ class NetlogConnection(object):
         while not self.sock:
             try:
                 s = socket.create_connection((self.hostip, self.hostport), 0.1)
-                s.sendall(self.proto)
             except socket.error:
                 time.sleep(0.1)
                 continue
 
+            s.settimeout(None)
+            s.sendall(self.proto.encode())
             self.sock = s
 
     def send(self, data, retry=True):
+        if type(data) == str:
+            data = data.encode()
+
         if not self.sock:
             self.connect()
 
@@ -78,8 +98,9 @@ class NetlogConnection(object):
 
 class NetlogFile(NetlogConnection):
     def __init__(self, filepath):
-        self.filepath = filepath
-        NetlogConnection.__init__(self, proto="FILE\n{0}\n".format(self.filepath))
+        NetlogConnection.__init__(
+            self, proto="FILE\n{0}\n".format(filepath)
+        )
         self.connect()
 
 class NetlogHandler(logging.Handler, NetlogConnection):
