@@ -22,8 +22,7 @@
 #    ./init_avd.sh cwd_path [-s device_serial]
 #
 
-usage="$(basename "$0") cwd_path [-s device_serial] - Initialize Android " \
-"virtual devices for Cuckoo analysis.
+usage="$(basename "$0") cwd_path [-s device_serial] - Initialize Android virtual devices for Cuckoo analysis.
 
 where:
     cwd_path  path to the cuckoo working directory.
@@ -101,7 +100,7 @@ $ADB root > /dev/null
 
 # Download and push our prebuilt Python interpreter
 tmp_dir=$(mktemp -d "tmp.XXXX")
-echo "Downloading the matching Python interpreter for your device.."
+echo "Downloading the Python interpreter that matches your device.."
 wget -qO- "https://github.com/muhzii/community/raw/master/prebuilt/Python3.7/${arch}-android.tar.gz" | tar xz -C $tmp_dir
 
 echo "Pushing Python to the device"
@@ -127,13 +126,13 @@ echo
 $ADB shell setenforce 0
 
 # Start the Cuckoo agent.
-echo "Starting the cuckoo agent."
+echo "Starting the cuckoo agent.."
 $ADB shell "${device_tmp}/android-agent.sh" &
 echo
 
 # Save a snapshot of the device state.
 echo "Taking a snapshot of the virtual device state."
-$ADB emu avd snapshot save cuckoo-sanpshot
+$ADB emu avd snapshot save cuckoo_sanpshot
 echo
 
 # Remove unneeded stuff!

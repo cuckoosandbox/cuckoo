@@ -1196,6 +1196,16 @@ interface = virbr0
     assert cfg["reporting"]["misp"]["tag"] == "Cuckoo"
     assert cfg["reporting"]["misp"]["upload_sample"] is False
 
+    assert cfg["avd"]["avd"]["mode"] == "headless"
+    assert cfg["avd"]["avd"]["emulator_path"] == "/home/cuckoo/Android/Sdk/emulator/emulator"
+    assert cfg["avd"]["avd"]["adb_path"] == "/home/cuckoo/Android/Sdk/platform-tools/adb"
+    assert cfg["avd"]["avd"]["machines"] == ["cuckoo1"]
+    assert cfg["avd"]["cuckoo1"]["label"] == "cuckoo1"
+    assert cfg["avd"]["cuckoo1"]["platform"] == "android"
+    assert cfg["avd"]["cuckoo1"]["ip"] == "127.0.0.1"
+    assert cfg["avd"]["cuckoo1"]["snapshot"] == "cuckoo-snapshot"
+    assert cfg["avd"]["cuckoo1"]["resultserver_ip"] == "10.0.2.2"
+
 
 class FullMigration(object):
     DIRPATH = None

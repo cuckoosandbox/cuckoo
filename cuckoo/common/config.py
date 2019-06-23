@@ -350,11 +350,6 @@ class Config(object):
                     "/home/cuckoo/Android/Sdk/platform-tools/adb",
                     exists=True, writable=False, readable=True
                 ),
-                "avd_path": Path(
-                    "/home/cuckoo/.android/avd",
-                    exists=True, writable=False, readable=True
-                ),
-                "reference_machine": String("cuckoo-bird"),
                 "machines": List(String, "cuckoo1"),
             },
             "*": {
@@ -362,7 +357,7 @@ class Config(object):
                 "label": String("cuckoo1"),
                 "platform": String("android"),
                 "ip": String("127.0.0.1"),
-                "snapshot": "cuckoo-snapshot",
+                "snapshot": String("cuckoo_snapshot"),
                 "resultserver_ip": String("10.0.2.2"),
                 "resultserver_port": Int(),
                 "osprofile": String(required=False),

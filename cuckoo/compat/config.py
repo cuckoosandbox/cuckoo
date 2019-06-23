@@ -725,6 +725,22 @@ def _206_207(c):
     c["reporting"]["misp"]["tag"] = "Cuckoo"
     c["reporting"]["misp"]["upload_sample"] = False
 
+    c["avd"] = {
+        "avd": {
+            "mode": "headless",
+            "emulator_path": "/home/cuckoo/Android/Sdk/emulator/emulator",
+            "adb_path": "/home/cuckoo/Android/Sdk/platform-tools/adb",
+            "machines": ["cuckoo1"],
+        },
+        "cuckoo1": {
+            "label": "cuckoo1",
+            "platform": "android",
+            "ip": "127.0.0.1",
+            "snapshot": "cuckoo_snapshot",
+            "resultserver_ip": "10.0.2.2",
+        },
+    }
+
     return c
 
 migrations = {

@@ -42,17 +42,6 @@ class Avd(Machinery):
                 % self.options.avd.adb_path
             )
 
-        if not self.options.avd.avd_path:
-            raise CuckooCriticalError(
-                "avd path missing, please add it to the config file"
-            )
-
-        if not os.path.exists(self.options.avd.avd_path):
-            raise CuckooCriticalError(
-                "avd not found at specified path \"%s\""
-                % self.options.avd.avd_path
-            )
-
         try:
             # Restart the adb server.
             subprocess.check_call([
