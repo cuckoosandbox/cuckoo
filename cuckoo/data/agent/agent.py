@@ -18,16 +18,26 @@ import tempfile
 import traceback
 import zipfile
 
-import SimpleHTTPServer
-import SocketServer
+python_version = sys.version_info.major
 
-AGENT_VERSION = "0.10"
+if python_version > 2:
+    import http.server as SimpleHTTPServer
+    import socketserver as SocketServer
+    TextIO = io.StringIO
+    text_type = str
+else:
+    import SimpleHTTPServer
+    import SocketServer
+    TextIO = io.BytesIO
+    text_type = unicode
+
+AGENT_VERSION = "0.11"
 AGENT_FEATURES = [
     "execpy", "pinning", "logs", "largefile", "unicodepath",
 ]
 
-sys.stdout = io.BytesIO()
-sys.stderr = io.BytesIO()
+sys.stdout = TextIO()
+sys.stderr = TextIO()
 
 class MiniHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     server_version = "Cuckoo Agent"
@@ -67,7 +77,7 @@ class MiniHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
                 if value.filename:
                     request.files[key] = value.file
                 else:
-                    request.form[key] = value.value.decode("utf8")
+                    request.form[key] = text_type(value.value)
 
         self.httpd.handle(self)
 
@@ -115,7 +125,7 @@ class MiniHTTPServer(object):
         obj.end_headers()
 
         if isinstance(ret, jsonify):
-            obj.wfile.write(ret.json())
+            obj.wfile.write(ret.json().encode())
         elif isinstance(ret, send_file):
             ret.write(obj.wfile)
 
@@ -240,7 +250,7 @@ def do_mkdir():
     if "dirpath" not in request.form:
         return json_error(400, "No dirpath has been provided")
 
-    mode = int(request.form.get("mode", 0777))
+    mode = int(request.form.get("mode", 0o777))
 
     try:
         os.makedirs(request.form["dirpath"], mode=mode)
@@ -349,14 +359,14 @@ def do_execute():
         return json_error(400, "No command has been provided")
 
     # Execute the command asynchronously? As a shell command?
-    async = "async" in request.form
+    _async = "async" in request.form
     shell = "shell" in request.form
 
     cwd = request.form.get("cwd")
     stdout = stderr = None
 
     try:
-        if async:
+        if _async:
             subprocess.Popen(request.form["command"], shell=shell, cwd=cwd)
         else:
             p = subprocess.Popen(
@@ -376,7 +386,7 @@ def do_execpy():
         return json_error(400, "No Python file has been provided")
 
     # Execute the command asynchronously? As a shell command?
-    async = "async" in request.form
+    _async = "async" in request.form
 
     cwd = request.form.get("cwd")
     stdout = stderr = None
@@ -387,7 +397,7 @@ def do_execpy():
     ]
 
     try:
-        if async:
+        if _async:
             subprocess.Popen(args, cwd=cwd)
         else:
             p = subprocess.Popen(args, cwd=cwd,
