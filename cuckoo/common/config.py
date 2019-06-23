@@ -343,11 +343,11 @@ class Config(object):
             "avd": {
                 "mode": String("headless"),
                 "emulator_path": Path(
-                    "/home/cuckoo/android-sdk-linux/tools/emulator",
+                    "/home/cuckoo/Android/Sdk/emulator/emulator",
                     exists=True, writable=False, readable=True
                 ),
                 "adb_path": Path(
-                    "/home/cuckoo/android-sdk-linux/platform-tools/adb",
+                    "/home/cuckoo/Android/Sdk/platform-tools/adb",
                     exists=True, writable=False, readable=True
                 ),
                 "avd_path": Path(
@@ -362,9 +362,9 @@ class Config(object):
                 "label": String("cuckoo1"),
                 "platform": String("android"),
                 "ip": String("127.0.0.1"),
-                "emulator_port": Int(5554),
+                "snapshot": "cuckoo-snapshot",
                 "resultserver_ip": String("10.0.2.2"),
-                "resultserver_port": Int(2042),
+                "resultserver_port": Int(),
                 "osprofile": String(required=False),
             },
             "__star__": ("avd", "machines"),
