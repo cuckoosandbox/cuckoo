@@ -396,6 +396,15 @@ class Machinery(object):
             waitme += 1
             current = self._status(label)
 
+    def port_forward(self, label, dport):
+        """Configures port forwarding for a vm.
+        @param label: virtual machine name.
+        @param dport: destination port on guest.
+        @return: host forwarding port.
+        @raise NotImplementedError: this method is abstract.
+        """
+        raise NotImplementedError
+
     @staticmethod
     def version():
         """Return the version of the virtualization software"""
