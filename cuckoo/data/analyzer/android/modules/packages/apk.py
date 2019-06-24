@@ -14,8 +14,8 @@ log = logging.getLogger(__name__)
 class Apk(Package):
     """Apk analysis package."""
 
-    def __init__(self, options={}):
-        Package.__init__(self, options)
+    def __init__(self, options={}, analyzer=None):
+        Package.__init__(self, options, analyzer)
         pkg_info = options.get("apk_entry", ":").split(":")
         self.package = pkg_info[0]
         self.activity = pkg_info[1]

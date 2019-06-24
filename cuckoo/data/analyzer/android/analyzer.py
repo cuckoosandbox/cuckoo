@@ -25,7 +25,7 @@ from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.utils import hash_file
 from modules import auxiliary
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("analyzer")
 
 class BehavioralLogs(object):
 

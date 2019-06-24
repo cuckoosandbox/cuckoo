@@ -47,7 +47,7 @@ function monitorJavaMethod (hookConfig) {
                     try {
                         onMethodEntered(this, arguments);
                     } catch (e) {
-                        LOG("error", e, true);
+                        LOG("errors", e, true);
                     }
 
                     return method.apply(this, arguments);
@@ -55,7 +55,7 @@ function monitorJavaMethod (hookConfig) {
             }
         });
     } catch (e) {
-        LOG("error", e, true);
+        LOG("errors", e, true);
     }
 };
 
@@ -420,8 +420,7 @@ function init () {
 
     Interceptor.attach(renamePtr, {
         onEnter: function (args) {
-            const data = args[0].readUtf8String() + "," + 
-                         args[1].readUtf8String();
+            const data = args[0].readUtf8String() + "," + args[1].readUtf8String();
 
             LOG("fileMoved", data);
         }
@@ -429,8 +428,7 @@ function init () {
 
     Interceptor.attach(renameatPtr, {
         onEnter: function (args) {
-            const data = args[1].readUtf8String() + "," + 
-                         args[3].readUtf8String();
+            const data = args[1].readUtf8String() + "," + args[3].readUtf8String();
 
             LOG("fileMoved", data);
         }
