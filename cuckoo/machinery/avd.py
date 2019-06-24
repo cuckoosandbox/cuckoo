@@ -5,6 +5,7 @@
 
 import os
 import time
+import socket
 import logging
 import subprocess
 
@@ -15,6 +16,8 @@ log = logging.getLogger(__name__)
 
 class Avd(Machinery):
     """Virtualization layer for Android Emulator."""
+
+    _instances = {}
 
     def _initialize_check(self):
         """Runs all checks when a machine manager is initialized.
@@ -64,9 +67,7 @@ class Avd(Machinery):
         args = [
             self.options.avd.emulator_path,
             "@%s" % label,
-            "-snapshot", self.options[label].snapshot,
             "-no-snapshot-save",
-            "-delay-adb",
             "-netspeed", "full",
             "-netdelay", "none",
             "-tcpdump", self.pcap_path(task.id)
@@ -84,22 +85,32 @@ class Avd(Machinery):
             _, port = task.options["proxy"].split(":")
             args += ["-http-proxy", "http://127.0.0.1:%s" % port]
 
+        # Retrieve snapshot name for the emulator to load it.
+        for machine in self.machines():
+            if machine.label == label:
+                args += ["-snapshot", machine.snapshot]
+                break
+
+        # Create a socket server to receive the console port of the emulator.
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(("127.0.0.1", 0))
+        s.listen(5)
+
+        args += ["-report-console", "tcp:" + str(s.getsockname()[1])]
+
         # Start the emulator process..
         subprocess.Popen(
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
-        # Wait untill the emulator shows up for the adb server.
-        while True:
-            if self._device_serial(label):
-                break
+        # Acquire the emulator console port.
+        console_port = s.accept()[0].recv(1024)
+        s.close()
 
-            log.debug(
-                "Waiting for machine %s to become available.", label
-            )
-            time.sleep(1)
+        self._instances[label] = "emulator-" + console_port
 
-        log.debug("Emulator has been found!")
+        # Wait untill the device is ready.
+        self._wait_for_vm_ready(label)
 
     def stop(self, label):
         """Stops a virtual machine.
@@ -110,7 +121,7 @@ class Avd(Machinery):
 
         args = [
             self.options.avd.adb_path,
-            "-s", self._device_serial(label),
+            "-s", self._instances[label],
             "emu", "kill"
         ]
 
@@ -118,8 +129,10 @@ class Avd(Machinery):
             subprocess.check_call(args)
         except subprocess.CalledProcessError as e:
             raise CuckooMachineError(
-                "Emulator failed killing the machine: %s" % e
+                "Emulator failed stopping the machine: %s" % e
             )
+
+        del self._instances[label]
 
     def _list(self):
         """Lists virtual machines installed.
@@ -143,55 +156,39 @@ class Avd(Machinery):
             machines.append(label)
         return machines
 
+    def _wait_for_vm_ready(self, label):
+        """Wait on the state of the device to become ready.
+        @param label: virtual machine name.
+        """
+        args = [
+            self.options.avd.adb_path,
+            "-s", self._instances[label],
+            "get-state"
+        ]
+
+        while True:
+            try:
+                output, err = subprocess.Popen(
+                    args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                ).communicate()
+            except OSError as e:
+                raise CuckooMachineError(
+                    "Failed to retrieve currently running devices: %s", e
+                )
+            if output and output.splitlines()[0] == "device":
+                break
+
+            log.debug(
+                "Waiting for machine %s to become available.", label
+            )
+            time.sleep(3)
+
     def _status(self, label):
         """Gets current status of a vm.
         @param label: virtual machine name.
         @return: status string.
         """
         log.debug("Getting status for %s", label)
-
-    def _device_serial(self, label):
-        """Returns the virtual device serial of the given label.
-        @param label: virtual machine name.
-        @return: device serial as seen by adb.
-        """
-        args = [
-            self.options.avd.adb_path,
-            "devices"
-        ]
-
-        try:
-            output, _ = subprocess.Popen(
-                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            ).communicate()
-        except OSError as e:
-            log.critical(
-                "Failed to retrieve currently running devices: %s", e
-            )
-            return
-
-        for line in output.splitlines()[1:-1]:
-            device_serial = line.split('\t')[0]
-            args = [
-                self.options.avd.adb_path,
-                "-s", device_serial,
-                "emu", "avd", "name"
-            ]
-
-            try:
-                output, err = subprocess.Popen(
-                    args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                ).communicate()
-                if err:
-                    raise OSError(err)
-            except OSError as e:
-                log.error(
-                    "Failed to retrieve name of virtual device: %s", e
-                )
-                continue
-            
-            if output.splitlines()[0] == label:
-                return device_serial
 
     def port_forward(self, label, dport):
         """Configures port forwarding for a vm.
@@ -202,7 +199,7 @@ class Avd(Machinery):
         """
         args = [
             self.options.avd.adb_path,
-            "-s", self._device_serial(label),
+            "-s", self._instances[label],
             "forward", "tcp:0", "tcp:%s" % dport
         ]
 
