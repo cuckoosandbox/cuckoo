@@ -1203,7 +1203,7 @@ interface = virbr0
     assert cfg["avd"]["cuckoo1"]["label"] == "cuckoo1"
     assert cfg["avd"]["cuckoo1"]["platform"] == "android"
     assert cfg["avd"]["cuckoo1"]["ip"] == "127.0.0.1"
-    assert cfg["avd"]["cuckoo1"]["snapshot"] == "cuckoo-snapshot"
+    assert cfg["avd"]["cuckoo1"]["snapshot"] == "cuckoo_snapshot"
     assert cfg["avd"]["cuckoo1"]["resultserver_ip"] == "10.0.2.2"
 
 
