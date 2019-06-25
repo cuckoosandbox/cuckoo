@@ -6,6 +6,7 @@ import os
 import json
 import logging
 
+from lib.common.constants import CONFIG_PATH
 from lib.common.exceptions import CuckooFridaError
 from lib.common.utils import load_configs
 
@@ -15,8 +16,7 @@ try:
 except ImportError:
     HAVE_FRIDA = False
 
-FRIDA_CONFIGS_PATH = "config/frida"
-AGENT_SCRIPT_PATH = "lib/core/agent.js"
+AGENT_PATH = "lib/core/agent.js"
 
 log = logging.getLogger(__name__)
 
@@ -91,16 +91,16 @@ class Client(object):
         """Load our instrumentation agent into the process and start it.
         @param pid: Target process.
         """
-        if not os.path.exists(AGENT_SCRIPT_PATH):
+        if not os.path.exists(AGENT_PATH):
             raise CuckooFridaError(
                 "Agent script not found at '%s', unable to inject into "
-                "process.." % AGENT_SCRIPT_PATH
+                "process.." % AGENT_PATH
             )
 
         self._start_session(pid)
-        self._load_script(pid, AGENT_SCRIPT_PATH)
+        self._load_script(pid, AGENT_PATH)
 
-        configs = load_configs(FRIDA_CONFIGS_PATH)
+        configs = load_configs(CONFIG_PATH)
         self.scripts[pid].exports.start(configs)
 
         self._resume(pid)

@@ -4,3 +4,4 @@
 # Originally contributed by Check Point Software Technologies, Ltd.
 
 ROOT = "/data/local/tmp"
+CONFIG_PATH = "config/"
