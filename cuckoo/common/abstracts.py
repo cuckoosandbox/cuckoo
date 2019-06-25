@@ -397,7 +397,7 @@ class Machinery(object):
             current = self._status(label)
 
     def port_forward(self, label, dport):
-        """Configures port forwarding for a vm.
+        """Configure port forwarding for a vm.
         @param label: virtual machine name.
         @param dport: destination port on guest.
         @return: host forwarding port.
