@@ -238,35 +238,35 @@ class AgentHandler(object):
         """
         if message["type"] == "send":
             if "payload" in message:
-                source = message["payload"].split(":")[0]
-                unboxed_msg = ":".join(message["payload"].split(":")[1:])
+                split_msg = message["payload"].splitlines()
+                header = split_msg[0]
+                message = "\n".join(split_msg[1:])
 
-                # Determine handler based on requested protocol..
-                handler = getattr(self, "_handle_" + source, None)
+                # Determine handler based on event..
+                handler = getattr(self, "_handle_%s" % header, None)
                 if handler:
-                    handler(unboxed_msg)
-
+                    handler(message)
         elif message["type"] == "error":
-            logger = self.analyzer.logs.get_logger("error")
+            logger = self.analyzer.logs.get_logger("errors")
             logger.info(message)
 
-    def _handle_jvmHook(self, data):
+    def _handle_jvmHook(self, message):
         """Handle jvmHook events."""
-        pid, api_call = data.split(":")
+        pid, api_call = message.splitlines()
 
         logger = self.analyzer.logs.get_logger("jvmHook_" + pid)
         logger.info(api_call)
 
-    def _handle_fileDrop(self, filepath):
+    def _handle_fileDrop(self, message):
         """Handle fileDrop events."""
-        self.analyzer.files.add_file(filepath)
+        self.analyzer.files.add_file(message)
 
-    def _handle_fileDelete(self, filepath):
+    def _handle_fileDelete(self, message):
         """Handle fileDelete events."""
-        self.analyzer.files.add_file(filepath)
+        self.analyzer.files.add_file(message)
 
-    def _handle_fileMove(self, data):
+    def _handle_fileMove(self, message):
         """Handle fileMove events."""
-        oldfilepath, newfilepath = data.split(",")
+        oldfilepath, newfilepath = message.split(",")
 
         self.analyzer.files.move_file(oldfilepath, newfilepath)

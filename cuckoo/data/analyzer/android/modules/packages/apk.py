@@ -4,9 +4,9 @@
 # Originally contributed by Check Point Software Technologies, Ltd.
 
 import logging
+import subprocess
 
 from lib.common.abstracts import Package
-from lib.common.utils import install_app, execute_app, get_pid_of
 from lib.common.exceptions import CuckooPackageError, CuckooError
 
 log = logging.getLogger(__name__)
@@ -16,6 +16,7 @@ class Apk(Package):
 
     def __init__(self, options={}, analyzer=None):
         Package.__init__(self, options, analyzer)
+
         pkg_info = options.get("apk_entry", ":").split(":")
         self.package = pkg_info[0]
         self.activity = pkg_info[1]
@@ -24,22 +25,97 @@ class Apk(Package):
         """Run analysis package.
         @param target: sample path.
         """
-        try:
-            install_app(target)
-        except RuntimeError as e:
-            raise CuckooPackageError(e)
+        self._install_app(target)
 
         success = super(Apk, self).execute(self.package)
         if not success:
-            try:
-                # Try starting it via the activity manager.
-                execute_app(self.package, self.activity)
-            except RuntimeError as e:
-                raise CuckooPackageError(e)
+            # Try starting it via the activity manager.
+            self._execute_app()
 
-            pid = get_pid_of(self.package)
+            pid = self._get_pid()
             if pid is None:
                 raise CuckooPackageError(
                     "Failed to execute application. Process not found."
                 )
             self.add_pid(pid)
+
+    def _install_app(self, apk_path):
+        """Install sample via package manager.
+        @raise CuckooError: failed to install sample.
+        """
+        log.info("Installing sample on the device: %s", apk_path)
+        
+        try:
+            args = [
+                "/system/bin/sh",
+                "/system/bin/pm",
+                "install", 
+                "-r", apk_path
+            ]
+            p = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            err = p.communicate()[1].decode('utf-8')
+
+            if p.returncode:
+                raise OSError(err)
+        except OSError as e:
+            raise CuckooPackageError("Error installing sample: %s" % e)
+
+        log.info("Sample installed successfully.")
+
+    def _execute_app(self):
+        """Execute sample via activity manager.
+        @raise CuckooError: failed to execute sample.
+        """
+        log.info(
+            "Executing sample on the device via the activity manager."
+        )
+
+        try:
+            args = [
+                "/system/bin/sh", 
+                "/system/bin/am", 
+                "start",
+                "-n", self.package + "/" + self.activity
+            ]
+            p = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            out, err = p.communicate()
+            
+            if p.returncode:
+                raise OSError(err.decode('utf-8'))
+        except OSError as e:
+            raise CuckooPackageError(
+                "Error executing package activity: %s" % e
+            )
+            
+        log.info("Executed package activity: %s", out.decode('utf-8'))
+
+    def _get_pid(self):
+        """Get PID of an Android application process via its package name
+        @return: the process id.
+        """
+        try:
+            args = [
+                "/system/bin/top",
+                "-bn", "1"
+            ]
+            p = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            out = p.communicate()[0].decode('utf-8')
+
+            if p.returncode:
+                return None
+        except OSError as e:
+            raise CuckooPackageError(
+                "Failed to get PID of package %s: %s" % (self.package, e)
+            )
+
+        for line in out.splitlines():
+            splitLine = line.split(" ")
+
+            if self.package in splitLine:
+                return int(splitLine[1])

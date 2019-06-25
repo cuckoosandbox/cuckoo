@@ -47,7 +47,7 @@ function monitorJavaMethod (hookConfig) {
                     try {
                         onMethodEntered(this, arguments);
                     } catch (e) {
-                        LOG("errors", e, true);
+                        LOG("error", e);
                     }
 
                     return method.apply(this, arguments);
@@ -55,7 +55,7 @@ function monitorJavaMethod (hookConfig) {
             }
         });
     } catch (e) {
-        LOG("errors", e, true);
+        LOG("error", e);
     }
 };
 
@@ -75,8 +75,8 @@ function makeJavaMethodImplCallback (className, methodName, category) {
             "method": methodName,
             "category": category,
             "time": new Date().toString(),
-            "args": args.map(unboxGenericJavaObject),
-            "this": unboxGenericJavaObject(thisObject)
+            "args": Array.from(args).map(unboxGenericObjectValue),
+            "this": unboxGenericObjectValue(thisObject)
         }
 
         const stackElements = Thread.currentThread().getStackTrace();
@@ -93,43 +93,21 @@ function makeJavaMethodImplCallback (className, methodName, category) {
 };
 
 /** 
- * Extracts the value of an object obtained from the Java runtime.
+ * Extracts the value of an object obtained from the runtime.
  */
-function unboxGenericJavaObject (obj) {
+function unboxGenericObjectValue (obj) {
     if (obj === null) {
         return null;
     }
 
-    const javaType = obj.hasOwnProperty("$className")? obj.$className : null;
-
-    if (javaType !== null) {
+    if (obj.$className !== undefined) {
+        const jObject = Java.cast(obj, Java.use(obj.$className));
         const typesParser = new JavaTypesParser();
-        const jObject = Java.cast(obj, Java.use(javaType));
 
-        let typeToParse;
-        if (typesParser.hasOwnProperty(capitalizeTypeName(javaType))) {
-            typeToParse = javaType;
-        } else {
-            for (let type in typesParser.supportedAbstractTypes) {
-                if (Java.use(type).class.isInstance(jObject)) {
-                    typeToParse = type;
-                    break;
-                }
-            }
-        }
-
-        let value = {};
-        if (typeToParse !== undefined) {
-            const handler = capitalizeTypeName(typeToParse);
-            value = typesParser["unbox" + handler](jObject);
-        }
-        value["class"] = javaType;
-
-        return value
+        return typesParser.parse(jObject);
     } else if (Array.isArray(obj)) { 
-        // non-primitive array
-        return obj.map(elem => unboxGenericJavaObject(elem));
-    } else if (obj.type === "byte") { 
+        return obj.map(elem => unboxGenericObjectValue(elem));
+    } else if (obj.type === "byte") {
         // primitive byte array
         if (isAsciiString(obj)) {
             const String = Java.use("java.lang.String");
@@ -144,6 +122,39 @@ function unboxGenericJavaObject (obj) {
 
 class JavaTypesParser {
     constructor () {
+        const abstractTypes = [
+            "java.util.Set",
+            "java.util.Map",
+            "java.util.List",
+            "android.net.Uri",
+            "java.net.HttpURLConnection"
+        ]
+
+        this.parse = function (obj) {
+            let value;
+
+            let handler = "unbox" + capitalizeTypeName(obj.$className);
+            if (this.hasOwnProperty(handler)) {
+                value = this[handler](obj);
+            } else {
+                for (const type of abstractTypes) {
+                    if (Java.use(type).class.isInstance(obj)) {
+                        handler = "unbox" + capitalizeTypeName(type);
+                        value = this[handler](obj);
+                        break
+                    }
+                }
+            }
+
+            if (value === undefined) {
+                value = { "class": obj.$className };
+            } else if (value.constructor.name === "Object") {
+                value["class"] = obj.$className;
+            }
+
+            return value;
+        };
+
         this.unboxJavaIoFile = function (fileObj) {
             return {
                 "path": fileObj.getAbsolutePath()
@@ -225,7 +236,7 @@ class JavaTypesParser {
         this.unboxJavaUtilSet = function (setObj) {
             return this.unboxJavaUtilIterator(setObj.iterator());
         };
-        
+
         this.unboxAndroidOsBundle = function (bundleObj) {
             return this.unboxJavaUtilMap(bundleObj);
         };
@@ -237,7 +248,7 @@ class JavaTypesParser {
         this.unboxJavaUtilIterator = function (iteratorObj) {
             let value = [];
             while (iteratorObj.hasNext()) {
-                value.push(unboxGenericJavaObject(iteratorObj.next()));
+                value.push(unboxGenericObjectValue(iteratorObj.next()));
             }
         
             return value;
@@ -246,7 +257,7 @@ class JavaTypesParser {
         this.unboxJavaUtilList = function (listObj) { 
             let value = [];
             for (let i = 0; i < listObj.size(); i++) {
-                value.push(unboxGenericJavaObject(listObj.get(i)));
+                value.push(unboxGenericObjectValue(listObj.get(i)));
             }
         
             return value;
@@ -259,25 +270,17 @@ class JavaTypesParser {
             while (iterator.hasNext()) {
                 keys.push(iterator.next())
             }
-        
+
             let items = [];
             keys.forEach(aKey => {
-                const key = unboxGenericJavaObject(aKey);
-                const value = unboxGenericJavaObject(mapObj.get(aKey));
+                const key = unboxGenericObjectValue(aKey);
+                const value = unboxGenericObjectValue(mapObj.get(aKey));
         
                 items.push({ key, value });
             });
             
             return { items };
         };
-
-        this.supportedAbstractTypes = [
-            "java.util.Set",
-            "java.util.Map",
-            "java.util.List",
-            "android.net.Uri",
-            "java.net.HttpURLConnection"
-        ]
     }
 }
 
@@ -324,9 +327,9 @@ function LOG (eventType, message, sendPid=false) {
         }
 
         if (sendPid) {
-            send(eventType + ":" + Process.id + ":" + message);
+            send(eventType + "\n" + Process.id + "\n" + message);
         } else {
-            send(eventType + ":" + message);
+            send(eventType + "\n" + message);
         }
     }
 };
