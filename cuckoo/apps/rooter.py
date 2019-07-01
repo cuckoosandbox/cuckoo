@@ -13,6 +13,7 @@ import stat
 import subprocess
 import sys
 
+from cuckoo.common.config import config
 from cuckoo.common.colors import red
 from cuckoo.misc import version as __version__
 
@@ -338,7 +339,20 @@ def tor_disable(vm_ip, resultserver_ip, dns_port, proxy_port):
     tor_toggle("-D", vm_ip, resultserver_ip, dns_port, proxy_port)
 
 def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
-    """Toggle iptables to allow internal Cuckoo traffic."""
+    """Toggle iptables to allow wanted or internal Cuckoo traffic."""
+    # Wanted traffic
+    for port_str in config("routing:internet:allowed_input_ports"):
+        port_cfg = port_str.split(':', 1)
+        port_type = port_cfg[0]
+        port_num = port_cfg[1]
+
+        run_iptables(
+            action, "INPUT", "--source", vm_ip, "-p", port_type,
+            "--destination", resultserver_ip, "--dport", "%s" % port_num,
+            "-j", "ACCEPT"
+        )
+
+    # Internal traffic
     run_iptables(
         action, "INPUT", "--source", vm_ip, "-p", "tcp",
         "--destination", resultserver_ip, "--dport", "%s" % resultserver_port,
@@ -351,8 +365,9 @@ def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
         "-j", "ACCEPT"
     )
 
+    # Policy for this IP
     run_iptables(action, "INPUT", "--source", vm_ip, "-j", "DROP")
-    run_iptables(action, "OUTPUT", "--source", vm_ip, "-j", "DROP")
+    run_iptables(action, "OUTPUT", "--destination", vm_ip, "-j", "DROP")
 
 def drop_enable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     """Enable complete dropping of all non-Cuckoo traffic by default."""

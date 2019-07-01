@@ -817,6 +817,11 @@ class Config(object):
                 "auto_rt": Boolean(True),
                 "drop": Boolean(False),
             },
+            "internet": {
+                "allowed_input_ports": List(String, ""),
+                "restrict_forwarded_ports": Boolean(False),
+                "allowed_forwarded_ports": List(String, ""),
+            },
             "inetsim": {
                 "enabled": Boolean(False),
                 "server": String("192.168.56.1"),
