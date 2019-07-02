@@ -179,6 +179,19 @@ def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
         "--to-destination", "%s:%s" % (dns_ip, dns_port)
     )
 
+def forward_toggle(action, src, dst, ipaddr):
+    """Toggle forwarding a specific IP address from one interface into
+    another."""
+    run_iptables(
+        action, "FORWARD", "-i", src, "-o", dst,
+        "--source", ipaddr, "-j", "ACCEPT"
+    )
+
+    run_iptables(
+        action, "FORWARD", "-i", dst, "-o", src,
+        "--destination", ipaddr, "-j", "ACCEPT"
+    )
+
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
     another."""
@@ -188,28 +201,12 @@ def forward_enable(src, dst, ipaddr):
     run_iptables("-D", "FORWARD", "-i", src, "-j", "REJECT")
     run_iptables("-D", "FORWARD", "-o", src, "-j", "REJECT")
 
-    run_iptables(
-        "-A", "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT"
-    )
-
-    run_iptables(
-        "-A", "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT"
-    )
+    forward_toggle("-A", src, dst, ipaddr)
 
 def forward_disable(src, dst, ipaddr):
     """Disable forwarding of a specific IP address from one interface into
     another."""
-    run_iptables(
-        "-D", "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT"
-    )
-
-    run_iptables(
-        "-D", "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT"
-    )
+    forward_toggle("-D", src, dst, ipaddr)
 
 def srcroute_enable(rt_table, ipaddr):
     """Enable routing policy for specified source IP address."""
