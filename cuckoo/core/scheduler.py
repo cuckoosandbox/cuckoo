@@ -66,6 +66,7 @@ class AnalysisManager(threading.Thread):
         self.unrouted_network = False
         self.stopped_aux = False
         self.rs_port = config("cuckoo:resultserver:port")
+        self.allowed_input_ports = []
 
     def init(self):
         """Initialize the analysis."""
@@ -281,6 +282,17 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
 
+        # Parse allowed INPUT ports
+        for port_str in config("routing:internet:allowed_input_ports"):
+            # String format => type:num (example: tcp:80)
+            port_cfg = port_str.split(':', 1)
+            self.allowed_input_ports.append( (port_cfg[0], port_cfg[1]) )
+
+        # Add MITMproxy port to the allowed input ones if it is running
+        if "mitm_port" in self.task.options:
+            mitm_port = str(self.task.options.get("mitm_port"))
+            self.allowed_input_ports.append( ("tcp", mitm_port) )
+
         # Check if the network interface is still available. If a VPN dies for
         # some reason, its tunX interface will no longer be available.
         if self.interface and not rooter("nic_available", self.interface):
@@ -304,6 +316,11 @@ class AnalysisManager(threading.Thread):
                 "drop_enable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
                 str(self.rs_port)
+            )
+
+        if self.route == "internet":
+            rooter(
+                "input_enable", self.machine.ip, self.allowed_input_ports
             )
 
         if self.route == "inetsim":
@@ -356,6 +373,11 @@ class AnalysisManager(threading.Thread):
                 "drop_disable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
                 str(self.rs_port)
+            )
+
+        if self.route == "internet":
+            rooter(
+                "input_disable", self.machine.ip, self.allowed_input_ports
             )
 
         if self.route == "inetsim":

@@ -382,20 +382,7 @@ def tor_disable(vm_ip, resultserver_ip, dns_port, proxy_port):
     tor_toggle("-D", vm_ip, resultserver_ip, dns_port, proxy_port)
 
 def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
-    """Toggle iptables to allow wanted or internal Cuckoo traffic."""
-    # Wanted traffic
-    for port_str in config("routing:internet:allowed_input_ports"):
-        port_cfg = port_str.split(':', 1)
-        port_type = port_cfg[0]
-        port_num = port_cfg[1]
-
-        run_iptables(
-            action, "INPUT", "--source", vm_ip, "-p", port_type,
-            "--destination", resultserver_ip, "--dport", "%s" % port_num,
-            "-j", "ACCEPT"
-        )
-
-    # Internal traffic
+    """Toggle iptables to allow internal Cuckoo traffic."""
     run_iptables(
         action, "INPUT", "--source", vm_ip, "-p", "tcp",
         "--destination", resultserver_ip, "--dport", "%s" % resultserver_port,
@@ -408,7 +395,6 @@ def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
         "-j", "ACCEPT"
     )
 
-    # Policy for this IP
     run_iptables(action, "INPUT", "--source", vm_ip, "-j", "DROP")
     run_iptables(action, "OUTPUT", "--destination", vm_ip, "-j", "DROP")
 
@@ -422,6 +408,27 @@ def drop_disable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     """Disable complete dropping of all non-Cuckoo traffic by default."""
     return drop_toggle(
         "-D", vm_ip, resultserver_ip, resultserver_port, agent_port
+    )
+
+def input_toggle(action, vm_ip, allowed_input_ports):
+    """Toggle iptables to allow some input traffic."""
+    for (port_type, port_num) in allowed_input_ports:
+        run_iptables(
+            action, "INPUT", "--source", vm_ip, "-p", port_type,
+            "--dport", "%s" % port_num,
+            "-j", "ACCEPT"
+        )
+
+def input_enable(vm_ip, allowed_input_ports):
+    """Enable input traffic."""
+    return input_toggle(
+        "-I", vm_ip, allowed_input_ports
+    )
+
+def input_disable(vm_ip, allowed_input_ports):
+    """Disable input traffic."""
+    return input_toggle(
+        "-D", vm_ip, allowed_input_ports
     )
 
 handlers = {
@@ -448,6 +455,8 @@ handlers = {
     "tor_disable": tor_disable,
     "drop_enable": drop_enable,
     "drop_disable": drop_disable,
+    "input_enable": input_enable,
+    "input_disable": input_disable,
 }
 
 def cuckoo_rooter(socket_path, group, service, iptables, ip):
@@ -554,15 +563,20 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
             log.info("Invalid keyword arguments: %r", kwargs)
             continue
 
-        for arg in args + kwargs.keys() + kwargs.values():
+        for arg in kwargs.keys():
             if not isinstance(arg, basestring):
+                log.info("Invalid argument detected: %r", arg)
+                break
+
+        for arg in args + kwargs.values():
+            if not isinstance(arg, (basestring, tuple, list)):
                 log.info("Invalid argument detected: %r", arg)
                 break
         else:
             log.info(
                 "Processing command: %s %s %s", command,
-                " ".join(args),
-                " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
+                " ".join(str(arg) for arg in args),
+                " ".join("%s=%s" % (k, str(v)) for k, v in kwargs.items())
             )
 
             output = e = None
