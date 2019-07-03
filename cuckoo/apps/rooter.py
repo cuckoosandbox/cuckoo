@@ -182,15 +182,61 @@ def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
 def forward_toggle(action, src, dst, ipaddr):
     """Toggle forwarding a specific IP address from one interface into
     another."""
-    run_iptables(
-        action, "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT"
-    )
+    # Forwarded ports are restricted
+    if config("routing:internet:restrict_forwarded_ports"):
+        # TCP rule exist (=> RELATED/ESTABLISHED allowed)
+        tcp_rule = False
 
-    run_iptables(
-        action, "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT"
-    )
+        # Forwarding rules
+        for port_str in config("routing:internet:allowed_forwarded_ports"):
+            port_cfg = port_str.split(':', 1)
+            port_type = port_cfg[0]
+            port_num = port_cfg[1]
+    
+            # UDP packets: no states
+            if port_type == "udp":
+                run_iptables(
+                    action, "FORWARD", "-i", src, "-o", dst,
+                    "-p", port_type, "--dport", "%s" % port_num,
+                    "--source", ipaddr, "-j", "ACCEPT"
+                )
+        
+                run_iptables(
+                    action, "FORWARD", "-i", dst, "-o", src,
+                    "-p", port_type, "--sport", "%s" % port_num,
+                    "--destination", ipaddr, "-j", "ACCEPT"
+                )
+
+            # TCP packets: NEW state only (RELATED and ESTABLISHED are in a global rule)
+            else:
+                tcp_rule = True
+
+                run_iptables(
+                    action, "FORWARD", "-i", src, "-o", dst,
+                    "-p", "tcp", "--dport", "%s" % port_num,
+                    "-m", "state", "--state", "NEW",
+                    "--source", ipaddr, "-j", "ACCEPT"
+                )
+
+        # There is a TCP rule => RELATED/ESTABLISHED needed
+        if tcp_rule:
+            run_iptables(
+                action, "FORWARD", "-i", src, "-o", dst,
+                "-m", "state", "--state", "RELATED,ESTABLISHED",
+                "--source", ipaddr, "-j", "ACCEPT"
+            )
+
+    # No restrictions for forwarding
+    else:
+        run_iptables(
+            action, "FORWARD", "-i", src, "-o", dst,
+            "--source", ipaddr, "-j", "ACCEPT"
+        )
+    
+        run_iptables(
+            action, "FORWARD", "-i", dst, "-o", src,
+            "--destination", ipaddr, "-j", "ACCEPT"
+        )
 
 def forward_enable(src, dst, ipaddr):
     """Enable forwarding a specific IP address from one interface into
