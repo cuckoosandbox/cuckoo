@@ -304,6 +304,8 @@ class Config(object):
             },
             "mitm": {
                 "enabled": Boolean(False),
+                "transparent_mode": Boolean(False),
+                "confdir": String(""),
                 "mitmdump": Path(
                     "/usr/local/bin/mitmdump",
                     exists=False, writable=False, readable=True
