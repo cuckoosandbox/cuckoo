@@ -947,6 +947,13 @@ class Scheduler(object):
                          "VM.", machine.name)
                 continue
 
+            # TODO: Ports forwarding filtering and input ports filtering isn't
+            #       performed here. To manage this cleaning, we must manage
+            #       differently rules in rooter because the configuration may
+            #       change between two cuckoo's starts. Thus, performing this
+            #       cleaning would require a stateful rooter, knowing which
+            #       rule is associated to which machine.
+
             # Drop forwarding rule to each VPN.
             if config("routing:vpn:enabled"):
                 for vpn in config("routing:vpn:vpns"):
