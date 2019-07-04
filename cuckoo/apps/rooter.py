@@ -339,12 +339,19 @@ def tor_disable(vm_ip, resultserver_ip, dns_port, proxy_port):
 
 def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
     """Toggle iptables to allow internal Cuckoo traffic."""
+    # Result server
     run_iptables(
         action, "INPUT", "--source", vm_ip, "-p", "tcp",
         "--destination", resultserver_ip, "--dport", "%s" % resultserver_port,
         "-j", "ACCEPT"
     )
+    run_iptables(
+        action, "OUTPUT", "--source", resultserver_ip, "-p", "tcp",
+        "--destination", vm_ip, "--sport", "%s" % resultserver_port,
+        "-j", "ACCEPT"
+    )
 
+    # Agent
     run_iptables(
         action, "OUTPUT", "--source", resultserver_ip,
         "-p", "tcp", "--destination", vm_ip, "--dport", "%s" % agent_port,
