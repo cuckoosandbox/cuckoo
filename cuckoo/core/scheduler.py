@@ -315,7 +315,7 @@ class AnalysisManager(threading.Thread):
         if self.route == "internet":
             rooter(
                 "redirect_enable",
-                self.interface, self.machine.ip,
+                self.machine.interface, self.machine.ip,
                 self.nat_redirections
             )
 
@@ -374,7 +374,7 @@ class AnalysisManager(threading.Thread):
         if self.route == "internet":
             rooter(
                 "redirect_disable",
-                self.interface, self.machine.ip,
+                self.machine.interface, self.machine.ip,
                 self.nat_redirections
             )
 
