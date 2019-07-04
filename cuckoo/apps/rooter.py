@@ -221,6 +221,12 @@ def forward_toggle(action, src, dst, ipaddr, restricted_forward, allowed_ports):
                 "--source", ipaddr, "-j", "ACCEPT"
             )
 
+            run_iptables(
+                action, "FORWARD", "-i", dst, "-o", src,
+                "-m", "state", "--state", "RELATED,ESTABLISHED",
+                "--destination", ipaddr, "-j", "ACCEPT"
+            )
+
     # No restrictions for forwarding
     else:
         run_iptables(
