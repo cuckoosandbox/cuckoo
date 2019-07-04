@@ -13,7 +13,6 @@ import stat
 import subprocess
 import sys
 
-from cuckoo.common.config import config
 from cuckoo.common.colors import red
 from cuckoo.misc import version as __version__
 
@@ -179,20 +178,16 @@ def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
         "--to-destination", "%s:%s" % (dns_ip, dns_port)
     )
 
-def forward_toggle(action, src, dst, ipaddr):
+def forward_toggle(action, src, dst, ipaddr, restricted_forward, allowed_ports):
     """Toggle forwarding a specific IP address from one interface into
     another."""
     # Forwarded ports are restricted
-    if config("routing:internet:restrict_forwarded_ports"):
-        # TCP rule exist (=> RELATED/ESTABLISHED allowed)
+    if restricted_forward:
+        # If a TCP rule exists (=> RELATED/ESTABLISHED allowed)
         tcp_rule = False
 
         # Forwarding rules
-        for port_str in config("routing:internet:allowed_forwarded_ports"):
-            port_cfg = port_str.split(':', 1)
-            port_type = port_cfg[0]
-            port_num = port_cfg[1]
-    
+        for (port_type, port_num) in allowed_ports:
             # UDP packets: no states
             if port_type == "udp":
                 run_iptables(
@@ -238,7 +233,7 @@ def forward_toggle(action, src, dst, ipaddr):
             "--destination", ipaddr, "-j", "ACCEPT"
         )
 
-def forward_enable(src, dst, ipaddr):
+def forward_enable(src, dst, ipaddr, restricted_forward=False, allowed_ports=[]):
     """Enable forwarding a specific IP address from one interface into
     another."""
     # Delete libvirt's default FORWARD REJECT rules. e.g.:
@@ -247,12 +242,12 @@ def forward_enable(src, dst, ipaddr):
     run_iptables("-D", "FORWARD", "-i", src, "-j", "REJECT")
     run_iptables("-D", "FORWARD", "-o", src, "-j", "REJECT")
 
-    forward_toggle("-A", src, dst, ipaddr)
+    forward_toggle("-A", src, dst, ipaddr, restricted_forward, allowed_ports)
 
-def forward_disable(src, dst, ipaddr):
+def forward_disable(src, dst, ipaddr, restricted_forward=False, allowed_ports=[]):
     """Disable forwarding of a specific IP address from one interface into
     another."""
-    forward_toggle("-D", src, dst, ipaddr)
+    forward_toggle("-D", src, dst, ipaddr, restricted_forward, allowed_ports)
 
 def srcroute_enable(rt_table, ipaddr):
     """Enable routing policy for specified source IP address."""
@@ -569,7 +564,7 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
                 break
 
         for arg in args + kwargs.values():
-            if not isinstance(arg, (basestring, tuple, list)):
+            if not isinstance(arg, (basestring, tuple, list, bool)):
                 log.info("Invalid argument detected: %r", arg)
                 break
         else:

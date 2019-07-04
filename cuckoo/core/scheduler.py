@@ -67,6 +67,8 @@ class AnalysisManager(threading.Thread):
         self.stopped_aux = False
         self.rs_port = config("cuckoo:resultserver:port")
         self.allowed_input_ports = []
+        self.restrict_forwarded_ports = config("routing:internet:restrict_forwarded_ports")
+        self.allowed_forwarded_ports = []
 
     def init(self):
         """Initialize the analysis."""
@@ -293,6 +295,12 @@ class AnalysisManager(threading.Thread):
             mitm_port = str(self.task.options.get("mitm_port"))
             self.allowed_input_ports.append( ("tcp", mitm_port) )
 
+        # Forwarded ports restrictions
+        if self.restrict_forwarded_ports:
+            for port_str in config("routing:internet:allowed_forwarded_ports"):
+                port_cfg = port_str.split(':', 1)
+                self.allowed_forwarded_ports.append( (port_cfg[0], port_cfg[1]) )
+
         # Check if the network interface is still available. If a VPN dies for
         # some reason, its tunX interface will no longer be available.
         if self.interface and not rooter("nic_available", self.interface):
@@ -344,7 +352,8 @@ class AnalysisManager(threading.Thread):
         if self.interface:
             rooter(
                 "forward_enable", self.machine.interface,
-                self.interface, self.machine.ip
+                self.interface, self.machine.ip,
+                self.restrict_forwarded_ports, self.allowed_forwarded_ports
             )
 
         if self.rt_table:
@@ -360,7 +369,8 @@ class AnalysisManager(threading.Thread):
         if self.interface:
             rooter(
                 "forward_disable", self.machine.interface,
-                self.interface, self.machine.ip
+                self.interface, self.machine.ip,
+                self.restrict_forwarded_ports, self.allowed_forwarded_ports
             )
 
         if self.rt_table:
