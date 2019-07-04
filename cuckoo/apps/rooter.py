@@ -419,6 +419,11 @@ def input_toggle(action, vm_ip, allowed_input_ports):
             "--dport", "%s" % port_num,
             "-j", "ACCEPT"
         )
+        run_iptables(
+            action, "OUTPUT", "--destination", vm_ip, "-p", port_type,
+            "--sport", "%s" % port_num,
+            "-j", "ACCEPT"
+        )
 
 def input_enable(vm_ip, allowed_input_ports):
     """Enable input traffic."""
