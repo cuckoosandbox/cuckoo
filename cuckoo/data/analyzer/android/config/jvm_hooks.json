@@ -345,6 +345,11 @@
         "category": "reflection"
     },
     {
+        "class": "java.lang.reflect.Field",
+        "method": "set",
+        "category": "reflection"
+    },
+    {
         "class": "java.lang.reflect.Method",
         "method": "invoke",
         "category": "reflection"
@@ -355,7 +360,7 @@
         "category": "file"
     },
     {
-        "class": "java.net.ProxySelectorImpl",
+        "class": "sun.net.spi.DefaultProxySelector",
         "method": "select",
         "category": "network"
     },
@@ -385,7 +390,7 @@
         "category": "file"
     },
     {
-        "class": "okio.Buffer", 
+        "class": "com.android.okhttp.okio.RealBufferedSink$1",
         "method": "write", 
         "category": "network"
     },
