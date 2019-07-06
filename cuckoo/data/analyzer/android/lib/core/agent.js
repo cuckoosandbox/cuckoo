@@ -143,6 +143,12 @@ class JavaTypesParser {
             return value;
         };
 
+        this.unboxJavaLangClass = function (classObj) {
+            return {
+                "name": classObj.getName() 
+            }
+        };
+
         this.unboxJavaIoFile = function (fileObj) {
             return {
                 "path": fileObj.getAbsolutePath()
