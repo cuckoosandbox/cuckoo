@@ -54,9 +54,10 @@ class Screenshots(threading.Thread, Auxiliary):
                 continue
 
             upload_to_host(img_current, "shots/%s.png" % img_count)
-            os.unlink(img_last)
+            if img_last:
+                os.unlink(img_last)
 
-            img_count += 1            
+            img_count += 1
             img_last = img_current
             img_current = tempfile.mktemp()
 
