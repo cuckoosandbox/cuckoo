@@ -6,7 +6,6 @@
 import os
 import logging
 import pkgutil
-import shutil
 import sys
 import urllib.request
 import urllib.parse
@@ -17,7 +16,6 @@ import tempfile
 
 from lib.core.packages import choose_package
 from lib.common.abstracts import Package, Auxiliary
-from lib.common.constants import ROOT
 from lib.common.results import upload_to_host
 from lib.core.config import Config
 from lib.core.startup import init_logging
@@ -31,46 +29,20 @@ class BehavioralLogs(object):
 
     def __init__(self):
         self.logs = []
-        self.cached_loggers = {}
 
     def add_log(self, filename):
-        """Add a new behavioral log to the list.
-        @param filename: name of log file to be addded.
-        @return: absolute path of the log file.
+        """Add a new log file to the list of behavioral logs.
+        @param filename: name of log file.
+        @return: absolute path to file.
         """
         filepath = "%s/%s" % (tempfile.gettempdir(), filename)
 
         if filepath not in self.logs:
             self.logs.append(filepath)
-
             log.info(
                 "Added new behavioral log '%s' to the list.", filename
             )
-
         return filepath
-
-    def get_logger(self, filename):
-        """Obtain a file logger instance.
-        @param filename: name of log file.
-        @return: logger instance.
-        """
-        if filename not in self.cached_loggers:
-            # Add log file to the list.
-            filepath = self.add_log(filename)
-
-            # Create file handler.
-            fh = logging.FileHandler(filepath)
-            fh.setFormatter(logging.Formatter("%(message)s"))
-
-            # Initialize logger.
-            logger = logging.getLogger(filename)
-            logger.addHandler(fh)
-            logger.setLevel(logging.DEBUG)
-            logger.propagate = False
-
-            self.cached_loggers[filename] = logger
-
-        return self.cached_loggers[filename]
 
     def dump_logs(self):
         """Dump all behavioral logs to host."""
@@ -113,10 +85,8 @@ class Files(object):
         if sha256 in self.dumped:
             return
 
-        filename = os.path.basename(filepath)
-        upload_to_host(filepath, "files/" + filename)
-
-        if sha256 is not None:
+        upload_to_host(filepath, "files/" + os.path.basename(filepath))
+        if sha256:
             self.dumped.append(sha256)
 
     def move_file(self, oldfilepath, newfilepath):
@@ -167,7 +137,9 @@ class Analyzer(object):
         # We update the target according to its category. If it's a file, then
         # we store the path.
         if self.config.category == "file":
-            self.target = os.path.join(ROOT, self.config.file_name)
+            self.target = os.path.join(
+                tempfile.gettempdir(), self.config.file_name
+            )
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
@@ -248,7 +220,7 @@ class Analyzer(object):
         for module in Auxiliary.__subclasses__():
             # Try to start the auxiliary module.
             try:
-                aux = module()
+                aux = module(self.config.options)
                 aux.start()
             except (NotImplementedError, AttributeError):
                 log.warning("Auxiliary module %s was not implemented",
