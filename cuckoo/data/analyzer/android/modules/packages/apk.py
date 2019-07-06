@@ -47,21 +47,18 @@ class Apk(Package):
         
         try:
             args = [
-                "/system/bin/sh",
-                "/system/bin/pm",
-                "install", 
-                "-r", apk_path
+                "/system/bin/sh", "/system/bin/pm",
+                "install", "-r", apk_path
             ]
             p = subprocess.Popen(
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
-            err = p.communicate()[1].decode('utf-8')
+            err = p.communicate()[1].decode()
 
             if p.returncode:
                 raise OSError(err)
         except OSError as e:
             raise CuckooPackageError("Error installing sample: %s" % e)
-
         log.info("Sample installed successfully.")
 
     def _execute_app(self):
@@ -74,10 +71,8 @@ class Apk(Package):
 
         try:
             args = [
-                "/system/bin/sh", 
-                "/system/bin/am", 
-                "start",
-                "-n", self.package + "/" + self.activity
+                "/system/bin/sh", "/system/bin/am", 
+                "start", "-n", "%s/%s" % (self.package, self.activity)
             ]
             p = subprocess.Popen(
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -85,27 +80,23 @@ class Apk(Package):
             out, err = p.communicate()
             
             if p.returncode:
-                raise OSError(err.decode('utf-8'))
+                raise OSError(err.decode())
         except OSError as e:
             raise CuckooPackageError(
                 "Error executing package activity: %s" % e
             )
-            
-        log.info("Executed package activity: %s", out.decode('utf-8'))
+        log.info("Executed package activity: %s", out.decode())
 
     def _get_pid(self):
         """Get PID of an Android application process via its package name
         @return: the process id.
         """
         try:
-            args = [
-                "/system/bin/top",
-                "-bn", "1"
-            ]
+            args = ["/system/bin/top", "-bn", "1"]
             p = subprocess.Popen(
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
-            out = p.communicate()[0].decode('utf-8')
+            out = p.communicate()[0].decode()
 
             if p.returncode:
                 return None
@@ -116,6 +107,5 @@ class Apk(Package):
 
         for line in out.splitlines():
             splitLine = line.split(" ")
-
             if self.package in splitLine:
                 return int(splitLine[1])
