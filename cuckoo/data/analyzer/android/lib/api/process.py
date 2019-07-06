@@ -6,7 +6,8 @@ import os
 import logging
 import subprocess
 
-from lib.common.results import upload_from_buffer
+from lib.core.config import Config
+from lib.common.utils import determine_device_arch
 
 log = logging.getLogger(__name__)
 
@@ -37,36 +38,50 @@ class Process(object):
     def kill(self):
         """Kill the process."""
         try:
-            subprocess.check_call(["kill", "-9", self.pid])
+            subprocess.check_call(["kill", "-9", str(self.pid)])
         except subprocess.CalledProcessError as e:
             log.error(
                 "Failed to kill process with pid '%s': %s", self.pid, e
             )
+            return
+        log.info("Process with id %d is terminated." % self.pid)
 
-    def dump_memory(self, frida_agent):
-        """Dump the process memory using Frida.
-        @param frida_agent: Frida agent instance.
-        """
-        log.info("Dumping memory of process id: %s", self.pid)
+    def dump_memory(self):
+        """Dump the process memory."""
+        config = Config(cfg="analysis.conf")
+        log.info("Dumping memory of process with id: %s", self.pid)
 
-        ranges = frida_agent.call("enumerateRanges", "r--")
-        for _range in ranges:
-            base_addr = _range["base"]
-            size = _range["size"]
+        try:
+            arch = determine_device_arch()
+            if not arch:
+                raise OSError("Failed to determine device architecture")
 
-            try:
-                data = frida_agent.call("readBytes", [base_addr, size])
-            except:  # TODO: fix memory access violations.
-                continue
+            args = ["chmod", "755", "bin/memdmp_%s" % arch]
+            subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            ).communicate()
 
-            dump_path = "memory/block-%s-%s.dmp" % (self.pid, base_addr)
-            upload_from_buffer(data, dump_path)
+            args = [
+                "bin/memdmp_%s" % arch,
+                "--remote", "%s:%s" % (config.ip, config.port),
+                str(self.pid), "memory/%s-0.dmp" % self.pid
+            ]
+            p = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            _, err = p.communicate()
+
+            if p.returncode:
+                raise OSError(err.decode().rstrip())
+        except OSError as e:
+            log.error("Failed to dump process memory. %s", e)
 
     @staticmethod
     def execute(cmd):
-        """Execute process.
-        @param cmd: List of arguments.
+        """Execute a program.
+        @param cmd: list of arguments.
         @return: instance of Process with new pid.
         """
-        proc = subprocess.Popen(cmd)
-        return Process(proc.pid)
+        return Process(
+            subprocess.Popen(cmd).pid
+        )

@@ -31,22 +31,6 @@ def upload_to_host(file_path, dump_path):
         if nc:
             nc.close()
 
-def upload_from_buffer(buffer, dump_path):
-    nc = None
-    try:
-        nc = NetlogFile(dump_path)
-
-        bytes_sent = 0
-        while bytes_sent < len(buffer):
-            data = buffer[bytes_sent:BUFSIZE]
-            nc.send(data, retry=False)
-            bytes_sent += len(data)
-    except Exception as e:
-        log.error("Exception sending buffer to host: %s", e)
-    finally:
-        if nc:
-            nc.close()
-
 class NetlogConnection(object):
     def __init__(self, proto=""):
         config = Config(cfg="analysis.conf")
