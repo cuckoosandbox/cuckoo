@@ -381,7 +381,7 @@ class GuestManager(object):
         if self.platform == "windows":
             return "%s/" % self.environ["SYSTEMDRIVE"]
         elif self.platform == "android":
-            return "/data/local/tmp"
+            return "/data/local"
         return "/"
 
     def determine_temp_path(self):
