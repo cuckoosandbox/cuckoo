@@ -107,14 +107,14 @@ echo "Pushing Python to the device"
 $ADB push "${tmp_dir}/usr" $device_tmp
 echo
 
-# Push the cuckoo agent
+# Push the Cuckoo agent.
 echo "Pushing the cuckoo agent"
 $ADB push "${cwd}/agent/agent.py" $device_tmp
 $ADB push "${cwd}/agent/android-agent.sh" $device_tmp
 $ADB shell chmod 06755 "${device_tmp}/android-agent.sh"
 echo
 
-# Download & Install the ImportContacts application
+# Download & Install the ImportContacts application.
 echo "Downloading and installing ImportContacts.apk"
 wget -qP $tmp_dir "https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/apps/ImportContacts.apk"
 $ADB install "${tmp_dir}/ImportContacts.apk"
@@ -127,12 +127,12 @@ $ADB shell setenforce 0
 
 # Start the Cuckoo agent.
 echo "Starting the cuckoo agent.."
-$ADB shell "${device_tmp}/android-agent.sh" &
+$ADB shell "${device_tmp}/android-agent.sh"
 echo
 
 # Save a snapshot of the device state.
-echo "Taking a snapshot of the virtual device state."
-$ADB emu avd snapshot save cuckoo_sanpshot
+echo "Taking a snapshot of the virtual device state.."
+$ADB emu avd snapshot save cuckoo_snapshot
 echo
 
 # Remove unneeded stuff!
