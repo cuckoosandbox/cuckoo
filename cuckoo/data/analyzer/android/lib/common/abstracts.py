@@ -49,7 +49,7 @@ class Package(object):
 
     def check(self):
         """Check."""
-        # Check the status of monitored PIDs.
+        # Update the list of monitored processes
         for pid in self.pids:
             if not Process(pid).is_alive():
                 self.remove_pid(pid)
@@ -59,7 +59,7 @@ class Package(object):
     def instrument(self):
         """Start instrumentation of analysis package."""
         if self.frida_client:
-            # Set callbacks for newly created children processes.
+            # callbacks for newly-created children.
             self.frida_client.on_child_added_callback = self._instrument
             self.frida_client.on_child_removed_callback = self.remove_pid
 
@@ -92,7 +92,6 @@ class Package(object):
         @return: True on success, False otherwise.
         """
         pid = None
-
         try:
             # Spawn the process with Frida..
             self.frida_client = Frida.Client(self.analyzer)
@@ -101,7 +100,6 @@ class Package(object):
             log.error(
                 "Failed to spawn application process with Frida: %s" % e
             )
-
             if os.path.exists(target[0]):
                 # Execute the target in a new process..
                 pid = Process.execute(target).pid
@@ -109,20 +107,12 @@ class Package(object):
         success = pid is not None
         if success:
             self.add_pid(pid)
-
         return success
 
     def finish(self):
         """Finish run."""
         for pid in self.pids:
-            if self.frida_client:
-                # Dump memory of monitored process.
-                frida_agent = self.frida_client.get_agent(pid)
-                Process(pid).dump_memory(frida_agent)
-
-                # Terminate the Frida session
-                self.frida_client.terminate_session(pid)
-            
+            Process(pid).dump_memory()
             Process(pid).kill()
 
 class Auxiliary(object):
@@ -131,6 +121,6 @@ class Auxiliary(object):
 
     def start(self):
         raise NotImplementedError
-    
+
     def stop(self):
         raise NotImplementedError

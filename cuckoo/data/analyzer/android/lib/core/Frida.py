@@ -6,7 +6,6 @@ import os
 import json
 import logging
 
-from lib.common.constants import CONFIG_PATH
 from lib.common.exceptions import CuckooFridaError
 from lib.common.utils import load_configs
 
@@ -99,36 +98,27 @@ class Client(object):
 
         self._start_session(pid)
         self._load_script(pid, AGENT_PATH)
-
-        configs = load_configs(CONFIG_PATH)
-        self.scripts[pid].exports.start(configs)
+        self.scripts[pid].exports.start(load_configs("config/"))
 
         self._resume(pid)
 
     def terminate_session(self, pid):
-        """Terminate the currently attached Frida session"""
+        """Terminate an attached session.
+        @param pid: process id.
+        """
         if pid in self.scripts:
             try:
                 self.scripts[pid].unload()
             except frida.InvalidOperationError:
                 pass
+
             del self.scripts[pid]
-        
+
         if pid in self.sessions:
             self.sessions[pid].detach()
             del self.sessions[pid]
 
         log.info("Frida session is terminated")
-
-    def get_agent(self, pid):
-        """Get the agent injected in a process.
-        @param pid: Process id.
-        @return: Agent instance.
-        """
-        if pid not in self.scripts:
-            return None
-
-        return Agent(pid, self.scripts[pid])
 
     def _on_child_added(self, pid):
         """A callback function. Called when a new child is added.
@@ -156,12 +146,11 @@ class Client(object):
         """
         try:
             self.device.resume(pid)
+            log.info("Process with id: %d is resumed" % pid)
         except (frida.InvalidArgumentError, frida.ProcessNotFoundError):
             log.warning(
                 "Attempted to resume a non-resumable process %d." % pid
             )
-
-        log.debug("Process with id: %d is resumed" % pid)
 
     def _start_session(self, pid):
         """Initiate a frida session with the application
@@ -169,60 +158,36 @@ class Client(object):
         """
         try:
             session = self.device.attach(pid)
+            log.info("Frida session established!")
         except frida.ProcessNotFoundError:
-            raise CuckooFridaError("Failed to initiate a frida session "
-                                   "with the application process")
-
-        log.info("Frida session established!")
+            raise CuckooFridaError(
+                "Failed to initiate a frida session with the application "
+                "process."
+            )
 
         session.enable_child_gating()
-
         self.sessions[pid] = session
 
-    def _load_script(self, pid, script_path):
+    def _load_script(self, pid, filepath):
         """Inject a JS script into the process
         @param pid: Process id.
-        @param script_path: Path to JS script file.'
+        @param filepath: Path to JS script file.'
         """
         if pid not in self.sessions:
             raise CuckooFridaError(
-                "Cannot inject into process, Frida is not attached."
+                "Cannot inject script into process, Frida is not attached."
             )
 
-        session = self.sessions[pid]
-        with open(script_path, "r") as fd:
-            _script = fd.read()
-
         try:
-            script = session.create_script(_script, runtime='v8')
-            script.on("message", self.agent_handler.on_receive)
-            script.load()
+            with open(filepath, "r") as fd:
+                s = self.sessions[pid]
+                script = s.create_script(fd.read(), runtime='v8')
+                script.on("message", self.agent_handler.on_receive)
+                script.load()
+                self.scripts[pid] = script
+            log.info("Script loaded successfully")
         except frida.TransportError:
             raise CuckooFridaError("Failed to inject instrumentation script")
-
-        self.scripts[pid] = script
-
-        log.info("Script loaded successfully")
-
-class Agent(object):
-    """RPC interface of Frida's agent."""
-
-    def __init__(self, pid, script):
-        """@param pid: Process id.
-        @param script: Script object to communicate with agent.
-        """
-        self.pid = pid
-        self.script = script
-
-    def call(self, func_name, args=None):
-        """Call an exported function from our agent script.
-        @param func_name: Name of exported function.
-        @param args: function arguments.
-        """
-        if args is not None and not isinstance(args, list):
-            args = [args]
-
-        self.script.exports.api(func_name, args)
 
 class AgentHandler(object):
     """Handles event messages received from Frida's agent."""
@@ -231,6 +196,7 @@ class AgentHandler(object):
         """@param analyzer: Analyzer instance.
         """
         self.analyzer = analyzer
+        self.loggers = {}
 
     def on_receive(self, message, payload):
         """A callback function invoked upon receiving an event message
@@ -247,15 +213,31 @@ class AgentHandler(object):
                 if handler:
                     handler(message)
         elif message["type"] == "error":
-            logger = self.analyzer.logs.get_logger("errors")
-            logger.info(message)
+            self.log_event("errors", message)
+
+    def log_event(self, src, data):
+        """Log an event to log file.
+        @param src: source of event.
+        @param data: event data.
+        """
+        if src not in self.loggers:
+            logger = logging.getLogger(src)
+            logger.setLevel(logging.DEBUG)
+            logger.propagate = False
+
+            filepath = self.analyzer.logs.add_log(src)
+            fh = logging.FileHandler(filepath)
+            fh.setFormatter(logging.Formatter("%(message)s"))
+            logger.addHandler(fh)
+
+            self.loggers[src] = logger
+
+        self.loggers[src].info(data)
 
     def _handle_jvmHook(self, message):
         """Handle jvmHook events."""
         pid, api_call = message.splitlines()
-
-        logger = self.analyzer.logs.get_logger("jvmHook_" + pid)
-        logger.info(api_call)
+        self.log_event("jvmHook_" + pid, api_call)
 
     def _handle_fileDrop(self, message):
         """Handle fileDrop events."""
@@ -268,5 +250,4 @@ class AgentHandler(object):
     def _handle_fileMove(self, message):
         """Handle fileMove events."""
         oldfilepath, newfilepath = message.split(",")
-
         self.analyzer.files.move_file(oldfilepath, newfilepath)

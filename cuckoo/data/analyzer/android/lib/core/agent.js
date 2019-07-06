@@ -7,21 +7,6 @@
 'use strict';
 
 /**
- * Exported methods for the Frida RPC client.
- */
-class Api {
-    constructor () {
-        this.readBytes = function (address, size) {
-            return ptr(address).readByteArray(size);
-        };
-
-        this.enumerateRanges = function (protection) {
-            return Process.enumerateRanges(protection);
-        };
-    }
-}
-
-/**
  * Replace the implementation of a Java method in order to monitor calls
  * made to the Android API. Needs to be called from a thread attached 
  * to the VM.
@@ -55,6 +40,7 @@ function monitorJavaMethod (hookConfig) {
             }
         });
     } catch (e) {
+        LOG("error", className + ":" + methodName);
         LOG("error", e);
     }
 };
@@ -100,15 +86,16 @@ function unboxGenericObjectValue (obj) {
         return null;
     }
 
-    if (obj.$className !== undefined) {
+    if (obj.$className !== undefined) { 
+        /* java type */
         const jObject = Java.cast(obj, Java.use(obj.$className));
         const typesParser = new JavaTypesParser();
-
         return typesParser.parse(jObject);
     } else if (Array.isArray(obj)) { 
+        /* non-primitive array */
         return obj.map(elem => unboxGenericObjectValue(elem));
-    } else if (obj.type === "byte") {
-        // primitive byte array
+    } else if (obj.type === "byte") { 
+        /* primitive byte array */
         if (isAsciiString(obj)) {
             const String = Java.use("java.lang.String");
             return String.$new(obj).toString();
@@ -131,19 +118,20 @@ class JavaTypesParser {
         ]
 
         this.parse = function (obj) {
-            let value;
-
             let handler = "unbox" + capitalizeTypeName(obj.$className);
-            if (this.hasOwnProperty(handler)) {
-                value = this[handler](obj);
-            } else {
+            if (!this.hasOwnProperty(handler)) {
+                handler = null;
                 for (const type of abstractTypes) {
                     if (Java.use(type).class.isInstance(obj)) {
                         handler = "unbox" + capitalizeTypeName(type);
-                        value = this[handler](obj);
                         break
                     }
                 }
+            }
+
+            let value;
+            if (handler !== null) {
+                value = this[handler](obj);
             }
 
             if (value === undefined) {
@@ -356,7 +344,7 @@ function init_jvm (jvmHooksConfig) {
  * Bootstrapping procedure for the analysis.
  */
 function init () {
-    // Exported symbols..
+    /* Exported symbols */
     let unlinkPtr = Module.findExportByName(null, "unlink");
     let unlinkatPtr = Module.findExportByName(null, "unlinkat");
     let openPtr = Module.findExportByName(null, "open");
@@ -366,10 +354,10 @@ function init () {
     let renamePtr = Module.findExportByName(null, "rename");
     let renameatPtr = Module.findExportByName(null, "renameat");
 
-    // Native functions..
+    /* Native functions */
     let lstat = new NativeFunction(lstatPtr, "int", ["pointer", "pointer"]);
 
-    // Check if file exists.
+    /* Check if file exists */
     let exists = function (fpathPtr) {
         let maxStatStructSize = 20 * 8;
         let statStruct = Memory.alloc(maxStatStructSize);
@@ -377,6 +365,7 @@ function init () {
         return lstat(fpathPtr, statStruct) === 0;
     };
 
+    /* Neutralize unlink calls */
     Interceptor.replace(unlinkPtr, new NativeCallback(
         function (pathnamePtr) {
             LOG("fileDelete", ptr(pathnamePtr).readUtf8String());
@@ -384,7 +373,6 @@ function init () {
         "int",
         ["pointer"]
     ));
-
     Interceptor.replace(unlinkatPtr, new NativeCallback(
         function (dirfd, pathnamePtr, flags) {
             LOG("fileDelete", ptr(pathnamePtr).readUtf8String());
@@ -393,6 +381,7 @@ function init () {
         ["int", "pointer", "int"]
     ));
 
+    /* Notify when a file is about to be created */
     Interceptor.attach(openPtr, {
         onEnter: function (args) {
             let createIfNotFound = args[1].toInt32() & 0o100 !== 0;
@@ -402,7 +391,6 @@ function init () {
             }
         }
     });
-
     Interceptor.attach(openatPtr, {
         onEnter: function (args) {
             let createIfNotFound = args[2].toInt32() & 0o100 !== 0;
@@ -412,7 +400,6 @@ function init () {
             }
         }
     });
-
     Interceptor.attach(creatPtr, {
         onEnter: function (args) {
             if (!exists(args[0])) {
@@ -421,29 +408,24 @@ function init () {
         }
     });
 
+    /* Notify when a file is about to get relocated */
     Interceptor.attach(renamePtr, {
         onEnter: function (args) {
-            const data = args[0].readUtf8String() + "," + args[1].readUtf8String();
-
-            LOG("fileMoved", data);
+            const message = args[0].readUtf8String() + "," +
+                         args[1].readUtf8String();
+            LOG("fileMoved", message);
         }
     });
-
     Interceptor.attach(renameatPtr, {
         onEnter: function (args) {
-            const data = args[1].readUtf8String() + "," + args[3].readUtf8String();
-
-            LOG("fileMoved", data);
+            const message = args[1].readUtf8String() + "," + 
+                         args[3].readUtf8String();
+            LOG("fileMoved", message);
         }
-    })
+    });
 };
 
-var api = new Api();
-
 rpc.exports = {
-    api: function (api_method, args) {
-        return api[api_method].apply(this, args);
-    },
     start: function (configs) {
         init();
 
