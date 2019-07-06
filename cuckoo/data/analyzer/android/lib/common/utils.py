@@ -3,11 +3,10 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
+import random
+import string
 import json
-import logging
 import subprocess
-
-log = logging.getLogger(__name__)
 
 BUFSIZE = 1024*1024
 
@@ -41,5 +40,40 @@ def hash_file(method, path):
         h.update(buf)
     return h.hexdigest()
 
-def roachify_procmem(dump_buffer):
-    pass
+def determine_device_arch():
+    """Determine the architecture of the device."""
+    try:
+        args = ["getprop", "ro.product.cpu.abi"]
+        p = subprocess.Popen(
+            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        out, err = list(map(bytes.decode, p.communicate()))
+
+        if p.returncode:
+            raise OSError(err)
+    except OSError:
+        return
+
+    supported_archs = ["arm64", "arm", "x86_64", "x86"]
+    for arch in supported_archs:
+        if arch in out:
+            return arch
+
+def random_str(length=8):
+    letters = string.ascii_letters
+    return "".join(random.choice(letters) for _ in range(length))
+
+# https://stackoverflow.com/a/24349916/7267323
+# Compare two xml.etree.ElementTree nodes
+def etree_compare(e1, e2):
+    if e1.tag != e2.tag:
+        return False
+    if e1.text != e2.text:
+        return False
+    if e1.tail != e2.tail:
+        return False
+    if e1.attrib != e2.attrib:
+        return False
+    if len(e1) != len(e2):
+        return False
+    return all(etree_compare(c1, c2) for c1, c2 in zip(e1, e2))
