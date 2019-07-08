@@ -186,7 +186,7 @@ do_setup(
     },
     install_requires=[
         "alembic==1.0.10",
-        "androguard==3.0.1",
+        "androguard==3.3.5",
         "beautifulsoup4==4.5.3",
         "chardet==2.3.0",
         "click==6.6",

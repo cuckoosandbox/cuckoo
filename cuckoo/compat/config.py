@@ -724,7 +724,6 @@ def _206_207(c):
     c["reporting"]["misp"]["min_malscore"] = 0
     c["reporting"]["misp"]["tag"] = "Cuckoo"
     c["reporting"]["misp"]["upload_sample"] = False
-
     c["avd"] = {
         "avd": {
             "mode": "headless",
@@ -740,6 +739,7 @@ def _206_207(c):
             "resultserver_ip": "10.0.2.2",
         },
     }
+    c["processing"].pop("apkinfo", None)
 
     return c
 

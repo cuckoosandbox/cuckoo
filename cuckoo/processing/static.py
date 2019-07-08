@@ -4,6 +4,7 @@
 # See the file 'docs/LICENSE' for copying permission.
 
 import bs4
+import hashlib
 import ctypes
 import datetime
 import logging
@@ -1028,6 +1029,172 @@ class ELF(object):
 def _pdf_worker(filepath):
     return PdfDocument(filepath).run()
 
+class AndroidPackage(object):
+    """Static android information."""
+
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.apk = None
+        self.analysis = None
+
+    def _apk_files(self):
+        """Return a list of files in the APK."""
+        result = []
+        for filename, filetype in self.apk.get_files_types().items():
+            buf = self.apk.zip.read(filename)
+            result.append({
+                "name": filename,
+                "md5": hashlib.md5(buf).hexdigest(),
+                "size": len(buf),
+                "type": filetype,
+            })
+
+        return result
+
+    def _get_certificates(self):
+        """Return a list of APK certificates"""
+        certficates = []
+        for cert in self.apk.get_certificates():
+            public_key = {}
+            public_key["size"] = "%d bit" % cert.public_key.bit_size
+            public_key["algorithm"] = cert.public_key.algorithm
+
+            signature = {}
+            signature["algorithm"] = cert.signature_algo
+            signature["hash_algorithm"] = cert.hash_algo
+            signature["value"] = cert.signature.encode("hex")
+
+            not_valid_after = cert['tbs_certificate']['validity']['not_after'].native
+            not_valid_before = cert['tbs_certificate']['validity']['not_before'].native
+
+            certficates.append({
+                "sha1": cert.sha1,
+                "sha256": cert.sha256,
+                "issuer": cert.issuer.human_friendly,
+                "subject": cert.subject.human_friendly,
+                "not_valid_after": not_valid_after.strftime("%Y-%m-%d %H:%M:%S"),
+                "not_valid_before": not_valid_before.strftime("%Y-%m-%d %H:%M:%S"),
+                "public_key": public_key,
+                "signature": signature,
+                "serial_number": cert.serial_number,
+                "content": cert.contents.encode("hex"),
+            })
+
+        return certficates
+
+    def run(self):
+        """Run androguard to extract static APK information
+        @return: dict of static features.
+        """
+        from androguard.misc import AnalyzeAPK
+
+        try:
+            self.apk, _, self.analysis = AnalyzeAPK(self.filepath)
+        except (OSError, zipfile.BadZipfile) as e:
+            log.error("Error parsing APK file: %s", e)
+            return None
+
+        manifest = {}
+        if self.apk.is_valid_APK():
+            manifest["package"] = self.apk.get_package()
+            manifest["services"] = self.apk.get_services()
+            manifest["receivers"] = self.apk.get_receivers()
+            manifest["providers"] = self.apk.get_providers()
+            manifest["activities"] = self.apk.get_activities()
+            manifest["main_activity"] = self.apk.get_main_activity()
+            manifest["permissions"] = self.apk.get_details_permissions()
+            manifest["receivers_actions"] = self._get_receivers_actions()
+
+        static_calls = {}
+        static_calls["crypto_calls"] = self._get_crypto_calls()
+        static_calls["reflection"] = self._get_reflection_calls()
+        static_calls["permission_calls"] = self._get_permission_calls()
+        static_calls["dynamic_code_calls"] = self._get_dynamic_code_calls()
+
+        apkinfo = {}
+        apkinfo["manifest"] = manifest
+        apkinfo["static_calls"] = static_calls
+        apkinfo["files"] = self._apk_files()
+        apkinfo["methods"] = self._get_methods()
+        apkinfo["classes"] = self._get_classes()
+        apkinfo["libraries"] = self.apk.get_libraries()
+        apkinfo["is_signed_v1"] = self.apk.is_signed_v1()
+        apkinfo["is_signed_v2"] = self.apk.is_signed_v2()
+        apkinfo["certificates"] = self._get_certificates()
+        apkinfo["native_methods"] = self._get_methods(0x100)
+
+        return apkinfo
+
+    def _get_classes(self):
+        classes = []
+        for ca in self.analysis.get_classes():
+            classes.append(ca.name)
+
+        return classes
+
+    def _get_permission_calls(self):
+        calls = []
+        for perm in self.apk.get_permissions():
+            for mca in self.analysis.get_permission_usage(perm):
+                for _, m, _ in mca.get_xref_from():
+                    calls.append({
+                        "src_class": mca.get_method().get_class_name(),
+                        "src_method": mca.get_method().get_name(),
+                        "dst_class": m.get_class_name(),
+                        "dst_method": m.get_name(),
+                    })
+ 
+        return calls
+
+    def _get_crypto_calls(self):
+        return self._get_calls_to_class("Ljavax/crypto/.*")
+    
+    def _get_calls_to_class(self, class_name):
+        calls = []
+        for mca in self.analysis.find_methods(class_name):
+            for _, m, _ in mca.get_xref_from():
+                calls.append({
+                    "src_class": mca.get_method().get_class_name(),
+                    "src_method": mca.get_method().get_name(),
+                    "dst_class": m.get_class_name(),
+                    "dst_method": m.get_name(),
+                })
+
+        return calls
+
+    def _get_reflection_calls(self):
+        return self._get_calls_to_class("Ljava/lang/reflect/.*")
+
+    def _get_dynamic_code_calls(self):
+        return \
+            self._get_calls_to_class("Ldalvik/system/.*ClassLoader;") + \
+            self._get_calls_to_class("Ldalvik/system/DexFile;")
+
+    def _get_receivers_actions(self):
+        actions = []
+        for receiver in self.apk.get_receivers():
+            filtr = self.apk.get_intent_filters("receiver", receiver)
+            actions.extend(filtr["action"])
+
+        return actions
+
+    def _get_methods(self, access_flags=None):
+        methods = []
+        for mca in self.analysis.get_methods():
+            if access_flags and not mca.get_method().get_access_flag() & access_flags:
+                continue
+
+            proto = mca.descriptor.replace("(", "").split(")")
+            params = proto[0].split(" ") if params and params[0] else []
+            methods.append({
+                "class": mca.class_name,
+                "name": mca.name,
+                "params": params,
+                "return": proto[1],
+            })
+
+        return methods
+
 class Static(Processing):
     """Static analysis."""
 
@@ -1092,5 +1259,8 @@ class Static(Processing):
 
         if package == "generic" or ext == "lnk":
             static["lnk"] = LnkShortcut(f.file_path).run()
+
+        if package == "apk" or ext == "apk" or f.get_type() in ("JAR", "Zip"):
+            static["apkinfo"] = AndroidPackage(f.file_path).run()
 
         return static

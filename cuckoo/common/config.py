@@ -529,10 +529,6 @@ class Config(object):
             "analysisinfo": {
                 "enabled": Boolean(True),
             },
-            "apkinfo": {
-                "enabled": Boolean(False),
-                "decompilation_threshold": Int(5000000),
-            },
             "baseline": {
                 "enabled": Boolean(False),
             },
