@@ -19,14 +19,15 @@ class PS1(Package):
 
     def start(self, path):
         powershell = self.get_path("PowerShell")
-        args = [
-            "-NoProfile", "-ExecutionPolicy", "unrestricted", "-File", path
-        ]
 
         # Enforce the .ps1 file extension as is required by powershell.
         if not path.endswith(".ps1"):
             os.rename(path, path + ".ps1")
             path += ".ps1"
             log.info("Submitted file is missing extension, added .ps1")
+
+        args = [
+            "-NoProfile", "-ExecutionPolicy", "unrestricted", "-File", path
+        ]
 
         return self.execute(powershell, args=args, trigger="file:%s" % path)
