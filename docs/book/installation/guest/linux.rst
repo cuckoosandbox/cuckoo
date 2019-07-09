@@ -34,7 +34,7 @@ avoid have to start as root, e.g.::
 with your user.**
 
 
-Preparing x32/x64 Ubuntu 18.04 Linux guests
+Preparing x32/x64 Ubuntu 17.04 Linux guests
 ===========================================
 
 Ensure the agent automatically starts. The easiest way is to add it to crontab::
@@ -46,24 +46,21 @@ Install dependencies inside of the virtual machine::
 
     $ sudo apt-get install systemtap gcc patch linux-headers-$(uname -r)
 
-Install kernel debugging symbols::
+Systemtap will not properply compile on versions other than 17.04. However, 17.04 is considered EOL, and most repositories are closed down. Below is a method to bypass the EOL'd repos.
 
-    $ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys C8CAB6595FDFF622
+*Warning: downloading packages off the internet is not without risks. Proceed with caution*
 
-    $ codename=$(lsb_release -cs)
-    $ sudo tee /etc/apt/sources.list.d/ddebs.list << EOF
-      deb http://ddebs.ubuntu.com/ ${codename}          main restricted universe multiverse
-      #deb http://ddebs.ubuntu.com/ ${codename}-security main restricted universe multiverse
-      deb http://ddebs.ubuntu.com/ ${codename}-updates  main restricted universe multiverse
-      deb http://ddebs.ubuntu.com/ ${codename}-proposed main restricted universe multiverse
-    EOF
+You may need to navigate to http://ddebs.ubuntu.com/dists.old/zesty/main/ , and check the release files for your arictecture before downloading a package.
 
-    $ sudo apt-get update
-    $ sudo apt-get install linux-image-$(uname -r)-dbgsym
+For example, on Ubuntu 17.04, amd64:
 
-(For Debian 9 amd64) Install kernel debugging symbols::
+Download kernel debugging symbols:
+    $ wget http://launchpadlibrarian.net/314756630/linux-image-4.10.0-19-generic-dbgsym_4.10.0-19.21_amd64.ddeb
 
-    $ sudo apt-get install linux-image-$(uname -r)-dbg
+Verify package integrity with the sha1 hash listed in the Release file:
+    $ sha1sum linux-image-4.10.0-19-generic-dbgsym_4.10.0-19.21_amd64.ddeb
+Install the debug package
+    $ sudo dpkg -i linux-image-4.10.0-19-generic-dbgsym_4.10.0-19.21_amd64.ddeb
 
 Patch the SystemTap tapset, so that the Cuckoo analyzer can properly parse the
 output::
