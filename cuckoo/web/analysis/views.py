@@ -16,7 +16,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.views.decorators.http import require_safe
-
+from django.views.decorators.csrf import csrf_exempt
 from cuckoo.core.database import Database, TASK_PENDING
 from cuckoo.common.config import config
 from cuckoo.common.elastic import elastic
@@ -357,6 +357,7 @@ def search(request):
     })
 
 @require_safe
+@csrf_exempt
 def remove(request, task_id):
     """Remove an analysis.
     @todo: remove folder from storage.
