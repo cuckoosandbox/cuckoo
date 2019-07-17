@@ -162,6 +162,31 @@ class Avd(Machinery):
         @return: host forwarding port.
         @raise CuckooMachineError: if unable to set up forwarding.
         """
+        # Ensure the destination port is up and running on the device side
+        # before setting up port forwarding. This is a workaround, so that we
+        # create no assumptions later about its connection state, where we will
+        # only be checking the forwarding port's returned from this method.
+        while True:
+            try:
+                args = [
+                    self.options.avd.adb_path,
+                    "-s", self._emulators[label],
+                    "shell", 
+                    "cat", "/proc/net/tcp"
+                ]
+                p = subprocess.Popen(
+                    args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                )
+                output, err = p.communicate()
+
+                if p.returncode:
+                    raise OSError(err)
+            except OSError as e:
+                log.error("Failed to executed adb command: %s" % e)
+
+            if format(dport, "04X") in output:
+                break
+
         try:
             args = [
                 self.options.avd.adb_path,
