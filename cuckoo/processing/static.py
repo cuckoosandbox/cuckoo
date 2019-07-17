@@ -21,8 +21,6 @@ import struct
 import zipfile
 import zlib
 
-from collections import OrderedDict
-
 try:
     import M2Crypto
     HAVE_MCRYPTO = True
