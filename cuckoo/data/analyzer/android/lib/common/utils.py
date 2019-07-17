@@ -63,17 +63,27 @@ def random_str(length=8):
     letters = string.ascii_letters
     return "".join(random.choice(letters) for _ in range(length))
 
+def equal_dicts(d1, d2, ignore_keys):
+    ignored = set(ignore_keys)
+    for k1, v1 in d1.items():
+        if k1 not in ignored and (k1 not in d2 or d2[k1] != v1):
+            return False
+    for k2, v2 in d2.items():
+        if k2 not in ignored and k2 not in d1:
+            return False
+    return True
+
 # https://stackoverflow.com/a/24349916/7267323
-# Compare two xml.etree.ElementTree nodes
-def etree_compare(e1, e2):
+# Compare two xml.etree.ElementTree nodes of 
+def etree_compare(e1, e2, ignore_attrib_keys):
     if e1.tag != e2.tag:
         return False
     if e1.text != e2.text:
         return False
     if e1.tail != e2.tail:
         return False
-    if e1.attrib != e2.attrib:
+    if not equal_dicts(e1.attrib, e2.attrib, ignore_attrib_keys):
         return False
     if len(e1) != len(e2):
         return False
-    return all(etree_compare(c1, c2) for c1, c2 in zip(e1, e2))
+    return all(etree_compare(c1, c2, ignore_attrib_keys) for c1, c2 in zip(e1, e2))

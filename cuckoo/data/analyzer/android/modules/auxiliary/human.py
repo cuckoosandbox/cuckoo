@@ -20,7 +20,8 @@ def tap(x, y):
     try:
         args = [
             "/system/bin/sh",
-            "/system/bin/input", "tap", x, y
+            "/system/bin/input",
+            "tap", x, y
         ]
         p = subprocess.Popen(
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -54,8 +55,9 @@ def dump_views(filepath):
     """
     try:
         args = [
-            "/system/bin/sh", 
-            "/system/bin/uiautomator", "dump", filepath
+            "/system/bin/sh",
+            "/system/bin/uiautomator",
+            "dump", filepath
         ]
         p = subprocess.Popen(
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -68,7 +70,7 @@ def dump_views(filepath):
 
     return ET.parse(filepath).getroot()
 
-class UIAutomator(threading.Thread, Auxiliary):
+class Human(threading.Thread, Auxiliary):
     """Generates random UI events."""
 
     def __init__(self, options={}):
@@ -84,23 +86,28 @@ class UIAutomator(threading.Thread, Auxiliary):
         @param tree: layout tree node.
         """
         for d in self.window_dumps:
-            if etree_compare(d, tree):
+            ignore_attrib_keys = ["checked", "focused", "selected"]
+            if etree_compare(d["tree"], tree, ignore_attrib_keys):
                 return d
 
-        self.window_dumps.append(tree)
-        return tree
+        new_dump = {
+            "tree": tree,
+            "views": list(tree.iter("node"))
+        }
+        self.window_dumps.append(new_dump)
+        return new_dump
 
     def run(self):
         """Run UI automator"""
         tmp = tempfile.mktemp()
-        root = dump_views(tmp)
 
         while self.do_run:
-            rnode = random.choice(list(root.iter("node")))
+            dump = self._add_dump(dump_views(tmp))
+
+            rnode = random.choice(dump["views"])
             if rnode.attrib["package"] == self.package:
                 self._trigger_event(rnode)
-
-                root = self._add_dump(dump_views(tmp))
+                dump["views"].remove(rnode)
 
         os.unlink(tmp)
 
@@ -114,9 +121,7 @@ class UIAutomator(threading.Thread, Auxiliary):
         @param node: view node.
         """
         x, y = node.attrib["bounds"].split("][")[0][1:].split(",")
+        tap(x, y)
 
         if node.attrib["focusable"] == "true":
-            tap(x, y)
             input_rtext()
-        else:
-            tap(x, y)
