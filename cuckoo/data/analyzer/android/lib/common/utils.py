@@ -74,7 +74,7 @@ def equal_dicts(d1, d2, ignore_keys):
     return True
 
 # https://stackoverflow.com/a/24349916/7267323
-# Compare two xml.etree.ElementTree nodes of 
+# Compare two xml.etree.ElementTree nodes
 def etree_compare(e1, e2, ignore_attrib_keys):
     if e1.tag != e2.tag:
         return False
