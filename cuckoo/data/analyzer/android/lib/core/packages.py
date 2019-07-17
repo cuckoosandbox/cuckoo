@@ -11,9 +11,6 @@ def choose_package(file_type, file_name):
     if not file_type:
         return None
 
-    file_type = file_type.lower()
-    file_name = file_name.lower()
-
     if "JAR" in file_type or \
             "Zip" in file_type or \
             "apk" in file_name:
