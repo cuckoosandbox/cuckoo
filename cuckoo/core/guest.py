@@ -388,7 +388,7 @@ class GuestManager(object):
         if self.platform == "windows":
             return self.environ["TEMP"]
         elif self.platform == "android":
-            return "/data/local/tmp"
+            return self.environ["TMPDIR"]
         return "/tmp"
 
     def upload_analyzer(self, monitor):

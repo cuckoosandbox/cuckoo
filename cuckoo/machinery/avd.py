@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2018 Cuckoo Foundation.
+# Copyright (C) 2015-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
@@ -63,7 +63,6 @@ class Avd(Machinery):
         @param task: task object.
         """
         log.debug("Starting vm %s", label)
-
         try:
             args = [
                 self.options.avd.emulator_path,
@@ -104,6 +103,7 @@ class Avd(Machinery):
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
             console_port = s.accept()[0].recv(1024)
+            self._emulators[label] = "emulator-" + console_port
         except OSError as e:
             raise CuckooMachineError(
                 "Emulator failed starting machine %s: %s" % (label, e)
@@ -111,7 +111,6 @@ class Avd(Machinery):
         finally:
             s.close()
 
-        self._emulators[label] = "emulator-" + console_port
         self._wait_status_ready(label)
 
     def _wait_status_ready(self, label):
@@ -121,7 +120,6 @@ class Avd(Machinery):
         log.debug(
             "Waiting for machine %s to become available.", label
         )
-
         try:
             args = [
                 self.options.avd.adb_path,
@@ -130,9 +128,7 @@ class Avd(Machinery):
             ]
             subprocess.check_call(args)
         except subprocess.CalledProcessError as e:
-            raise CuckooMachineError(
-                "Failed to issue adb command: %s" % e
-            )
+            raise CuckooMachineError("Failed to issue adb command: %s" % e)
 
     def stop(self, label):
         """Stop a virtual machine.
@@ -148,24 +144,24 @@ class Avd(Machinery):
                 "emu", "kill"
             ]
             subprocess.check_call(args)
+
+            del self._emulators[label]
         except subprocess.CalledProcessError as e:
             raise CuckooMachineError(
                 "Emulator failed stopping the machine: %s" % e
             )
-
-        del self._emulators[label]
 
     def port_forward(self, label, dport):
         """Configure port forwarding for a vm.
         @param label: virtual machine name.
         @param dport: destination port on the vm.
         @return: host forwarding port.
-        @raise CuckooMachineError: if unable to set up forwarding.
+        @raise CuckooMachineError: when unable to set up forwarding.
         """
-        # Ensure the destination port is up and running on the device side
+        # Make sure the destination port is up and running on the device side
         # before setting up port forwarding. This is a workaround, so that we
         # create no assumptions later about its connection state, where we will
-        # only be checking the forwarding port's returned from this method.
+        # only be doing checks on the forwarding port returned from this method.
         while True:
             try:
                 args = [
@@ -182,7 +178,7 @@ class Avd(Machinery):
                 if p.returncode:
                     raise OSError(err)
             except OSError as e:
-                log.error("Failed to executed adb command: %s" % e)
+                log.error("Failed to execute adb command: %s" % e)
 
             if format(dport, "04X") in output:
                 break
