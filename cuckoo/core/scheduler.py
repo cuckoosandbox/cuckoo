@@ -525,13 +525,11 @@ class AnalysisManager(threading.Thread):
                         "Port forwarding support has not been implemented for "
                         "this machinery to run with NAT-based configurations."
                     )
-                    return False
                 except CuckooMachineError as e:
                     log.error(
                         "Failed to set up port forwarding for the machine '%s' "
                         "configured to run with NAT: %s", self.machine.name, e
                     )
-                    return False
 
             # retrieve the port used for remote control
             if control_enabled:
