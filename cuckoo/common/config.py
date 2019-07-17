@@ -751,7 +751,7 @@ class Config(object):
                 "enabled": Boolean(False),
                 "url": String(),
                 "apikey": String(sanitize=True),
-                "mode": String("maldoc ipaddr hashes url"),
+                "mode": String("ipaddr hashes url"),
                 "distribution": Int(0, required=False),
                 "analysis": Int(0, required=False),
                 "threat_level": Int(4, required=False),
