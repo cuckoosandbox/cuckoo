@@ -125,3 +125,7 @@ def pdf_urls(pdf):
         for url in version["urls"]:
             ret.append((url, version["version"]))
     return ret
+
+@register.filter
+def deunderscore(string):
+    return string.replace("_", " ")
