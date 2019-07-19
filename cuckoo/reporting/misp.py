@@ -22,6 +22,7 @@ class MISP(Report):
     def sample_hashes(self, results, event):
         if results.get("target", {}).get("file", {}):
             f = results["target"]["file"]
+            hash_ids = self.options.get("hash_ids") or False
             self.misp.add_hashes(
                 event,
                 category="Payload delivery",
@@ -30,6 +31,7 @@ class MISP(Report):
                 sha1=f["sha1"],
                 sha256=f["sha256"],
                 comment="File submitted to Cuckoo",
+                to_ids=hash_ids
             )
 
     def all_urls(self, results, event):
@@ -47,8 +49,8 @@ class MISP(Report):
 
                 if not is_whitelisted_mispurl(url):
                     urls.add(url)
-
-        self.misp.add_url(event, sorted(list(urls)))
+        url_ids = self.options.get("url_ids") or False
+        self.misp.add_url(event, sorted(list(urls)), to_ids=url_ids)
 
     def domain_ipaddr(self, results, event):
         domains, ips = {}, set()
@@ -67,24 +69,32 @@ class MISP(Report):
             if ipaddr not in ips and not is_whitelisted_mispip(ipaddr):
                 ipaddrs.add(ipaddr)
 
-        self.misp.add_domains_ips(event, domains)
-        self.misp.add_ipdst(event, sorted(list(ipaddrs)))
+        domain_ids = self.options.get("domain_ids") or False
+        ip_ids = self.options.get("ip_ids") or False
+
+        self.misp.add_domains_ips(event, domains, to_ids=domain_ids)
+        self.misp.add_ipdst(event, sorted(list(ipaddrs)), to_ids=ip_ids)
 
     def family(self, results, event):
+        url_ids = self.options.get("url_ids") or False
+        mutex_ids = self.options.get("mutex_ids") or False
+        useragent_ids = self.options.get("useragent_ids") or False
+
         for config in results.get("metadata", {}).get("cfgextr", []):
             self.misp.add_detection_name(
                 event, config["family"], "External analysis"
             )
             for cnc in config.get("cnc", []):
-                self.misp.add_url(event, cnc)
+                self.misp.add_url(event, cnc, to_ids=url_ids)
             for url in config.get("url", []):
-                self.misp.add_url(event, url)
+                self.misp.add_url(event, url, to_ids=url_ids)
             for mutex in config.get("mutex", []):
-                self.misp.add_mutex(event, mutex)
+                self.misp.add_mutex(event, mutex, to_ids=mutex_ids)
             for user_agent in config.get("user_agent", []):
-                self.misp.add_useragent(event, user_agent)
+                self.misp.add_useragent(event, user_agent, to_ids=useragent_ids)
 
     def signature(self, results, event):
+        url_ids = self.options.get("url_ids") or False
         for sig in results.get("signatures", []):
 
             marks = []
@@ -113,12 +123,14 @@ class MISP(Report):
                 elif mark["type"] == "call":
                     if not mark["call"]["api"] in marks:
                         marks.append(mark["call"]["api"])
-
                 elif mark["type"] == "config":
                     marks.append(mark["config"].get("url", ""))
-
                 else:
                     marks.append(mark[mark["type"]])
+                    if mark["category"] == "url":
+                        url = mark.get("ioc", "")
+                        if url.count('.') > 0:
+                            self.misp.add_url(event, url, to_ids=url_ids)
 
             markslist = ", ".join([x for x in marks if x and x != " "])
 
@@ -172,6 +184,9 @@ class MISP(Report):
         threat_level = self.options.get("threat_level") or 4
         analysis = self.options.get("analysis") or 0
         tag = self.options.get("tag") or "Cuckoo"
+        cuckoo_baseurl = self.options.get("cuckoo_baseurl")
+        sample_ids = self.options.get("sample_ids") or False
+
 
         event = self.misp.new_event(
             distribution=distribution,
@@ -179,6 +194,9 @@ class MISP(Report):
             analysis=analysis,
             info="Cuckoo Sandbox analysis #%d" % self.task["id"]
         )
+        if cuckoo_baseurl:
+            self.misp.add_internal_link(event, "{}/analysis/{}/summary/".format(cuckoo_baseurl, self.task["id"]),
+                                        category='Internal reference')
 
         # Add a specific tag to flag Cuckoo's event
         if tag:
@@ -194,6 +212,7 @@ class MISP(Report):
                     filepath_or_bytes=self.task["target"],
                     event_id=event["Event"]["id"],
                     category="External analysis",
+                    to_ids=sample_ids
                 )
 
         self.signature(results, event)
