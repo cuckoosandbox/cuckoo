@@ -183,7 +183,7 @@ class MISP(Report):
         distribution = self.options.get("distribution") or 0
         threat_level = self.options.get("threat_level") or 4
         analysis = self.options.get("analysis") or 0
-        tag = self.options.get("tag") or "Cuckoo"
+        tags = self.options.get("tag") or "Cuckoo"
         cuckoo_baseurl = self.options.get("cuckoo_baseurl")
         sample_ids = self.options.get("sample_ids") or False
 
@@ -199,7 +199,7 @@ class MISP(Report):
                                         category='Internal reference')
 
         # Add a specific tag to flag Cuckoo's event
-        if tag:
+        for tag in tags.split(' '):
             mispresult = self.misp.tag(event["Event"]["uuid"], tag)
             if mispresult.has_key("message"):
                 log.debug("tag event: %s" % mispresult["message"])
