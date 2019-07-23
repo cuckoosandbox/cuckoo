@@ -265,6 +265,26 @@ def test_misp_sample_hashes():
         comment="File submitted to Cuckoo"
     )
 
+def test_misp_screenshots():
+    r = MISP()
+    r.misp = mock.MagicMock()
+
+    r.misp.add_object.return_value = None
+    r.screenshots({
+        "screenshots": [
+            {"path": "tests/files/foo.txt"},
+        ]
+    }, {
+        "Event": {
+            "id": "0"
+        }
+    })
+    r.misp.add_object.assert_called_once()
+
+    params, dict_params = r.misp.add_object.call_args
+    event_id, report = params
+    assert event_id == "0"
+
 def test_misp_signatures():
     r = MISP()
     r.misp = mock.MagicMock()

@@ -6,6 +6,7 @@ import logging
 import os.path
 import shlex
 import warnings
+from base64 import b64encode
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooProcessingError
@@ -15,6 +16,7 @@ from cuckoo.common.whitelist import (
 )
 
 log = logging.getLogger(__name__)
+
 
 class MISP(Report):
     """Enrich MISP with Cuckoo results."""
@@ -69,6 +71,28 @@ class MISP(Report):
 
         self.misp.add_domains_ips(event, domains)
         self.misp.add_ipdst(event, sorted(list(ipaddrs)))
+
+    def screenshots(self, results, event):
+        """
+        Add all the screenshots taken during analysis to a sandbox-report
+        MISP object.
+        """
+        from pymisp import MISPObject
+        report = MISPObject("sandbox-report", strict=True)
+        report.add_attribute("sandbox-type", "on-premise")
+        report.add_attribute("on-premise-sandbox", "cuckoo")
+        for entry in results.get("screenshots"):
+            filepath = entry.get("path")
+            filename = os.path.basename(filepath)
+            with open(filepath, "rb") as f:
+                # .decode("utf-8") in order to avoid the b"" format
+                img_data = b64encode(f.read()).decode("utf-8")
+
+            report.add_attribute("sandbox-file", value=filename,
+                                 data=img_data, type="attachment",
+                                 category="External analysis")
+
+        self.misp.add_object(event["Event"]["id"], report)
 
     def family(self, results, event):
         for config in results.get("metadata", {}).get("cfgextr", []):
@@ -206,5 +230,8 @@ class MISP(Report):
 
         if "ipaddr" in mode:
             self.domain_ipaddr(results, event)
+
+        if "screenshots" in mode:
+            self.screenshots(results, event)
 
         self.family(results, event)
