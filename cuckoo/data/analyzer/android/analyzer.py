@@ -49,7 +49,7 @@ class BehavioralLogs(object):
         for filepath in self.logs:
             filename = os.path.basename(filepath)
 
-            upload_to_host(filepath, "logs/%s.log" % filename)
+            upload_to_host(filepath, "logs/%s" % filename)
             os.unlink(filepath)
 
 class Files(object):

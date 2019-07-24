@@ -264,31 +264,38 @@ class AgentHandler(object):
                 if handler:
                     handler(message)
         elif message["type"] == "error":
-            self.log_event("errors", message)
+            self._log_event(-1, "errors", message)
 
-    def log_event(self, src, data):
+    def _log_event(self, pid, event_type, data):
         """Log an event to log file.
-        @param src: source of event.
-        @param data: event data.
+        @param pid: Process id (event source).
+        @param event_type: Type of event.
+        @param data: Event data.
         """
-        if src not in self.loggers:
-            logger = logging.getLogger(src)
+        if pid != -1:
+            event_id = "%s.%s" % (pid, event_type)
+        else:
+            event_id = event_type
+
+        if event_id not in self.loggers:
+            logger = logging.getLogger(event_id)
             logger.setLevel(logging.DEBUG)
             logger.propagate = False
 
-            filepath = self.analyzer.logs.add_log(src)
+            filepath = self.analyzer.logs.add_log(event_id)
             fh = logging.FileHandler(filepath)
             fh.setFormatter(logging.Formatter("%(message)s"))
             logger.addHandler(fh)
 
-            self.loggers[src] = logger
+            self.loggers[event_id] = logger
+            logger.info(json.dumps(self.client.processes[pid]))
 
-        self.loggers[src].info(data)
+        self.loggers[event_id].info(data)
 
     def _handle_jvmHook(self, message):
         """Handle jvmHook events."""
         pid, api_call = message.splitlines()
-        self.log_event("jvmHook_" + pid, api_call)
+        self._log_event(int(pid), "jvmHook", api_call)
 
     def _handle_fileDrop(self, message):
         """Handle fileDrop events."""
