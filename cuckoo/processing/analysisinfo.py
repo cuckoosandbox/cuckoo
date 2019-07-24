@@ -26,6 +26,7 @@ class AnalysisInfo(Processing):
 
         db = Database()
         dbtask = db.view_task(self.task["id"], details=True)
+        dbmachine = db.view_machine(self.machine["name"])
 
         # Fetch the task.
         if dbtask:
@@ -40,6 +41,9 @@ class AnalysisInfo(Processing):
                 emptytask = Task()
                 emptytask.id = self.task["id"]
                 task = emptytask.to_dict()
+
+        if dbmachine:
+            task["guest"]["platform"] = dbmachine.to_dict()["platform"]
 
         # Get git head.
         if os.path.exists(cwd(".cwd")):
