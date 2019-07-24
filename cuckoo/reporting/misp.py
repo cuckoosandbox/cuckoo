@@ -81,7 +81,7 @@ class MISP(Report):
         report = MISPObject("sandbox-report", strict=True)
         report.add_attribute("sandbox-type", "on-premise")
         report.add_attribute("on-premise-sandbox", "cuckoo")
-        for entry in results.get("screenshots"):
+        for entry in results.get("screenshots", []):
             filepath = entry.get("path")
             filename = os.path.basename(filepath)
             with open(filepath, "rb") as f:
