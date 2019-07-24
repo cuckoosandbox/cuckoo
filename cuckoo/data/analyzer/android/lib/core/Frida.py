@@ -105,60 +105,6 @@ class Client(object):
 
         return pid
 
-    def load_agent(self, pid):
-        """Load our instrumentation agent into the process and start it.
-        @param pid: Target process.
-        """
-        if not os.path.exists(AGENT_PATH):
-            raise CuckooFridaError(
-                "Agent script not found at '%s', unable to inject into "
-                "process.." % AGENT_PATH
-            )
-
-        self._start_session(pid)
-        self._load_script(pid, AGENT_PATH)
-        self.scripts[pid].exports.start(load_configs("config/"))
-
-        self._resume(pid)
-
-    def terminate_session(self, pid):
-        """Terminate an attached session.
-        @param pid: process id.
-        """
-        if pid in self.scripts:
-            try:
-                self.scripts[pid].unload()
-            except frida.InvalidOperationError:
-                pass
-
-            del self.scripts[pid]
-
-        if pid in self.sessions:
-            self.sessions[pid].detach()
-            del self.sessions[pid]
-
-        log.info("Frida session is terminated")
-
-    def _on_child_added(self, pid):
-        """A callback function. Called when a new child is added.
-        @param pid: PID of child process.
-        """
-        if self._on_child_added_callback:
-            self._on_child_added_callback(pid)
-
-    def _on_child_removed(self, pid):
-        """A callback function. Called when a child is removed.
-        @param pid: PID of child process.
-        """
-        if pid in self.sessions:
-            del self.sessions[pid]
-        
-        if pid in self.scripts:
-            del self.sessions[pid]
-        
-        if self._on_child_removed_callback:
-            self._on_child_removed_callback(pid)
-
     def _resume(self, pid):
         """Resume a suspended process.
         @param pid: Process id.
@@ -234,6 +180,43 @@ class Client(object):
             return None
 
         return Agent(pid, self.scripts[pid])
+
+    def terminate_session(self, pid):
+        """Terminate an attached session.
+        @param pid: Process id.
+        """
+        if pid in self.processes:
+            del self.processes[pid]
+
+        if pid in self.scripts:
+            try:
+                self.scripts[pid].unload()
+            except frida.InvalidOperationError:
+                pass
+
+            del self.scripts[pid]
+
+        if pid in self.sessions:
+            self.sessions[pid].detach()
+            del self.sessions[pid]
+
+        log.info("Frida session is terminated")
+
+    def _on_child_added(self, pid):
+        """A callback function. Called when a new child is added.
+        @param pid: Process id of child.
+        """
+        if self._on_child_added_callback:
+            self._on_child_added_callback(pid)
+
+    def _on_child_removed(self, pid):
+        """A callback function. Called when a child is removed.
+        @param pid: Process id of child.
+        """
+        self.terminate_session(pid)
+
+        if self._on_child_removed_callback:
+            self._on_child_removed_callback(pid)
 
 class Agent(object):
     """RPC interface of Frida's agent."""
