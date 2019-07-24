@@ -182,10 +182,13 @@ class JavaTypesParser {
                     }
                 }
 
-            let value;
-            if (handler !== null) {
-                value = this[handler](obj);
+                let result = obj.toString();
+                if (handler !== null) {
+                    result = this[handler](obj);
+                }
+                return result;
             }
+        };
 
             if (value === undefined) {
                 value = { "class": obj.$className };
