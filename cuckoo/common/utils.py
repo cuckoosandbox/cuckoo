@@ -366,3 +366,13 @@ def cmp_version(first, second, op):
     op = op_lookup.get(op)
 
     return op(LooseVersion(first), LooseVersion(second))
+
+def byteify(data):
+    if isinstance(data, unicode):
+        return data.encode('utf-8')
+    elif isinstance(data, list):
+        return [byteify(elem) for elem in data]
+    elif isinstance(data, dict):
+        return {byteify(k): byteify(v) for k, v in data.items()}
+    else:
+        return data
