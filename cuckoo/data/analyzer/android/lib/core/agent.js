@@ -33,7 +33,6 @@ class Api {
  * to the VM.
  * 
  * @param {JavaHookConfig} hookConfig Configuration object for the hook.
- * @param {Function} callback Called to do stuff after a method is hooked.
  */
 function monitorJavaMethod (hookConfig) {
     const className = hookConfig.class;
