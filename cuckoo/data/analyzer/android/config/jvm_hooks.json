@@ -408,5 +408,10 @@
         "class": "dalvik.system.DexFile",
         "method": "loadDex",
         "category": "dynload"
+    },
+    {
+        "class": "dalvik.system.InMemoryDexClassLoader",
+        "method": "$init",
+        "category": "dynload"
     }
 ]
