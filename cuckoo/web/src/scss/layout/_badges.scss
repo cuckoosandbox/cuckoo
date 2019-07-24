@@ -18,6 +18,13 @@
     &.iexplore { @include badge('iexplore') }
     &.office { @include badge('office'); }
     &.pdf { @include badge('pdf'); }
+    &.preferences { @include badge('preferences'); }
+    &.content { @include badge('content'); }
+    &.dynload { @include badge('dynload'); }
+    &.intent { @include badge('intent'); }
+    &.crypto { @include badge('crypto'); }
+    &.reflection { @include badge('reflection'); }
+    &.binder { @include badge('binder'); }
 
 }
 

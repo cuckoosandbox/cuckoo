@@ -12939,6 +12939,125 @@ table.table-fixed
     background-color: #6297f8;
 }
 
+.badge.preferences
+{
+    color: #806377;
+    background-color: #ffc5ee;
+}
+
+.badge.preferences:hover
+{
+    background-color: #f2bbe2;
+}
+
+.badge.preferences.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
+.badge.content
+{
+    color: #6a8063;
+    background-color: #d3ffc5;
+}
+
+.badge.content:hover
+{
+    background-color: #c8f2bb;
+}
+
+.badge.content.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
+.badge.dynload
+{
+    color: #806363;
+    background-color: #ffc5c5;
+}
+
+.badge.dynload:hover
+{
+    background-color: #f2bbbb;
+}
+
+.badge.dynload.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
+.badge.intent
+{
+    color: #666f5e;
+    background-color: #cdb;
+}
+
+.badge.intent:hover
+{
+    background-color: #c2d2b2;
+}
+
+.badge.intent.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
+.badge.crypto
+{
+    color: #666380;
+    background-color: #ccc5ff;
+}
+
+.badge.crypto:hover
+{
+    background-color: #c2bbf2;
+}
+
+.badge.crypto.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
+.badge.reflection
+{
+    color: #807e63;
+    background-color: #fffcc5;
+}
+
+.badge.reflection:hover
+{
+    background-color: #f2efbb;
+}
+
+.badge.reflection.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
+.badge.binder
+{
+    color: #807e63;
+    background-color: #fffcc5;
+}
+
+.badge.binder:hover
+{
+    background-color: #f2efbb;
+}
+
+.badge.binder.active
+{
+    color: #fff;
+    background-color: #6297f8;
+}
+
 .dns-badge
 {
     display: -ms-flexbox;

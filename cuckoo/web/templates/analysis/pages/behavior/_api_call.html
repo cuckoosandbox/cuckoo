@@ -1,6 +1,11 @@
 {% load analysis_tags %}
 <td class="date-api">
-  <p>{{call.api}}</p>
+  {% if is_java_api %}
+    <p>{{call.class}}</p>
+    <p>{{call.method}}</p>
+  {% else %}
+    <p>{{call.api}}</p>
+  {% endif %}
   <time>{{call.time}}</time>
   {% if pid %}
     <a href="#" class="call-link" data-pid="{{pid}}" data-cid="{{cid}}">
@@ -23,9 +28,7 @@
           <pre>{{v}}</pre>
         {% endfor %}
       {% else %}
-        {% for v in value|ensurelist %}
-          <span class="mono">{{v}}</span>
-        {% endfor %}
+        <span class="mono">{{value|_byteify}}</span>
       {% endif %}
       {% if key in call.flags %}
         <span class="grey">({{ call.flags|get_item:key|ensurelist|join:", " }})</span>
@@ -34,6 +37,19 @@
     {% endif %}
   {% endfor %}
 </td>
+{% if is_java_api %}
+<td>
+  {% if call.thisObject|is_dict %}
+    {% for key, value in call.thisObject.items %}
+      <span class="grey">{{key}}:</span>
+      <span class="mono">{{value}}</span>
+      <br />
+    {% endfor %}
+  {% else %}
+    <span class="mono">{{call.thisObject|_byteify}}</span>
+  {% endif %}
+</td>
+{% else %}
 <td>
     {% if call.status == true %}
         success
@@ -43,7 +59,18 @@
         {{ call.status }}
     {% endif %}
 </td>
-<td><span class="mono">{{call.return_value}}</span></td>
+{% endif %}
+<td>
+  {% if call.return_value|is_dict %}
+    {% for key, value in call.return_value.items %}
+      <span class="grey">{{key}}:</span>
+      <span class="mono">{{value}}</span>
+      <br />
+    {% endfor %}
+  {% else %}
+    <span class="mono">{{call.return_value|_byteify}}</span>
+  {% endif %}
+  </td>
 <td>
     {% if call.repeated %}
         {{call.repeated}}

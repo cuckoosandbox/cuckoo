@@ -5,6 +5,7 @@
 from django.template.defaultfilters import register
 
 from cuckoo.common.config import config
+from cuckoo.common.utils import byteify
 
 @register.filter
 def mongo_id(value):
@@ -129,3 +130,7 @@ def pdf_urls(pdf):
 @register.filter
 def deunderscore(string):
     return string.replace("_", " ")
+
+@register.filter
+def _byteify(data):
+    return byteify(data)
