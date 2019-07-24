@@ -15,8 +15,11 @@ from lib.common.abstracts import Auxiliary
 
 log = logging.getLogger(__name__)
 
-def tap(x, y):
-    """Generate a tap event."""
+def _tap(x, y):
+    """Generate a tap event.
+    @param x: x-axis coordinate.
+    @param y: y-axis coordinate.
+    """
     try:
         args = [
             "/system/bin/sh",
@@ -32,12 +35,15 @@ def tap(x, y):
     except OSError as e:
         log.error("Failed to generate touch event: %s", e)
 
-def input_rtext():
-    """Input text event."""
+def _input_text(text):
+    """Input text event.
+    @param text: str text input.
+    """
     try:
         args = [
             "/system/bin/sh", 
-            "/system/bin/input", "text", random_str()
+            "/system/bin/input", 
+            "text", text
         ]
         p = subprocess.Popen(
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -47,28 +53,6 @@ def input_rtext():
             raise OSError(err)
     except OSError as e:
         log.error("Failed to generate text event: %s", e)
-
-def dump_views(filepath):
-    """Dump the views in the current window with uiautomator.
-    @param filepath: dump file path.
-    @return: tree presentation of XML.
-    """
-    try:
-        args = [
-            "/system/bin/sh",
-            "/system/bin/uiautomator",
-            "dump", filepath
-        ]
-        p = subprocess.Popen(
-            args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        _, err = p.communicate()
-        if p.returncode:
-            raise OSError(err)
-    except OSError as e:
-        log.error("Failed to dump window's views: %s", e)
-
-    return ET.parse(filepath).getroot()
 
 class Human(threading.Thread, Auxiliary):
     """Generates random UI events."""
@@ -80,8 +64,26 @@ class Human(threading.Thread, Auxiliary):
         self.package = options.get("apk_entry", ":").split(":")[0]
         self.do_run = True
         self.window_dumps = []
+        self.temp_dumpfile = None
 
-    def _add_dump(self, tree):
+    def _dump_views(self):
+        """Dump the views in the current window with uiautomator."""
+        try:
+            args = [
+                "/system/bin/sh",
+                "/system/bin/uiautomator",
+                "dump", self.temp_dumpfile
+            ]
+            p = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            _, err = p.communicate()
+            if p.returncode:
+                raise OSError(err)
+        except OSError as e:
+            log.error("Failed to dump window's views: %s", e)
+
+    def _add_window_dump(self, tree):
         """Add a new views dump to the list.
         @param tree: layout tree node.
         """
@@ -97,31 +99,46 @@ class Human(threading.Thread, Auxiliary):
         self.window_dumps.append(new_dump)
         return new_dump
 
+    def _remove_window_dump(self, dump):
+        """Remove a views dump from the list.
+        @param dump: window dump object.
+        """
+        self.window_dumps.remove(dump)
+
     def run(self):
         """Run UI automator"""
-        tmp = tempfile.mktemp()
-
+        self.temp_dumpfile = tempfile.mktemp()
         while self.do_run:
-            dump = self._add_dump(dump_views(tmp))
+            self._dump_views()
 
-            rnode = random.choice(dump["views"])
-            if rnode.attrib["package"] == self.package:
-                self._trigger_event(rnode)
-                dump["views"].remove(rnode)
+            tree = ET.parse(self.temp_dumpfile).getroot()
+            dump = self._add_window_dump(tree)
+            r_node = random.choice(dump["views"])
+            pkg_name = r_node.attrib["package"]
 
-        os.unlink(tmp)
+            if pkg_name == self.package:
+                self._trigger_event(r_node)
+                dump["views"].remove(r_node)
+            elif "packageinstaller" in pkg_name:
+                self._remove_window_dump(dump)
+                for node in dump["views"]:
+                    if "permission_allow_button" in node.attrib["resource-id"]:
+                        self._trigger_event(node)
+                        break
 
     def stop(self):
         """Stop UI automator"""
         self.do_run = False
         self.join()
 
+        os.unlink(self.temp_dumpfile)
+
     def _trigger_event(self, node):
         """Trigger an event on a view.
         @param node: view node.
         """
         x, y = node.attrib["bounds"].split("][")[0][1:].split(",")
-        tap(x, y)
+        _tap(x, y)
 
         if node.attrib["focusable"] == "true":
-            input_rtext()
+            _input_text(random_str())
