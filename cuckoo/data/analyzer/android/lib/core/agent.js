@@ -138,17 +138,49 @@ class JavaTypesParser {
             "java.net.HttpURLConnection"
         ]
 
+        const primitiveTypes = {
+            "Z": "boolean",
+            "B": "byte",
+            "C": "char",
+            "D": "double",
+            "F": "float",
+            "I": "int",
+            "J": "long",
+            "S": "short",
+        };
+
+        const javaLangReflectArray = Java.use("java.lang.reflect.Array");
+        const javaLangClass = Java.use("java.lang.Class");
+
         this.parse = function (obj) {
-            let handler = "unbox" + capitalizeTypeName(obj.$className);
-            if (!this.hasOwnProperty(handler)) {
-                handler = null;
-                for (const type of abstractTypes) {
-                    if (Java.use(type).class.isInstance(obj)) {
-                        handler = "unbox" + capitalizeTypeName(type);
-                        break
+            const className = obj.$className;
+            if (className.indexOf("[") === 0) { /* unwrapped array object */
+                const result = [];
+                const elementType = className.substring(1);
+                const length = javaLangReflectArray.getLength(obj);
+
+                let getFromArray = "get";
+                if (elementType[elementType.length - 1] !== ";" && elementType[0] !== "[") {
+                    if (primitiveTypes.hasOwnProperty(elementType)) {
+                        getFromArray += capitalizeTypeName(primitiveTypes[elementType]);
                     }
                 }
-            }
+                for (let i = 0; i < length; i++) {
+                    const element = javaLangReflectArray[getFromArray](obj, i);
+                    result.push(unboxGenericObjectValue(element));
+                }
+                return result
+            } else {
+                let handler = "unbox" + capitalizeTypeName(className);
+                if (!this.hasOwnProperty(handler)) {
+                    handler = null;
+                    for (const klass of parseableAbstractClasses) {
+                        if (klass.class.isInstance(obj)) {
+                            handler = "unbox" + capitalizeTypeName(klass.$className);
+                            break
+                        }
+                    }
+                }
 
             let value;
             if (handler !== null) {
