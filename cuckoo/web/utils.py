@@ -107,6 +107,19 @@ def file_response(data, filename, content_type):
     response["Content-Disposition"] = "attachment; filename=%s" % filename
     return response
 
+def buffer_filepath(task_id, sha1):
+    record = mongo.db.analysis.find_one({
+        "info.id": int(task_id),
+        "buffer.sha1": sha1,
+    })
+
+    if not record:
+        return
+
+    for dropped in record["buffer"]:
+        if dropped["sha1"] == sha1:
+            return dropped["path"]
+
 def dropped_filepath(task_id, sha1):
     record = mongo.db.analysis.find_one({
         "info.id": int(task_id),

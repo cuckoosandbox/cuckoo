@@ -13,6 +13,8 @@ urlpatterns = [
     url(r"pre/(?P<submit_id>\d+)/$", SubmissionRoutes.presubmit, name="submission/pre"),
     url(r"^post/(?P<submit_id>\d+)", SubmissionRoutes.postsubmit, name="submission/post"),
     url(r"^re/(?P<task_id>\d+)/$", SubmissionRoutes.resubmit, name="submission/resubmit"),
+    url(r"^(?P<task_id>\d+)/buffer/(?P<sha1>[a-f0-9]{40})/$",
+        SubmissionRoutes.buffer, name="submission/buffer"),
     url(r"^(?P<task_id>\d+)/dropped/(?P<sha1>[a-f0-9]{40})/$",
         SubmissionRoutes.dropped, name="submission/dropped"),
     url(r"^api/presubmit", SubmissionApi.presubmit, name="submission/api/presubmit"),

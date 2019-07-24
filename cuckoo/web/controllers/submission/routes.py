@@ -10,7 +10,8 @@ from django.shortcuts import redirect
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.core.database import Database
 from cuckoo.core.submit import SubmitManager
-from cuckoo.web.utils import view_error, render_template, dropped_filepath, binary_filepath
+from cuckoo.web.utils import (view_error, render_template,
+        dropped_filepath, buffer_filepath, binary_filepath)
 
 log = logging.getLogger(__name__)
 submit_manager = SubmitManager()
@@ -50,6 +51,19 @@ class SubmissionRoutes(object):
         return render_template(
             request, "submission/presubmit.html", submit_id=submit_id
         )
+
+    @staticmethod
+    def buffer(request, task_id, sha1):
+        filepath = buffer_filepath(task_id, sha1)
+        if not filepath:
+            return view_error(request, "No such dropped file was found!")
+
+        submit_id = submit_manager.pre("files", [{
+            "name": os.path.basename(filepath),
+            "data": open(filepath, "rb"),
+        }])
+
+        return redirect("submission/pre", submit_id=submit_id)
 
     @staticmethod
     def dropped(request, task_id, sha1):
