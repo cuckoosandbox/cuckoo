@@ -2,57 +2,57 @@
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getDeviceId",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getSubscriberId",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getLine1Number",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getNetworkOperator",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getSimSerialNumber",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getSimOperatorName",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getSimCountryIso",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getNetworkCountryIso",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getDeviceSoftwareVersion",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getImei",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
         "method": "getMeid",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.TelephonyManager",
@@ -62,7 +62,7 @@
     {
         "class": "android.net.wifi.WifiInfo",
         "method": "getMacAddress",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.SharedPreferencesImpl$EditorImpl",
@@ -172,27 +172,27 @@
     {
         "class": "android.app.ActivityManager",
         "method": "getRunningAppProcesses",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.ActivityManager",
         "method": "getRunningTasks",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.ActivityManager",
         "method": "getRunningServices",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.ActivityManager",
         "method": "killBackgroundProcesses",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.usage.UsageStatsManager",
         "method": "queryUsageStats",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.os.Process",
@@ -232,7 +232,7 @@
     {
         "class": "android.content.BroadcastReceiver", 
         "method": "abortBroadcast", 
-        "type": "receiver"
+        "category": "binder"
     },
     {
         "class": "android.util.Base64",
@@ -267,37 +267,37 @@
     {
         "class": "android.accounts.AccountManager",
         "method": "getAccountsByType",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.accounts.AccountManager",
         "method": "getAccounts",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.media.AudioRecord",
         "method": "startRecording",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.media.MediaRecorder",
         "method": "start",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.ApplicationPackageManager",
         "method": "getInstalledPackages",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.ApplicationPackageManager",
         "method": "getInstalledApplications",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.ApplicationPackageManager",
         "method": "setComponentEnabledSetting",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.os.Debug",
@@ -307,37 +307,37 @@
     {
         "class": "android.location.Location",
         "method": "getLatitude",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.location.Location",
         "method": "getLongitude",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.NotificationManager",
         "method": "notify",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.AlarmManager",
         "method": "setAlarmClock",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.app.AlarmManager",
         "method": "set",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.SmsManager",
         "method": "sendDataMessage",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "android.telephony.SmsManager",
         "method": "sendTextMessage",
-        "category": "service"
+        "category": "services"
     },
     {
         "class": "java.lang.reflect.Field",
