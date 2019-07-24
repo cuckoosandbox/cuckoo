@@ -190,18 +190,25 @@ class JavaTypesParser {
             }
         };
 
-            if (value === undefined) {
-                value = { "class": obj.$className };
-            } else if (value.constructor.name === "Object") {
-                value["class"] = obj.$className;
-            }
-
-            return value;
-        };
-
         this.unboxJavaLangClass = function (classObj) {
             return {
-                "name": classObj.getName() 
+                "class_name": classObj.getName() 
+            }
+        };
+
+        this.unboxJavaLangReflectMethod = function (methodObj) {
+            const class_name = Java.cast(methodObj.getDeclaringClass(), javaLangClass).getName();
+            return {
+                "class_name": class_name,
+                "method_name": methodObj.getName()
+            }
+        };
+
+        this.unboxJavaLangReflectField = function (fieldObj) {
+            const class_name = Java.cast(fieldObj.getDeclaringClass(), javaLangClass).getName();
+            return {
+                "class_name": class_name,
+                "field_name": fieldObj.getName()
             }
         };
 
@@ -213,7 +220,7 @@ class JavaTypesParser {
 
         this.unboxAndroidAppSharedPreferencesImplEditorImpl = function (editorObj) {
             return {
-                "filepath": this.unboxJavaIoFile(editorObj.this$0.value.mFile.value)
+                "filepath": unboxGenericObjectValue(editorObj.this$0.value.mFile.value)
             };
         };
 
@@ -225,42 +232,34 @@ class JavaTypesParser {
 
         this.unboxJavaNetHttpURLConnection = function (httpObj) {
             return {
-                "url": this.unboxJavaNetURL(httpObj.getUrl()),
+                "url": unboxGenericObjectValue(httpObj.getURL()),
                 "request_method": httpObj.getRequestMethod(),
-                "header_fields": this.unboxJavaUtilMap(httpObj.getHeaderFields()),
+                "header_fields": unboxGenericObjectValue(httpObj.getHeaderFields()),
                 "response_code": httpObj.getResponseCode(),
                 "response": httpObj.getResponseMessage()
             };
         };
 
         this.unboxJavaLangProcessBuilder = function (builderObj) {
-            const command = this.unboxJavaUtilList(builderObj.command).join(" ");
-
+            const command = unboxGenericObjectValue(builderObj.command).join(" ");
             return { command };
         };
 
         this.unboxAndroidContentIntentFilter = function (filterObj) {
-            const actions = this.unboxJavaUtilIterator(filterObj.actionsIterator());
-
+            const actions = unboxGenericObjectValue(filterObj.actionsIterator());
             return { actions };
         };
 
         this.unboxJavaNetURL = function (urlObj) {
-            return {
-                "url": urlObj.toString()
-            };
+            return urlObj.toString();
         };
 
         this.unboxAndroidNetUri = function (uriObj) {
-            return {
-                "uri": uriObj.toString()
-            };
+            return uriObj.toString();
         };
 
         this.unboxJavaNetURI = function (uriObj) {
-            return {
-                "uri": uriObj.toString()
-            };
+            return uriObj.toString();
         };
 
         this.unboxAndroidContentIntent = function (intentObj) {
@@ -270,13 +269,13 @@ class JavaTypesParser {
                 "package": intentObj.getPackage(),
                 "type": intentObj.getType(),
                 "component": intentObj.getComponent().flattenToString(),
-                "extras": this.unboxAndroidOsBundle(intentObj.getExtras())
+                "extras": unboxGenericObjectValue(intentObj.getExtras())
             };
         };
 
         this.unboxAndroidAppActivityThreadReceiverData = function (rcvDataObj) {
             return {
-                "intent": this.unboxAndroidContentIntent(rcvDataObj.intent.value),
+                "intent": unboxGenericObjectValue(rcvDataObj.intent.value),
                 "package": rcvDataObj.info.value.packageName.value,
                 "result_data": rcvDataObj.getResultData(),
                 "result_code": rcvDataObj.getResultCode()
@@ -284,52 +283,47 @@ class JavaTypesParser {
         };
 
         this.unboxJavaUtilSet = function (setObj) {
-            return this.unboxJavaUtilIterator(setObj.iterator());
+            return unboxGenericObjectValue(setObj.iterator());
         };
 
         this.unboxAndroidOsBundle = function (bundleObj) {
-            return this.unboxJavaUtilMap(bundleObj);
+            return unboxGenericObjectValue(bundleObj);
         };
 
         this.unboxAndroidContentContentValues = function (valuesObj) {
-            return this.unboxJavaUtilMap(valuesObj);
+            return unboxGenericObjectValue(valuesObj);
         };
 
         this.unboxJavaUtilIterator = function (iteratorObj) {
-            let value = [];
+            const result = [];
             while (iteratorObj.hasNext()) {
-                value.push(unboxGenericObjectValue(iteratorObj.next()));
+                result.push(unboxGenericObjectValue(iteratorObj.next()));
             }
-        
-            return value;
+            return result;
         };
 
         this.unboxJavaUtilList = function (listObj) { 
-            let value = [];
+            const result = [];
             for (let i = 0; i < listObj.size(); i++) {
-                value.push(unboxGenericObjectValue(listObj.get(i)));
+                result.push(unboxGenericObjectValue(listObj.get(i)));
             }
-        
-            return value;
+            return result;
         };
 
         this.unboxJavaUtilMap = function (mapObj) {
+            const keys = [];
             const iterator = mapObj.keySet().iterator();
-        
-            let keys = [];
             while (iterator.hasNext()) {
                 keys.push(iterator.next())
             }
 
-            let items = [];
+            const result = {};
             keys.forEach(aKey => {
                 const key = unboxGenericObjectValue(aKey);
                 const value = unboxGenericObjectValue(mapObj.get(aKey));
-        
-                items.push({ key, value });
+                result[key] = value;
             });
-            
-            return { items };
+            return result;
         };
     }
 }
