@@ -105,6 +105,10 @@ function unboxGenericObjectValue (obj) {
 
     if (obj.$className !== undefined) {
         /* java type */
+        if (!obj.hasOwnProperty("$handle")) {
+            return null;
+        }
+
         const jObject = Java.cast(obj, Java.use(obj.$className));
         const typesParser = new JavaTypesParser();
         return typesParser.parse(jObject);
