@@ -39,9 +39,7 @@ function monitorJavaMethod (hookConfig) {
     const className = hookConfig.class;
     const methodName = hookConfig.method;
     const category = hookConfig.category;
-
-    let onMethodEntered = 
-        makeJavaMethodImplCallback(className, methodName, category);
+    const onMethodExited = makeJavaMethodImplCallback(className, methodName, category);
 
     try {
         const klass = Java.use(className);
@@ -61,10 +59,9 @@ function monitorJavaMethod (hookConfig) {
             }
         });
     } catch (e) {
-        LOG("error", className + ":" + methodName);
         LOG("error", e);
     }
-};
+}
 
 /**
  * Make generic implementation callback function for a Java method.
@@ -86,36 +83,35 @@ function makeJavaMethodImplCallback (className, methodName, category) {
             "this": unboxGenericObjectValue(thisObject)
         }
 
+        const Thread = Java.use("java.lang.Thread");
         const stackElements = Thread.currentThread().getStackTrace();
         const callStack = stackElements.map((elem) => elem.getMethodName());
-        const currentCallIndex = callStack.findIndex((call) => call === methodName);
-    
-        const isCalledFromOverload = 
-            callStack[currentCallIndex] === callStack[currentCallIndex-1];
-    
+        const currentCallIdx = callStack.findIndex((call) => call === methodName);
+        const isCalledFromOverload = callStack[currentCallIdx] === callStack[currentCallIdx-1];
+
         if (!isCalledFromOverload) {
             LOG("jvmHook", hookData, true);
         }
     }
-};
+}
 
 /** 
  * Extracts the value of an object obtained from the runtime.
  */
 function unboxGenericObjectValue (obj) {
-    if (obj === null) {
+    if (obj === null || obj === undefined) {
         return null;
     }
 
-    if (obj.$className !== undefined) { 
+    if (obj.$className !== undefined) {
         /* java type */
         const jObject = Java.cast(obj, Java.use(obj.$className));
         const typesParser = new JavaTypesParser();
         return typesParser.parse(jObject);
-    } else if (Array.isArray(obj)) { 
+    } else if (Array.isArray(obj)) {
         /* non-primitive array */
         return obj.map(elem => unboxGenericObjectValue(elem));
-    } else if (obj.type === "byte") { 
+    } else if (obj.type === "byte") {
         /* primitive byte array */
         if (isAsciiString(obj)) {
             const String = Java.use("java.lang.String");
@@ -126,17 +122,18 @@ function unboxGenericObjectValue (obj) {
     } else {
         return obj;
     }
-};
+}
 
 class JavaTypesParser {
     constructor () {
-        const abstractTypes = [
+        const parseableAbstractClasses = [
             "java.util.Set",
             "java.util.Map",
             "java.util.List",
             "android.net.Uri",
-            "java.net.HttpURLConnection"
+            "java.net.HttpURLConnection",
         ]
+        .map(type => Java.use(type));
 
         const primitiveTypes = {
             "Z": "boolean",
@@ -347,18 +344,17 @@ function capitalizeTypeName (typeName) {
             .split(/[.$]/)
             .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
             .join("");
-};
+}
 
 function isAsciiString (byteArray) {
     for (let i = 0; i < byteArray.length; i++) {
-        let byte = byteArray[i];
+        const byte = byteArray[i];
         if (!(byte > 31 && byte < 127)) {
             return false;
         }
     }
-
     return true;
-};
+}
 
 /** 
  * Utility method for forwarding messages/ events to Frida's client.
@@ -382,7 +378,7 @@ function LOG (eventType, message, sendPid=false) {
             send(eventType + "\n" + message);
         }
     }
-};
+}
 
 /**
  * Bootstrapping procedure for java runtime analysis.
@@ -396,34 +392,32 @@ function init_jvm (jvmHooksConfig) {
                 hookConfig.method,
                 hookConfig.category
             );
-
             monitorJavaMethod(javaHookConfig);
         });
     });
-};
+}
 
 /**
  * Bootstrapping procedure for the analysis.
  */
 function init () {
     /* Exported symbols */
-    let unlinkPtr = Module.findExportByName(null, "unlink");
-    let unlinkatPtr = Module.findExportByName(null, "unlinkat");
-    let openPtr = Module.findExportByName(null, "open");
-    let openatPtr = Module.findExportByName(null, "openat");
-    let creatPtr = Module.findExportByName(null, "creat");
-    let lstatPtr = Module.findExportByName(null, "lstat");
-    let renamePtr = Module.findExportByName(null, "rename");
-    let renameatPtr = Module.findExportByName(null, "renameat");
+    const unlinkPtr = Module.findExportByName(null, "unlink");
+    const unlinkatPtr = Module.findExportByName(null, "unlinkat");
+    const openPtr = Module.findExportByName(null, "open");
+    const openatPtr = Module.findExportByName(null, "openat");
+    const creatPtr = Module.findExportByName(null, "creat");
+    const lstatPtr = Module.findExportByName(null, "lstat");
+    const renamePtr = Module.findExportByName(null, "rename");
+    const renameatPtr = Module.findExportByName(null, "renameat");
 
     /* Native functions */
-    let lstat = new NativeFunction(lstatPtr, "int", ["pointer", "pointer"]);
+    const lstat = new NativeFunction(lstatPtr, "int", ["pointer", "pointer"]);
 
     /* Check if file exists */
-    let exists = function (fpathPtr) {
-        let maxStatStructSize = 20 * 8;
-        let statStruct = Memory.alloc(maxStatStructSize);
-
+    const exists = function (fpathPtr) {
+        const maxStatStructSize = 20 * 8;
+        const statStruct = Memory.alloc(maxStatStructSize);
         return lstat(fpathPtr, statStruct) === 0;
     };
 
@@ -446,7 +440,7 @@ function init () {
     /* Notify when a file is about to be created */
     Interceptor.attach(openPtr, {
         onEnter: function (args) {
-            let createIfNotFound = args[1].toInt32() & 0o100 !== 0;
+            const createIfNotFound = args[1].toInt32() & 0o100 !== 0;
 
             if (!exists(args[0]) && createIfNotFound) {
                 LOG("fileDrop", args[0].readUtf8String());
@@ -455,7 +449,7 @@ function init () {
     });
     Interceptor.attach(openatPtr, {
         onEnter: function (args) {
-            let createIfNotFound = args[2].toInt32() & 0o100 !== 0;
+            const createIfNotFound = args[2].toInt32() & 0o100 !== 0;
 
             if (!exists(args[1]) && createIfNotFound) {
                 LOG("fileDrop", args[1].readUtf8String());
@@ -474,14 +468,14 @@ function init () {
     Interceptor.attach(renamePtr, {
         onEnter: function (args) {
             const message = args[0].readUtf8String() + "," +
-                         args[1].readUtf8String();
+                            args[1].readUtf8String();
             LOG("fileMoved", message);
         }
     });
     Interceptor.attach(renameatPtr, {
         onEnter: function (args) {
-            const message = args[1].readUtf8String() + "," + 
-                         args[3].readUtf8String();
+            const message = args[1].readUtf8String() + "," +
+                            args[3].readUtf8String();
             LOG("fileMoved", message);
         }
     });
