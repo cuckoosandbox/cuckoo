@@ -6,6 +6,8 @@ import os
 import json
 import logging
 
+from datetime import datetime
+
 from lib.common.exceptions import CuckooFridaError
 from lib.common.utils import load_configs
 
@@ -33,6 +35,7 @@ class Client(object):
                 "installation."
             )
 
+        self.processes = {}
         self.sessions = {}
         self.scripts = {}
         self.device = frida.get_local_device()
@@ -46,7 +49,7 @@ class Client(object):
             lambda child: self._on_child_removed(child.pid)
         )
 
-        self.agent_handler = AgentHandler(analyzer)
+        self.agent_handler = AgentHandler(analyzer, self)
 
         self._on_child_added_callback = None
         self._on_child_removed_callback = None
@@ -66,6 +69,22 @@ class Client(object):
     @on_child_removed_callback.setter
     def on_child_removed_callback(self, callback):
         self._on_child_removed_callback = callback
+
+    def _add_process(self, pid):
+        """Add a process to the list of processes.
+        @param pid: Process id.
+        """
+        for proc in self.device.enumerate_processes():
+            if proc.pid == pid:
+                process_name = proc.name
+
+        proc_info = self._get_agent(pid).call("getCurrentProcessInfo")
+        self.processes[pid] = {
+            "ppid": proc_info["ppid"],
+            "uid": proc_info["uid"],
+            "process_name": process_name,
+            "first_seen": str(datetime.now()),
+        }
 
     def spawn(self, pkg):
         """Start a target Android application.
@@ -189,12 +208,61 @@ class Client(object):
         except frida.TransportError:
             raise CuckooFridaError("Failed to inject instrumentation script")
 
-class AgentHandler(object):
-    """Handles event messages received from Frida's agent."""
-
-    def __init__(self, analyzer):
-        """@param analyzer: Analyzer instance.
+    def load_agent(self, pid):
+        """Load our instrumentation agent into the process and start it.
+        @param pid: Process id.
         """
+        if not os.path.exists(AGENT_PATH):
+            raise CuckooFridaError(
+                "Agent script not found at '%s', unable to inject into "
+                "process.." % AGENT_PATH
+            )
+
+        self._start_session(pid)
+        self._load_script(pid, AGENT_PATH)
+        self._add_process(pid)
+        self.scripts[pid].exports.start(load_configs("config/"))
+
+        self._resume(pid)
+
+    def _get_agent(self, pid):
+        """Get the agent injected in a process.
+        @param pid: Process id.
+        @return: Agent instance.
+        """
+        if pid not in self.scripts:
+            return None
+
+        return Agent(pid, self.scripts[pid])
+
+class Agent(object):
+    """RPC interface of Frida's agent."""
+
+    def __init__(self, pid, script):
+        """@param pid: Process id.
+        @param script: Script object to communicate with agent.
+        """
+        self.pid = pid
+        self.script = script
+
+    def call(self, func_name, args=None):
+        """Call an exported function from the agent script.
+        @param func_name: Name of exported function.
+        @param args: function arguments.
+        """
+        if args is not None and not isinstance(args, list):
+            args = [args]
+
+        return self.script.exports.api(func_name, args)
+
+class AgentHandler(object):
+    """Handles event messages received from a Frida agent."""
+
+    def __init__(self, analyzer, client):
+        """@param analyzer: Analyzer instance.
+        @param client: Frida client instance.
+        """
+        self.client = client
         self.analyzer = analyzer
         self.loggers = {}
 

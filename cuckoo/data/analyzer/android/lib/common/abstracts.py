@@ -111,7 +111,8 @@ class Package(object):
 
     def finish(self):
         """Finish run."""
-        for pid in self.pids:
+        for pid in self.pids[::-1]:
+            # TODO: terminate frida sessions
             Process(pid).dump_memory()
             Process(pid).kill()
 

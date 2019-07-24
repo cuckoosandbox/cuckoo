@@ -7,6 +7,27 @@
 'use strict';
 
 /**
+ * Exported methods for the Frida RPC client.
+ */
+class Api {
+    constructor () {
+        this.getCurrentProcessInfo = function () {
+            const getppid = new NativeFunction(
+                Module.findExportByName(null, "getppid"), "int", []
+            );
+            const getuid = new NativeFunction(
+                Module.findExportByName(null, "getuid"), "int", []
+            );
+
+            return {
+                "ppid": getppid(),
+                "uid": getuid()
+            };
+        };
+    }
+}
+
+/**
  * Replace the implementation of a Java method in order to monitor calls
  * made to the Android API. Needs to be called from a thread attached 
  * to the VM.
@@ -429,9 +450,14 @@ function init () {
             LOG("fileMoved", message);
         }
     });
-};
+}
+
+var api = new Api();
 
 rpc.exports = {
+    api: function (api_method, args) {
+        return api[api_method].apply(this, args);
+    },
     start: function (configs) {
         init();
 
