@@ -370,11 +370,6 @@
         "category": "network"
     },
     {
-        "class": "com.android.okhttp.internal.huc.HttpsURLConnectionImpl",
-        "method": "execute",
-        "category": "network"
-    },
-    {
         "class": "android.os.SystemProperties", 
         "method": "get", 
         "category": "content"
