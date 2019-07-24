@@ -48,13 +48,14 @@ function monitorJavaMethod (hookConfig) {
         overloads.forEach(method => {
             if (method.implementation === null) {
                 method.implementation = function () {
+                    const returnValue = method.apply(this, arguments);
+
                     try {
-                        onMethodEntered(this, arguments);
+                        onMethodExited(this, arguments, returnValue);
                     } catch (e) {
                         LOG("error", e);
                     }
-
-                    return method.apply(this, arguments);
+                    return returnValue;
                 };
             }
         });
@@ -71,17 +72,16 @@ function monitorJavaMethod (hookConfig) {
  * @param category Category of API call.
  */
 function makeJavaMethodImplCallback (className, methodName, category) {
-    return function (thisObject, args) {
-        const Thread = Java.use("java.lang.Thread");
-
+    return function (thisObject, args, returnValue) {
         const hookData = {
             "class": className,
             "method": methodName,
             "category": category,
             "time": new Date().toString(),
             "args": Array.from(args).map(unboxGenericObjectValue),
-            "this": unboxGenericObjectValue(thisObject)
-        }
+            "this": unboxGenericObjectValue(thisObject),
+            "returnValue": unboxGenericObjectValue(returnValue),
+        };
 
         const Thread = Java.use("java.lang.Thread");
         const stackElements = Thread.currentThread().getStackTrace();
