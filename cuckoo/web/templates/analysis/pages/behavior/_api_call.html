@@ -42,7 +42,7 @@
   {% if call.thisObject|is_dict %}
     {% for key, value in call.thisObject.items %}
       <span class="grey">{{key}}:</span>
-      <span class="mono">{{value}}</span>
+      <span class="mono">{{value|_byteify}}</span>
       <br />
     {% endfor %}
   {% else %}
