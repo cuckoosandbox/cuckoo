@@ -265,6 +265,65 @@ def test_misp_sample_hashes():
         comment="File submitted to Cuckoo"
     )
 
+def test_misp_dropped_files():
+    r = MISP()
+    r.misp = mock.MagicMock()
+
+    r.misp.upload_sample_files.return_value = None
+    r.misp.update_event.return_value = None
+    r.misp.get_event.return_value = {
+        "Event": {
+            'info': 'test',
+            'Object': [
+                {"name": "file"}
+                ]
+        }
+    }
+    r.dropped_files({
+        "dropped": [
+            {
+                "path": "tests/files/foo.txt",
+                "filepath": "/tmp/foo.txt",
+                "name": "foo.txt",
+                "yara": [
+                    {
+                        "meta": {
+                            "description": "Test"
+                        }
+                    }
+                ],
+            }
+        ]
+    } , {
+        "Event": {
+            "id": "0"
+        }
+    })
+
+    r.misp.upload_sample.assert_called_once_with(
+        filename="foo.txt", filepath_or_bytes="tests/files/foo.txt",
+        event_id="0", category="External analysis",
+        comment="Dropped file"
+    )
+
+    r.misp.update_event.assert_called_once()
+    params, dict_params = r.misp.update_event.call_args
+    event_id, event = params
+    assert event_id == "0"
+    obj = event.objects[-1]
+
+    assert obj.has_attributes_by_relation(["fullpath"])
+    attr = obj.get_attributes_by_relation("fullpath")[0]
+    assert 'value' in attr
+    assert attr.value == "/tmp/foo.txt"
+
+    assert obj.has_attributes_by_relation(["text"])
+    attr = obj.get_attributes_by_relation("text")[0]
+    assert 'value' in attr
+    assert attr.value == "Test"
+    assert 'comment' in attr
+    assert attr.comment == "Yara match"
+
 def test_misp_signatures():
     r = MISP()
     r.misp = mock.MagicMock()

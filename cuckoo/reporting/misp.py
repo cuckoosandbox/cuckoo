@@ -16,6 +16,7 @@ from cuckoo.common.whitelist import (
 
 log = logging.getLogger(__name__)
 
+
 class MISP(Report):
     """Enrich MISP with Cuckoo results."""
 
@@ -69,6 +70,40 @@ class MISP(Report):
 
         self.misp.add_domains_ips(event, domains)
         self.misp.add_ipdst(event, sorted(list(ipaddrs)))
+
+    def dropped_files(self, results, event):
+        """
+        Add all the dropped files as MISP attributes.
+        """
+        from pymisp import MISPEvent
+        for entry in results.get("dropped", []):
+            self.misp.upload_sample(
+                    filename=entry.get("name"),
+                    filepath_or_bytes=entry.get("path"),
+                    event_id=event["Event"]["id"],
+                    category="External analysis",
+                    comment="Dropped file",
+            )
+
+            # Load the event from MISP (we cannot use event as it
+            # does not contain the sample uploaded above, nor it is
+            # a MISPEvent but a simple dict)
+            e = MISPEvent()
+            e.from_dict(Event=self.misp.get_event(event["Event"]["id"])["Event"])
+            dropped_file_obj = e.objects[-1]
+
+            # Add the real location of the dropped file (during the analysis)
+            real_filepath = entry.get("filepath")
+            dropped_file_obj.add_attribute("fullpath", real_filepath)
+
+            # Add Yara matches if any
+            for match in entry.get("yara", []):
+                desc = match["meta"]["description"]
+                dropped_file_obj.add_attribute("text",
+                        value=desc, comment="Yara match")
+
+            # Update the event
+            self.misp.update_event(event["Event"]["id"], e)
 
     def family(self, results, event):
         for config in results.get("metadata", {}).get("cfgextr", []):
@@ -194,6 +229,7 @@ class MISP(Report):
                     filepath_or_bytes=self.task["target"],
                     event_id=event["Event"]["id"],
                     category="External analysis",
+                    comment="Sample run",
                 )
 
         self.signature(results, event)
@@ -206,5 +242,8 @@ class MISP(Report):
 
         if "ipaddr" in mode:
             self.domain_ipaddr(results, event)
+
+        if "dropped_files" in mode:
+            self.dropped_files(results, event)
 
         self.family(results, event)
