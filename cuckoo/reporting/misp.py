@@ -73,10 +73,10 @@ class MISP(Report):
     def family(self, results, event):
         for config in results.get("metadata", {}).get("cfgextr", []):
             self.misp.add_detection_name(
-                event, config["family"], "External analysis"
+                event, config["family"], "Payload type"
             )
             for cnc in config.get("cnc", []):
-                self.misp.add_url(event, cnc)
+                self.misp.add_url(event, cnc, comment="cnc")
             for url in config.get("url", []):
                 self.misp.add_url(event, url)
             for mutex in config.get("mutex", []):
@@ -123,14 +123,15 @@ class MISP(Report):
             markslist = ", ".join([x for x in marks if x and x != " "])
 
             data = "%s - (%s)" % (sig["description"], markslist)
-            self.misp.add_internal_comment(event, data)
+            self.misp.add_internal_comment(event, data, category="External analysis")
             for att, description in sig["ttp"].items():
                 if not description:
                     log.warning("Description for %s is not found", att)
                     continue
 
                 self.misp.add_internal_comment(
-                    event, "TTP: %s, short: %s" % (att, description["short"])
+                    event, "TTP: %s, short: %s" % (att, description["short"]),
+                    category="External analysis"
                 )
 
     def run(self, results):
@@ -193,7 +194,7 @@ class MISP(Report):
                     filename=os.path.basename(self.task["target"]),
                     filepath_or_bytes=self.task["target"],
                     event_id=event["Event"]["id"],
-                    category="External analysis",
+                    category="Payload delivery",
                 )
 
         self.signature(results, event)

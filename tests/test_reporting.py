@@ -277,17 +277,22 @@ def test_misp_signatures():
 
     assert r.misp.add_internal_comment.call_count == 36
     r.misp.add_internal_comment.assert_has_calls([
-        mock.call("event", "Creates a service - (T1031, CreateServiceW)"),
+        mock.call("event", "Creates a service - (T1031, CreateServiceW)",
+                  category="External analysis"),
         mock.call("event", "Searches running processes potentially to identify"
                            " processes for sandbox evasion, code injection or"
                            " memory dumping -"
-                           " (T1057, Process32FirstW, Process32NextW)"),
-        mock.call("event", "TTP: T1054, short: Indicator Blocking"),
+                           " (T1057, Process32FirstW, Process32NextW)",
+                  category="External analysis"),
+        mock.call("event", "TTP: T1054, short: Indicator Blocking",
+                  category="External analysis"),
         mock.call("event", "Disables Windows Security features -"
                            " (T1089, T1112, attempts to disable user access"
-                           " control)"),
+                           " control)",
+                  category="External analysis"),
         mock.call("event", "Communicates with host for which no DNS query was"
-                           " performed - (200.87.164.69)")
+                           " performed - (200.87.164.69)",
+                  category="External analysis")
     ], any_order=True)
 
 def test_misp_all_urls():
@@ -389,14 +394,14 @@ def test_misp_family():
 
     assert r.misp.add_detection_name.call_count == 3
     r.misp.add_detection_name.assert_has_calls([
-        mock.call("event", "3x4mpl3", "External analysis"),
-        mock.call("event", "3x4mpl3_2", "External analysis"),
-        mock.call("event", "3x4mpl3_3", "External analysis")
+        mock.call("event", "3x4mpl3", "Payload type"),
+        mock.call("event", "3x4mpl3_2", "Payload type"),
+        mock.call("event", "3x4mpl3_3", "Payload type")
     ])
 
     assert r.misp.add_url.call_count == 2
     r.misp.add_url.assert_has_calls([
-        mock.call("event", "example.com/gate.php"),
+        mock.call("event", "example.com/gate.php", comment="cnc"),
         mock.call("event", "http://example.org")
     ])
 
