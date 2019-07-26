@@ -302,7 +302,7 @@ def test_misp_dropped_files():
 
     r.misp.upload_sample.assert_called_once_with(
         filename="foo.txt", filepath_or_bytes="tests/files/foo.txt",
-        event_id="0", category="External analysis",
+        event_id="0", category="Artifacts dropped",
         comment="Dropped file"
     )
 

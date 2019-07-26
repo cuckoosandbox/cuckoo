@@ -81,7 +81,7 @@ class MISP(Report):
                     filename=entry.get("name"),
                     filepath_or_bytes=entry.get("path"),
                     event_id=event["Event"]["id"],
-                    category="External analysis",
+                    category="Artifacts dropped",
                     comment="Dropped file",
             )
 
