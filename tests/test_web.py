@@ -693,6 +693,16 @@ class TestWebInterface(object):
         assert len(r) == 1
         assert r[0].filesize == os.path.getsize(__file__)
 
+    @mock.patch("cuckoo.web.controllers.submission.routes.buffer_filepath")
+    def test_submission_buffer(self, p, client):
+        p.return_value = __file__
+        r = client.get("/submit/1234/buffer/" + "a"*40 + "/")
+        assert r.status_code == 302
+
+        r, _, _ = SubmitManager().get_files(1)
+        assert len(r) == 1
+        assert r[0].filesize == os.path.getsize(__file__)
+
     @mock.patch("cuckoo.web.controllers.analysis.api.CuckooFeedback")
     def test_feedback_form(self, p, client):
         p.return_value.send_form.return_value = 3
