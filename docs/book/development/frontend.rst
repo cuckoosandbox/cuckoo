@@ -8,7 +8,7 @@ Frontend
 .. CAUTION::
    This documentation is WIP.
 
-The Javascript code in Cuckoo web is developed in ECMASript 6. For browser compatibility, this will need to be transpiled back to ECMAScript 5.
+The Javascript code in Cuckoo web is developed in ECMAScript 6. For browser compatibility, this will need to be transpiled back to ECMAScript 5.
 
 Cuckoo makes use of Gulp to build from source to static (frontend sources). Before you can use this,
 make sure that the following dependencies are installed (required for Node and following assets):
