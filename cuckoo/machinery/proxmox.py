@@ -12,6 +12,9 @@ from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooMachineError
 
+# silence overly verbose INFO level logging default of proxmoxer module
+logging.getLogger("proxmoxer").setLevel(logging.WARNING)
+
 log = logging.getLogger(__name__)
 
 class Proxmox(Machinery):
