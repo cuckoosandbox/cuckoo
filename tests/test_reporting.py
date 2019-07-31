@@ -265,33 +265,72 @@ def test_misp_sample_hashes():
         comment="File submitted to Cuckoo"
     )
 
+def test_misp_no_dropped_files():
+    r = MISP()
+    r.misp = mock.MagicMock()
+
+    r.dropped_files({
+        "dropped": []
+    } , {
+        "Event": {
+            "id": "0"
+        }
+    })
+
 def test_misp_dropped_files():
     r = MISP()
     r.misp = mock.MagicMock()
 
-    r.misp.upload_sample_files.return_value = None
     r.misp.update_event.return_value = None
     r.misp.get_event.return_value = {
         "Event": {
             'info': 'test',
             'Object': [
-                {"name": "file"}
-                ]
+                {
+                    "name": "file",
+                    "Attribute": [{
+                        "object_relation": "sha1",
+                        'type': u'sha1',
+                        'value': 'plop',
+                    }]
+                },
+                {
+                    "name": "file",
+                    "Attribute": [{
+                        "object_relation": "sha1",
+                        'type': u'sha1',
+                        'value': 'cakelie',
+                    }]
+                }
+            ]
         }
     }
     r.dropped_files({
         "dropped": [
             {
                 "path": "tests/files/foo.txt",
+                "sha1": "plop",
                 "filepath": "/tmp/foo.txt",
                 "name": "foo.txt",
                 "yara": [
-                    {
-                        "meta": {
-                            "description": "Test"
+                        {
+                            "meta": {
+                                "description": "foo"
+                            }
+                        },
+                        {
+                            "meta": {
+                                "description": "bar"
+                            }
                         }
-                    }
-                ],
+                    ]
+            },
+            {
+                "path": "tests/files/cake.txt",
+                "sha1": "cakelie",
+                "filepath": "/tmp/cake.txt",
+                "name": "cake.txt",
+                "yara": []
             }
         ]
     } , {
@@ -300,29 +339,44 @@ def test_misp_dropped_files():
         }
     })
 
-    r.misp.upload_sample.assert_called_once_with(
-        filename="foo.txt", filepath_or_bytes="tests/files/foo.txt",
+    r.misp.upload_samplelist.assert_called_once_with(
+        filepaths=["tests/files/foo.txt", "tests/files/cake.txt"],
         event_id="0", category="Artifacts dropped",
-        comment="Dropped file"
+        comment="Dropped file",
     )
 
     r.misp.update_event.assert_called_once()
     params, dict_params = r.misp.update_event.call_args
-    event_id, event = params
+    event_id, event = dict_params["event_id"], dict_params["event"]
     assert event_id == "0"
-    obj = event.objects[-1]
 
-    assert obj.has_attributes_by_relation(["fullpath"])
-    attr = obj.get_attributes_by_relation("fullpath")[0]
+    # Assert the objects are there
+    assert len(event.objects) == 2
+    obj1, obj2 = event.objects
+    assert obj1.get_attributes_by_relation("sha1")[0].value == "plop"
+    assert obj2.get_attributes_by_relation("sha1")[0].value == "cakelie"
+    
+    # Assert they have the correct fullpath attribute
+    assert obj1.has_attributes_by_relation(["fullpath"])
+    attr = obj1.get_attributes_by_relation("fullpath")[0]
     assert 'value' in attr
     assert attr.value == "/tmp/foo.txt"
 
-    assert obj.has_attributes_by_relation(["text"])
-    attr = obj.get_attributes_by_relation("text")[0]
+    assert obj2.has_attributes_by_relation(["fullpath"])
+    attr = obj2.get_attributes_by_relation("fullpath")[0]
     assert 'value' in attr
-    assert attr.value == "Test"
-    assert 'comment' in attr
-    assert attr.comment == "Yara match"
+    assert attr.value == "/tmp/cake.txt"
+
+    # Assert the have the correct yara matches
+    assert obj1.has_attributes_by_relation(["text"])
+    attr1, attr2 = obj1.get_attributes_by_relation("text")
+    assert 'comment' in attr1
+    assert attr1.comment == "Yara match"
+    assert 'comment' in attr2
+    assert attr2.comment == "Yara match"
+    assert 'value' in attr1
+    assert 'value' in attr2
+    assert (attr1.value == "foo" and attr2.value == "bar")
 
 def test_misp_signatures():
     r = MISP()
