@@ -150,7 +150,7 @@ echo ""
 
 # Save a snapshot of the device state.
 echo "Taking a snapshot of the virtual device state.."
-$adb_prefix emu avd snapshot save cuckoo_snapshot_tmp
+$adb_prefix emu avd snapshot save cuckoo_snapshot
 echo ""
 
 # Remove the temp directory.
