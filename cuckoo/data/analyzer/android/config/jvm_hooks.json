@@ -365,11 +365,6 @@
         "category": "network"
     },
     {
-        "class": "com.android.okhttp.internal.huc.HttpURLConnectionImpl",
-        "method": "execute",
-        "category": "network"
-    },
-    {
         "class": "android.os.SystemProperties", 
         "method": "get", 
         "category": "content"
@@ -383,11 +378,6 @@
         "class": "java.io.FileOutputStream", 
         "method": "write", 
         "category": "file"
-    },
-    {
-        "class": "com.android.okhttp.okio.RealBufferedSink$1",
-        "method": "write", 
-        "category": "network"
     },
     {
         "class": "dalvik.system.PathClassLoader",

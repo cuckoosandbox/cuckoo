@@ -37,8 +37,7 @@ class Api {
 function monitorJavaMethod (hookConfig) {
     const className = hookConfig.class;
     const methodName = hookConfig.method;
-    const category = hookConfig.category;
-    const onMethodExited = makeJavaMethodImplCallback(className, methodName, category);
+    const onMethodExited = makeJavaMethodImplCallback(hookConfig);
 
     try {
         const klass = Java.use(className);
@@ -64,23 +63,36 @@ function monitorJavaMethod (hookConfig) {
 }
 
 /**
+ * Create a hookData object for a Java method.
+ * 
+ * @param {JavaHookConfig} hookConfig
+ * @param {Array} args
+ * @param {Object} thisObject
+ * @param {Object} returnValue
+ */
+function makeJavaMethodHookData (hookConfig, args, thisObject, returnValue) {
+    let unwrappedArguments;
+    if (args !== null && args !== undefined) {
+        unwrappedArguments = Array.from(args).map(unboxGenericObjectValue);
+    }
+
+    const unwrappedSelf = unboxGenericObjectValue(thisObject);
+    const unwrappedReturnValue = unboxGenericObjectValue(returnValue);
+
+    return new JavaHookData(
+        hookConfig, unwrappedArguments, unwrappedSelf, unwrappedReturnValue
+    );
+}
+
+/**
  * Make generic implementation callback function for a Java method.
  * 
- * @param className Method's class name.
- * @param methodName Method name.
- * @param category Category of API call.
+ * @param {JavaHookConfig} hookConfig
  */
-function makeJavaMethodImplCallback (className, methodName, category) {
+function makeJavaMethodImplCallback (hookConfig) {
     return function (thisObject, args, returnValue) {
-        const hookData = {
-            "class": className,
-            "method": methodName,
-            "category": category,
-            "time": new Date().toString(),
-            "args": Array.from(args).map(unboxGenericObjectValue),
-            "this": unboxGenericObjectValue(thisObject),
-            "returnValue": unboxGenericObjectValue(returnValue),
-        };
+        const hookData = makeJavaMethodHookData(hookConfig, args, thisObject, returnValue);
+        const methodName = hookConfig.method;
 
         const Thread = Java.use("java.lang.Thread");
         const stackElements = Thread.currentThread().getStackTrace();
@@ -120,7 +132,9 @@ function unboxGenericObjectValue (obj) {
             const String = Java.use("java.lang.String");
             return String.$new(obj).toString();
         } else {
-            return hexdump(new Int8Array(obj).buffer);
+            return Array.from(obj, function(b) {
+                return ("0" + (b & 0xFF).toString(16)).slice(-2);
+            }).join("");
         }
     } else {
         return obj;
@@ -134,7 +148,6 @@ class JavaTypesParser {
             "java.util.Map",
             "java.util.List",
             "android.net.Uri",
-            "java.net.HttpURLConnection",
         ]
         .map(type => Java.use(type));
 
@@ -230,16 +243,6 @@ class JavaTypesParser {
             };
         };
 
-        this.unboxJavaNetHttpURLConnection = function (httpObj) {
-            return {
-                "url": unboxGenericObjectValue(httpObj.getURL()),
-                "request_method": httpObj.getRequestMethod(),
-                "header_fields": unboxGenericObjectValue(httpObj.getHeaderFields()),
-                "response_code": httpObj.getResponseCode(),
-                "response": httpObj.getResponseMessage()
-            };
-        };
-
         this.unboxJavaLangProcessBuilder = function (builderObj) {
             const command = unboxGenericObjectValue(builderObj.command).join(" ");
             return { command };
@@ -328,11 +331,113 @@ class JavaTypesParser {
     }
 }
 
+function loadOkHttpHook () {
+    const httpUrlConnectionImplClassName = "com.android.okhttp.internal.huc.HttpURLConnectionImpl";
+    if (!isClassNameOnClasspath(httpUrlConnectionImplClassName)) {
+        return;
+    }
+
+    const hookConfig = new JavaHookConfig(httpUrlConnectionImplClassName, "execute", "network");
+
+    const RetryableSink = Java.use("com.android.okhttp.internal.http.RetryableSink");
+    const HttpUrlConnectionImpl = Java.use(httpUrlConnectionImpleClassName);
+
+    HttpUrlConnectionImpl.execute.implementation = function (readResponse) {
+        this.httpEngine.value.bufferRequestBody.value = true;
+        const returnValue = this.execute(readResponse);
+        const originalRequest = this.httpEngine.value.networkRequest(this.httpEngine.value.getRequest());
+        const body = Java.cast(this.httpEngine.value.getRequestBody(), RetryableSink);
+
+        const self = {};
+        self["url"] = unboxGenericObjectValue(this.getURL());
+        self["request_method"] = this.getRequestMethod();
+        self["request_headers"] = originalRequest.headers().toString();
+        self["request_body"] = unboxGenericObjectValue(body.content.value.readByteArray());
+        self["response_headers"] = unboxGenericObjectValue(this.getHeaderFields());
+        self["response_code"] = this.getResponseCode();
+        self["response_message"] = this.getResponseMessage();
+
+        const hookData = makeJavaMethodHookData(hookConfig, arguments, null, returnValue);
+        hookData.thisObject = self;
+        LOG("jvmHook", hookData, true);
+
+        return returnValue;
+    };
+}
+
+function loadOkHttp3Hook () {
+    const okhttpClientClassName = "okhttp3.OkHttpClient";
+    if (!isClassNameOnClasspath(okhttpClientClassName)) {
+        return;
+    }
+
+    const hookConfig = new HookConfig(okhttpClientClassName, "", "network");
+
+    const Builder = Java.use("okhttp3.OkHttpClient$Builder");
+    const Buffer = Java.use("com.android.okhttp.okio.Buffer");
+    const Interceptor = Java.use("okhttp3.Interceptor");
+
+    const TrafficLoggerInterceptor = Java.registerClass({
+        name: "okhttp3.TrafficLoggerInterceptor",
+        implements: [Interceptor],
+        methods: {
+            intercept: function(chain) {
+                const request = chain.request();
+                const requestBody = request.body();
+                if (requestBody) {
+                    const buffer = Buffer.$new();
+                    try {
+                        requestBody.writeTo(buffer);
+                        self["request_body"] = unboxGenericObjectValue(buffer.readByteArray());
+                    } catch (e) {
+                        LOG("error", e);
+                    }
+                }
+
+                const self = {};
+                self["url"] = unboxGenericObjectValue(request.url().url());
+                self["request_method"] = request.method();
+                self["request_headers"] = request.headers().toString();
+
+                const response = chain.proceed(request);
+
+                self["response_code"] = response.code();
+                self["response_headers"] = response.headers().toString();
+                self["response_message"] = response.message();
+
+                const hookData = makeJavaMethodHookData(hookConfig, null, null, null);
+                hookData.thisObject = self;
+                LOG("jvmHook", hookData, true);
+
+                return response;
+            }
+        }
+    });
+
+    Builder.build.implementation = function() {
+        this.interceptors().add(TrafficLoggerInterceptor.$new());
+        return this.build();
+    };
+}
+
 class JavaHookConfig {
     constructor (className, methodName, category) {
         this.class = className;
         this.method = methodName;
         this.category = category;
+    }
+}
+
+class JavaHookData {
+    constructor (hookConfig, args, thisObject, returnValue) {
+        this.class = hookConfig.class;
+        this.method = hookConfig.method;
+        this.category = hookConfig.category;
+
+        this.args = args;
+        this.thisObject = thisObject;
+        this.returnValue = returnValue;
+        this.time = new Date().toString();
     }
 }
 
@@ -352,6 +457,17 @@ function isAsciiString (byteArray) {
     }
     return true;
 }
+
+function isClassNameOnClasspath (name) {
+    let isOnClasspath = false;
+    for (const className of cachedLoadedJavaClasses) {
+        if (className.includes(name)) {
+            isOnClasspath = true;
+            break
+        }
+    }
+    return isOnClasspath;
+} 
 
 /** 
  * Utility method for forwarding messages/ events to Frida's client.
@@ -377,20 +493,24 @@ function LOG (eventType, message, sendPid=false) {
     }
 }
 
+function applyPostAppLoadingInstrumentation() {
+    loadOkHttp3Hook();
+}
+
 /**
  * Bootstrapping procedure for java runtime analysis.
  */
-function init_jvm (jvmHooksConfig) {
-    Java.performNow(function () {
-        // Load hooks from configuration object.
-        jvmHooksConfig.forEach(hookConfig => {
-            const javaHookConfig = new JavaHookConfig(
-                hookConfig.class,
-                hookConfig.method,
-                hookConfig.category
-            );
-            monitorJavaMethod(javaHookConfig);
-        });
+function applyPreAppLoadingInstrumentation (jvmHooksConfig) {
+    loadOkHttpHook();
+
+    // Load hooks from configuration object.
+    jvmHooksConfig.forEach(hookConfig => {
+        const javaHookConfig = new JavaHookConfig(
+            hookConfig.class,
+            hookConfig.method,
+            hookConfig.category
+        );
+        monitorJavaMethod(javaHookConfig);
     });
 }
 
@@ -464,21 +584,20 @@ function init () {
     /* Notify when a file is about to get relocated */
     Interceptor.attach(renamePtr, {
         onEnter: function (args) {
-            const message = args[0].readUtf8String() + "," +
-                            args[1].readUtf8String();
+            const message = args[0].readUtf8String() + "," + args[1].readUtf8String();
             LOG("fileMoved", message);
         }
     });
     Interceptor.attach(renameatPtr, {
         onEnter: function (args) {
-            const message = args[1].readUtf8String() + "," +
-                            args[3].readUtf8String();
+            const message = args[1].readUtf8String() + "," + args[3].readUtf8String();
             LOG("fileMoved", message);
         }
     });
 }
 
 var api = new Api();
+var cachedLoadedJavaClasses;
 
 rpc.exports = {
     api: function (api_method, args) {
@@ -488,7 +607,16 @@ rpc.exports = {
         init();
 
         if (Java.available) {
-            init_jvm(configs["jvm_hooks"]);
+            Java.performNow(function () {
+                cachedLoadedJavaClasses = Java.enumerateLoadedClassesSync();
+                applyPreAppLoadingInstrumentation(configs["jvm_hooks"]);
+            });
+
+            Java.perform(function () {
+                // Upadate list of loaded classes.
+                cachedLoadedJavaClasses = Java.enumerateLoadedClassesSync();
+                applyPostAppLoadingInstrumentation();
+            });
         }
     }
 };
