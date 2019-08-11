@@ -7,55 +7,45 @@
 # This script sets an Android virtual device up to be used for analysis by Cuckoo.
 #
 # Objectives:
-#    1- Downloading and pushing the prebuilt Python interpreter.
-#    2- Installing helper APKs.
-#    3- Pushing and starting the Cuckoo agent.
-#    4- Saving a snapshot of the virtual device.
-#
-# Prerequisites:
-#    1- An Android virtual device needs to be up and running.
-#    2- A working setup of cuckoo.
+#    1- Creating an Android virtual device.
+#    2- Downloading and pushing our prebuilt Python interpreter.
+#    3- Installing helper APKs.
+#    4- Pushing and starting the Cuckoo agent.
+#    5- Saving a snapshot of the virtual device state.
 #
 # How to use:
-#    You need to provide this script with some paths in order for it to work,
-#    This can be done by setting a bunch of environment variables via:
+#    You need to provide this script with some paths via setting shell variables:
 #    ```
-#    export ADB=<path_to_adb_bin>
+#    export ANDROID_SDK_ROOT=<path_to_android_sdk>
 #    export CWD=<path_to_cuckoo_working_directory>
 #    ```
-#    NOTE: for it to work properly (make sure the cwd is initialized).
-#    ./init_avd.sh [-s device_serial]
+#    NOTE: for it to work properly, make sure the cwd is initialized.
 #
 
 usage="
-$(basename "$0") [-s device_serial] - Initialize Android virtual devices for Cuckoo analysis.
+$(basename "$0") - Initialize Android virtual devices for Cuckoo analysis.
 
 Options:
 
   -h  show this help text.
-  -s  specify device serial as shown in the output of \`adb devices\`.
 
 Environment variables:
 
-  \$ADB Path to adb binary.
+  \$ANDROID_SDK_ROOT Path to Android SDK folder.
   \$CWD Path to cuckoo working directory.
 "
 device_tmp="/data/local/tmp"
-tmpdir=$(mktemp -d "tmp.XXXX")
+cd "$(dirname $0)"
 
 # Parse command-line options
-while getopts ':hs:' option; do
+while getopts ":h" option; do
   case "$option" in
-    h) echo "$usage"
+    h) 
+      echo "$usage"
       exit
       ;;
-    s) device_serial=$OPTARG
-      ;;
-    :) printf "missing argument for -%s\n" "$OPTARG" >&2
-      echo "$usage" >&2
-      exit 1
-      ;;
-   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+    \?) 
+      echo "illegal option: -$OPTARG" >&2
       echo "$usage" >&2
       exit 1
       ;;
@@ -63,41 +53,128 @@ while getopts ':hs:' option; do
 done
 shift $((OPTIND - 1))
 
-if [ -n "$device_serial" ]; then
-  adb_prefix="$ADB -s $device_serial"
-else
-  adb_prefix="$ADB"
-fi
-
-# Checking environment variables.
+# Check environment variables.
 if [ -z "$CWD" ]; then
-  echo 'ERROR: $cwd must be set to the location of your cuckoo working directory.'
+  echo "ERROR: \$CWD must be set to the location of your cuckoo working" \
+  "directory." >&2
   exit 1
 else
-  if [ ! -f "${CWD}/.cwd" ]; then
+  if [ ! -f "$CWD/.cwd" ]; then
     echo "ERROR: incorrect path for cuckoo working directory," \
-    "make sure your cwd is both correct and initialized!" >&2
+    "make sure your cwd is both correct and initialized." >&2
     echo "$usage" >&2
     exit 1
   fi
   echo "Checked cuckoo working directory!"
 fi
 
-if [ -z "$ADB" ]; then
-  echo 'ERROR: $ADB must be set to the location of adb binary.'
+if [ -z "$ANDROID_SDK_ROOT" ]; then
+  echo "ERROR: \$ANDROID_SDK_ROOT must be set to the location of the Android" \
+  "SDK root folder." >&2
   exit 1
 else
-  if [ ! -x "$ADB" ]; then
-    echo "ERROR: adb command was not found! Make sure you have the" \
-    "Android SDK installed with your PATH configured properly." >&2
+  if [ ! -f "$ANDROID_SDK_ROOT/platform-tools/source.properties" ] ||
+     [ ! -f "$ANDROID_SDK_ROOT/tools/source.properties" ] ||
+     [ ! -f "$ANDROID_SDK_ROOT/emulator/source.properties" ] ||
+     [ ! -d "$ANDROID_SDK_ROOT/skins" ]; then
+    echo "ERROR: The Android SDK is not installed properly! Make sure" \
+    "you have the latest SDK installed with your ANDROID_SDK_ROOT" \
+    "pointing to the root folder." >&2
     echo "$usage" >&2
     exit 1
   fi
-  echo "Checked adb binary available!"
+  echo "Checked the Android SDK!"
+  echo ""
 fi
 
-# Determine device architecture.
-android_abi=$($adb_prefix shell getprop ro.product.cpu.abi)
+avdmanager="$ANDROID_SDK_ROOT/tools/bin/avdmanager"
+sdkmanager="$ANDROID_SDK_ROOT/tools/bin/sdkmanager"
+emulator="$ANDROID_SDK_ROOT/emulator/emulator"
+adb="$ANDROID_SDK_ROOT/platform-tools/adb"
+hardware_skins="$($avdmanager list device | grep id: | grep -oe '".*"' | tr -d '"')"
+
+# Gather the virtual device specs from user input.
+read -ep "Specify the label of the virtual device: " device_label
+read -ep "Specify size of sdcard in megabytes: " sdcard_size
+read -ep "Specify the Android ABI [x86, x86_64, armeabi-v7a, arm64-v8a]: " android_abi
+case "$android_abi" in
+  x86|x86_64|armeabi-v7a|arm64-v8a)
+    ;;
+  *)
+    echo "ERROR: Incorrect input for Android ABI." >&2
+    exit 1
+    ;;
+esac
+read -ep "Specify the Android API level [>= 21]: " android_api_level
+if [ "$android_api_level" -lt 21 ]; then
+  echo "ERROR: Unsupported Android version. Select an API level" \
+  "higher than 21 (Lollipop)." >&2
+  exit 1
+fi
+read -ep "Select the hardware definition of the device [${hardware_skins//$'\n'/, }] (default: pixel): " hardware_def
+for i in $hardware_skins; do
+  case "$hardware_def" in
+    "$i")
+      is_valid_skin_id=yes
+      break
+      ;;
+  esac
+done
+if [ -z "$is_valid_skin_id" ]; then
+  if [ -z "$hardware_def" ]; then
+    hardware_def="pixel"
+  else
+    echo "ERROR: invalid choice for device hardware definition." >&2
+    exit 1
+  fi
+fi
+image_pkg_name="system-images;android-$android_api_level;default;$android_abi"
+echo ""
+
+# Create the virtual device..
+echo "Creating the Android virtual device.."
+$sdkmanager --install "$image_pkg_name"
+if [ ! $? -eq 0 ]; then
+  echo "ERROR: sdkmanager failed to locate package." >&2
+  exit 1
+fi
+$avdmanager create avd -n "$device_label" -c "$sdcard_size"M -k "$image_pkg_name" -d "$hardware_def"
+if [ ! $? -eq 0 ]; then
+  exit 1
+else
+  echo "Virtual device created successfully!"
+  echo ""
+fi
+
+# Start the Android emulator.
+echo "Starting the Android emulator.."
+$emulator @"$device_label" >/dev/null 2>&1 &
+until [ -n "$emulator_label" ]; do
+  avail_emulators=$($adb devices | grep -oe "emulator-[0-9]*")
+  for i in $avail_emulators; do
+    avd_name=$($adb -s "$i" emu avd name)
+    if [ -n "$(echo "$avd_name" | grep "$device_label")" ]; then
+      emulator_label="$i"
+      break
+    fi
+  done
+done
+adb+=" -s $emulator_label"
+
+echo "Waiting for the device to become available.."
+until [ "$($adb get-state 2>/dev/null)" == "device" ]; do
+  sleep 1
+done
+echo ""
+
+# Obtain root privileges through adbd.
+$adb root >/dev/null
+if [ ! $? -eq 0 ]; then
+  echo "ERROR: failed to obtain root privileges, command: \`$adb root\`." >&2
+  exit 1
+fi
+
+# Determine the device architecture.
 supported_archs="arm64 arm x86_64 x86"
 for i in $supported_archs; do
   case "$android_abi" in
@@ -107,53 +184,47 @@ for i in $supported_archs; do
       ;;
   esac
 done
-
 if [ -z "$arch" ]; then
-  echo "ERROR: Failed to determine the device's architecture."
+  echo "ERROR: failed to determine device architecture from" \
+  "the Android ABI: $android_abi" >&2
   exit 1
 fi
-echo ""
-
-# Obtain root privileges
-$adb_prefix root > /dev/null
 
 # Download and push our prebuilt Python interpreter
-echo "Downloading the Python interpreter that matches your device.."
-wget -qO- "https://github.com/muhzii/community/raw/master/prebuilt/Python3.7/android-${arch}.tar.gz" | tar xz -C $tmpdir
+echo "Downloading the prebuilt Python interpreter for your device.."
+wget -qO- "https://github.com/muhzii/community/raw/master/prebuilt/Python3.7/android-${arch}.tar.gz" | tar xz -C .
 
 echo "Pushing Python to the device"
-$adb_prefix push "$tmpdir/usr" "$device_tmp"
+$adb push usr/ "$device_tmp"
+rm -rf usr/
 echo ""
 
 # Push the Cuckoo agent.
 echo "Pushing the cuckoo agent"
-$adb_prefix push "$CWD/agent/agent.py" "$device_tmp"
-$adb_prefix push "$CWD/agent/android-agent.sh" "$device_tmp"
-$adb_prefix shell chmod 06755 "$device_tmp/android-agent.sh"
+$adb push "$CWD/agent/agent.py" "$device_tmp"
+$adb push "$CWD/agent/android-agent.sh" "$device_tmp"
+$adb shell chmod 06755 "$device_tmp/android-agent.sh"
 echo ""
 
 # Download & Install the ImportContacts application.
 echo "Downloading and installing ImportContacts.apk"
 wget -qP "$tmpdir" "https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/apps/ImportContacts.apk"
-$adb_prefix install "$tmpdir/ImportContacts.apk"
+$adb install "$tmpdir/ImportContacts.apk"
 echo ""
 
 # Set SELinux to permissive..
 # This is required for frida to work properly on some versions of Android.
 # https://github.com/frida/frida-core/tree/master/lib/selinux
-$adb_prefix shell setenforce 0
+$adb shell setenforce 0
 
 # Start the Cuckoo agent.
 echo "Starting the cuckoo agent.."
-$adb_prefix shell "$device_tmp/android-agent.sh"
+$adb shell "$device_tmp/android-agent.sh"
 echo ""
 
 # Save a snapshot of the device state.
 echo "Taking a snapshot of the virtual device state.."
-$adb_prefix emu avd snapshot save cuckoo_snapshot
+$adb emu avd snapshot save cuckoo_snapshot
 echo ""
-
-# Remove the temp directory.
-rm -rf "$tmpdir"
 
 echo "Device is now ready!"
