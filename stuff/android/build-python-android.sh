@@ -6,6 +6,13 @@
 # This script is for building the Python interpeter used for Android
 # malware analysis with cuckoo.
 
+usage="
+$(basename "$0") device_arch - Build the Python interpreter for Android.
+
+Arguments:
+
+  device_arch   CPU architecture of the target Android device.
+"
 python_version=e09359112e250268eca209355abeb17abf822486
 frida_version=0675862c5eff6638ace2196e563ab83fa7adf1bc
 host_arch=x86_64
@@ -13,17 +20,20 @@ host_arch=x86_64
 # Get command line argument
 target_arch=$1
 if [ -z "$target_arch" ]; then
-  echo "ERROR: target architecture is not specified."
-  echo "supported archs: (x86, x86_64, arm, arm64)."
+  echo "ERROR: target architecture is not specified. supported archs:" \
+  "(x86, x86_64, arm, arm64)." >&2
+  echo "$usage" >&2
   exit 1
 else
   case "$target_arch" in
-  x86|x86_64|arm|arm64)
-    ;;
-  *)
-    echo "ERROR: Unsupported architecture. choose from: (x86, x86_64, arm, arm64)."
-    exit 1
-    ;;
+    x86|x86_64|arm|arm64)
+      ;;
+    *)
+      echo "ERROR: Unsupported architecture. choose from: " \
+      "(x86, x86_64, arm, arm64)." >&2
+      echo "$usage" >&2
+      exit 1
+      ;;
   esac
 fi
 
