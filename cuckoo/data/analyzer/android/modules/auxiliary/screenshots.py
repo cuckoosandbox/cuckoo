@@ -53,7 +53,11 @@ class Screenshots(threading.Thread, Auxiliary):
             if img_last and scr.equal(img_last, img_current):
                 continue
 
-            upload_to_host(img_current, "shots/%s.png" % img_count)
+            # The screencap tool doesn't support jpeg as output format, which
+            # is what the cuckoo backend expects. We hack around this by
+            # uploading the shots with a jpeg extension.
+            # Obviously, this is a nasty hack, but will have to do for now.
+            upload_to_host(img_current, "shots/%s.jpg" % img_count)
             if img_last:
                 os.unlink(img_last)
 
