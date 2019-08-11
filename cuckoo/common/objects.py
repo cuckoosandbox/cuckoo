@@ -277,6 +277,9 @@ class File(object):
     def get_apk_entry(self):
         """Get the entry point for this APK. The entry point is denoted by a
         package and main activity name."""
+        logging.getLogger("androguard.axml").setLevel(logging.WARNING)
+        logging.getLogger("androguard.core.api_specific_resources").setLevel(logging.WARNING)
+
         filetype = self.get_type()
         if "Zip archive data" not in filetype and "Java archive data" not in filetype:
             return "", ""

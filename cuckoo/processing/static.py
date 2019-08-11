@@ -1080,6 +1080,9 @@ class AndroidPackage(object):
         @return: dict of static features.
         """
         from androguard.misc import AnalyzeAPK
+        logging.getLogger("androguard.dvm").setLevel(logging.WARNING)
+        logging.getLogger("androguard.analysis").setLevel(logging.WARNING)
+        logging.getLogger("androguard.apk").setLevel(logging.CRITICAL)
 
         try:
             self.apk, _, self.analysis = AnalyzeAPK(self.filepath)
