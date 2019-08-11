@@ -96,7 +96,7 @@ hardware_skins="$($avdmanager list device | grep id: | grep -oe '".*"' | tr -d '
 # Gather the virtual device specs from user input.
 read -ep "Specify the label of the virtual device: " device_label
 read -ep "Specify size of sdcard in megabytes: " sdcard_size
-read -ep "Specify the Android ABI [x86, x86_64, armeabi-v7a, arm64-v8a]: " android_abi
+read -ep "Select the Android ABI [x86, x86_64, armeabi-v7a, arm64-v8a]: " android_abi
 case "$android_abi" in
   x86|x86_64|armeabi-v7a|arm64-v8a)
     ;;
@@ -158,13 +158,24 @@ until [ -n "$emulator_label" ]; do
       break
     fi
   done
+  sleep 1
 done
 adb+=" -s $emulator_label"
 
-echo "Waiting for the device to become available.."
-until [ "$($adb get-state 2>/dev/null)" == "device" ]; do
+echo "Waiting for the emulator to be ready.."
+$adb wait-for-device
+until [ "$($adb shell getprop dev.bootcomplete)" == "1" ]; do
   sleep 1
 done
+echo " - (dev.bootcomplete)"
+until [ "$($adb shell getprop sys.boot_completed)" == "1" ]; do
+  sleep 1
+done
+echo " - (sys.boot_completed)"
+until [ "$($adb shell getprop init.svc.bootanim)" == "stopped" ]; do
+  sleep 1
+done
+echo " - (init.svc.bootanim)"
 echo ""
 
 # Obtain root privileges through adbd.
