@@ -35,7 +35,6 @@ Environment variables:
   \$CWD Path to cuckoo working directory.
 "
 device_tmp="/data/local/tmp"
-cd "$(dirname $0)"
 
 # Parse command-line options
 while getopts ":h" option; do
@@ -98,7 +97,7 @@ read -ep "Specify the label of the virtual device: " device_label
 read -ep "Specify size of sdcard in megabytes: " sdcard_size
 read -ep "Select the Android ABI [x86, x86_64, armeabi-v7a, arm64-v8a]: " android_abi
 case "$android_abi" in
-  x86|x86_64|armeabi-v7a|arm64-v8a)
+  x86|x86_64|armeabi-v7a|armeabi|arm64-v8a)
     ;;
   *)
     echo "ERROR: Incorrect input for Android ABI." >&2
@@ -201,13 +200,13 @@ if [ -z "$arch" ]; then
   exit 1
 fi
 
+tmpdir=$(mktemp -d "tmp.XXXX")
 # Download and push our prebuilt Python interpreter
 echo "Downloading the prebuilt Python interpreter for your device.."
-wget -qO- "https://github.com/muhzii/community/raw/master/prebuilt/Python3.7/android-${arch}.tar.gz" | tar xz -C .
+wget -qO- "https://github.com/muhzii/community/raw/master/prebuilt/Python3.7/android-${arch}.tar.gz" | tar xz -C "$tmpdir"
 
 echo "Pushing Python to the device"
-$adb push usr/ "$device_tmp"
-rm -rf usr/
+$adb push "$tmpdir/usr" "$device_tmp"
 echo ""
 
 # Push the Cuckoo agent.
@@ -221,6 +220,13 @@ echo ""
 echo "Downloading and installing ImportContacts.apk"
 wget -qP "$tmpdir" "https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/apps/ImportContacts.apk"
 $adb install "$tmpdir/ImportContacts.apk"
+echo ""
+
+# Download & push fake drivers and cpuinfo
+wget -qP "$tmpdir" "https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/anti-vm/fake-cpuinfo"
+wget -qP "$tmpdir" "https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/anti-vm/fake-drivers"
+$adb push "$tmpdir/fake-cpuinfo" "$device_tmp"
+$adb push "$tmpdir/fake-drivers" "$device_tmp"
 echo ""
 
 # Set SELinux to permissive..
@@ -237,5 +243,8 @@ echo ""
 echo "Taking a snapshot of the virtual device state.."
 $adb emu avd snapshot save cuckoo_snapshot
 echo ""
+
+# Remove the temp directory.
+rm -rf "$tmpdir"
 
 echo "Device is now ready!"
