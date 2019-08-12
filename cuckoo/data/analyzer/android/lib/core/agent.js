@@ -43,10 +43,10 @@ function monitorJavaMethod (hookConfig) {
         const klass = Java.use(className);
         const overloads = klass[methodName].overloads;
 
-        overloads.forEach(method => {
-            if (method.implementation === null) {
-                method.implementation = function () {
-                    const returnValue = method.apply(this, arguments);
+        overloads.forEach(overload => {
+            if (overload.implementation === null) {
+                overload.implementation = function () {
+                    const returnValue = overload.apply(this, arguments);
 
                     try {
                         onMethodExited(this, arguments, returnValue);
@@ -467,7 +467,30 @@ function isClassNameOnClasspath (name) {
         }
     }
     return isOnClasspath;
-} 
+}
+
+function pick (iterable) {
+    let result;
+    if (Array.isArray(iterable)) {
+        result = iterable[Math.floor(Math.random() * iterable.length)];
+    } else if (typeof iterable === "string") {
+        result = iterable.charAt(Math.floor(Math.random() * iterable.length))
+    }
+    return result;
+}
+
+function generateRandomNumber(length, isHex=false) {
+    let characters = "0123456789";
+    if (isHex) {
+        characters += "abcdef";
+    }
+
+    let result = "";
+    for (let i = 0; i < length; i++) {
+        result += pick(characters);
+    }
+    return result;
+}
 
 /** 
  * Utility method for forwarding messages/ events to Frida's client.
@@ -493,7 +516,7 @@ function LOG (eventType, message, sendPid=false) {
     }
 }
 
-function applyPostAppLoadingInstrumentation() {
+function applyPostAppLoadingInstrumentation () {
     loadOkHttp3Hook();
 }
 
@@ -503,15 +526,219 @@ function applyPostAppLoadingInstrumentation() {
 function applyPreAppLoadingInstrumentation (jvmHooksConfig) {
     loadOkHttpHook();
 
-    // Load hooks from configuration object.
+    /* Load hooks from configuration object */
     jvmHooksConfig.forEach(hookConfig => {
         const javaHookConfig = new JavaHookConfig(
-            hookConfig.class,
-            hookConfig.method,
-            hookConfig.category
+            hookConfig.class, hookConfig.method, hookConfig.category
         );
         monitorJavaMethod(javaHookConfig);
     });
+}
+
+/**
+ * Setup the emulated environment to defeat emulation detection.
+ */
+function setupEnv () {
+    const patchMethodCall = function (hookConfig, returnValuePatch) {
+        const klass = Java.use(hookConfig.class);
+        if (!klass.hasOwnProperty(hookConfig.method)) {
+            return;
+        }
+
+        klass[methodName].overloads[0].implementation = function () {
+            let returnValue;
+            if (typeof returnValuePatch === "function") {
+                returnValue = returnValuePatch(arguments, this);
+            } else {
+                returnValue = returnValuePatch;
+            }
+
+            const hookData = makeJavaMethodHookData(hookConfig, arguments, this, returnValue);
+            LOG("jvmHook", hookData, true);
+            return returnValue;
+        };
+    };
+
+    const insertCheckDigit = function(number) {
+        /* Luhn algorithm */
+        let checksum = 0;
+        for (let i = 1; i < 15; i++) {
+            if (i % 2 === 0) {
+                let digitValue = (2 * number[i-1]).toString();
+                if (digitValue.length === 2) {
+                    checksum += parseInt(digitValue[0]) + parseInt(digitValue[1]);
+                } else {
+                    checksum += parseInt(digitValue);
+                }
+            } else {
+                checksum += parseInt(number[i-1]);
+            }
+        }
+
+        let checkdigit = 0; 
+        if ((checksum % 10) > 0) {
+            checkdigit = 10 - (checksum % 10);
+        }
+        return number + checkdigit.toString();
+    };
+
+    const mcc = "310";
+    const mncs = ["170", "150", "680", "070", "560", "410", "380", "980"];
+    const areaCodes = [
+        "518", "410", "404", "207", "512", "225", "701", "208", "617",
+        "775", "843", "307", "803", "614", "603", "303", "515", "302",
+        "502", "717", "860", "406", "808", "317", "601", "904", "573",
+        "385", "505", "417", "850", "785", "609", "202"
+    ];
+
+    const mnc = pick(mncs);
+    const areaCode = pick(areaCodes);
+    const randomImei = insertCheckDigit(generateRandomNumber(14));
+    const randomPhoneNumber = "1" + areaCode + generateRandomNumber(7);
+    const randomSubscriberId = mcc + mnc + generateRandomNumber(9);
+    const randomSimSerialNumber = insertCheckDigit("89" + mcc + mnc + generateRandomNumber(11));
+
+    const qemuProps = [
+        "init.svc.qemu-props", "init.svc.qemud", "qemu.hw.mainkeys",
+        "qemu.sf.fake_camera", "qemu.sf.lcd_density", "ro.kernel.android.qemud",
+        "ro.kernel.qemu.gles", "ro.kernel.qemu", "qemu.adbd", "qemu.cmdline",
+        "qemu.gles", "qemu.logcat", "qemu.timezone", "ro.boottime.qemu-props",
+        "ro.kernel.qemu.wifi", "ro.kernel.qemu.settings.system.screen_off_timeout",
+        "ro.kernel.qemu.opengles.version", "ro.kernel.qemu.encrypt", 
+        "ro.kernel.qemu.dalvik.vm.heapsize"
+    ];
+    const serialnoProps = [
+        "ro.serialno", "ro.boot.serialno", "ro.kernel.androidboot.serialno"
+    ];
+    const productProps = [
+        "ro.product.name", "ro.product.device", "ro.build.product", "ro.product.board"
+    ];
+
+    const knownQemuFiles = [
+        "/dev/qemu_pipe", "/dev/socket/qemud", "/system/lib/libc_malloc_debug_qemu.so",
+        "/sys/qemu_trace", "/system/bin/qemu-props", "/init.goldfish.rc",
+        "/vendor/bin/qemu-props", "/dev/__properties__/u:object_r:qemu_cmdline:s0",
+        "/dev/__properties__/u:object_r:qemu_prop:s0"  
+    ];
+
+    const fakeDriversFilePath = "/data/local/tmp/fake-drivers";
+    const fakeCpuinfoFilePath = "/data/local/tmp/fake-cpuinfo";
+
+    const Location = Java.use("android.location.Location");
+    const fakeLocation = Location.$new("gps");
+    fakeLocation.setLatitude(37.09);
+    fakeLocation.setLongitude(95.71);
+
+    const fakeMacAddress = generateRandomNumber(12, true)
+                            .toUpperCase()
+                            .split(/(?=(?:..)*$)/)
+                            .join(":");
+
+    /* Modify android.os.Build fields */
+    const Build = Java.use("android.os.Build");
+    Build.BOARD.value = "taimen";
+    Build.MODEL.value = "Pixel 2 XL";
+    Build.BOOTLOADER.value = "TMZ20j";
+    Build.DEVICE.value = "taimen";
+    Build.PRODUCT.value = "taimen";
+    Build.HARDWARE.value = "taimen";
+    Build.FINGERPRINT.value = "google/taimen/taimen:9/PPR1.180610.011/4904810:user/release-keys";
+    Build.HOST.value = "wphl1.hot.corp.google.com";
+    Build.ID.value = "PPR1.180610.011";
+    Build.MANUFACTURER.value = "Google";
+    Build.TAGS.value = "release-keys";
+    Build.SERIAL.value = Build.UNKNOWN.value;
+
+    const spoofSystemProperties = function (args, self) {
+        const key = args[0];
+
+        let result;
+        if (qemuProps.indexOf(key) !== -1) {
+            result = null;
+        } else if (serialnoProps.indexOf(key) !== -1) {
+            result = Build.SERIAL.value;
+        } else if (productProps.indexOf(key) !== -1) {
+            result = Build.PRODUCT.value;
+        } else if (key === "ro.hardware") {
+            result = Build.HARDWARE.value;
+        } else if (key === "ro.product.model") {
+            result = Build.MODEL.value;
+        } else if (key === "ro.bootloader") {
+            result = Build.BOOTLOADER.value;
+        } else if (key === "ro.build.fingerprint" || 
+                   key === "ro.bootimage.build.fingerprint") {
+            result = Build.FINGERPRINT.value;
+        } else if (key === "ro.product.manufacturer") {
+            result = Build.MANUFACTURER.value;
+        } else if (key === "ro.build.id" || key === "ro.build.display.id") {
+            result = Build.ID.value;
+        } else if (key === "ro.product.model") {
+            result = Build.MODEL.value;
+        } else if (key === "ro.build.tags") {
+            result = Build.TAGS.value;
+        } else if (key === "ro.build.host") {
+            result = Build.HOST.value;
+        } else {
+            result = self.get(key);
+        }
+        return result;
+    };
+
+    const spoofFileCheck = function (args, self) {
+        const filepath = self.getAbsolutePath();
+        if (knownQemuFiles.indexOf(filepath) !== -1) {
+            return false;
+        } else {
+            return self.exists();
+        }
+    };
+
+    const spoofIoBridge = function (args, self) {
+        const path = args[0];
+
+        let replacedPath = path;
+        if (path === "/proc/tty/drivers") {
+            try {
+                new File(fakeDriversFilePath);
+                replacedPath = fakeDriversFilePath;
+            } catch (e) {
+                /* file not found */
+            }
+        } else if (path === "/proc/cpuinfo") {
+            try {
+                new File(fakeCpuinfoFilePath);
+                replacedPath = fakeCpuinfoFilePath;
+            } catch (e) {
+                /* file not found */
+            }
+        }
+        return this.open(replacedPath, args[1]);
+    };
+
+    /* Patch framework APIs */
+    const patches = [
+        [new HookConfig("android.telephony.TelephonyManager", "getLine1Number", "service"), randomPhoneNumber],
+        [new HookConfig("android.telephony.TelephonyManager", "getDeviceId", "service"), randomImei],
+        [new HookConfig("android.telephony.TelephonyManager", "getSubscriberId", "service"), randomSubscriberId],
+        [new HookConfig("android.telephony.TelephonyManager", "getImei", "service"), randomImei],
+        [new HookConfig("android.telephony.TelephonyManager", "getMeid", "service"), null],
+        [new HookConfig("android.telephony.TelephonyManager", "getNetworkOperatorName", "service"), "AT&T"],
+        [new HookConfig("android.telephony.TelephonyManager", "getSimOperatorName", "service"), "AT&T"],
+        [new HookConfig("android.telephony.TelephonyManager", "getNetworkCountryIso", "service"), "us"],
+        [new HookConfig("android.telephony.TelephonyManager", "getSimCountryIso", "service"), "us"],
+        [new HookConfig("android.telephony.TelephonyManager", "getPhoneType", "service"), 1],
+        [new HookConfig("android.telephony.TelephonyManager", "getNetworkOperator", "service"), mcc + mnc],
+        [new HookConfig("android.telephony.TelephonyManager", "getSimSerialNumber", "service"), randomSimSerialNumber],
+        [new HookConfig("android.telephony.TelephonyManager", "getVoiceMailNumber", "service"), randomPhoneNumber],
+        [new HookConfig("android.app.ActivityManager", "isUserAMonkey", "service"), false],
+        [new HookConfig("android.os.Build", "getSerial", "content"), Build.SERIAL.value],
+        [new HookConfig("android.os.SystemProperties", "get", "content"), spoofSystemProperties],
+        [new HookConfig("java.io.File", "exists", "file"), spoofFileCheck],
+        [new HookConfig("libcore.io.IoBridge", "open", "file"), spoofIoBridge],
+        [new HookConfig("android.location.LocationManager", "getLastKnownLocation", "service"), fakeLocation],
+        [new HookConfig("android.net.wifi.WifiInfo", "getMacAddress", "network"), fakeMacAddress]
+    ];
+    patches.forEach((patch) => patchMethodCall.apply(this, patch));
 }
 
 /**
@@ -608,12 +835,13 @@ rpc.exports = {
 
         if (Java.available) {
             Java.performNow(function () {
+                setupEnv();
                 cachedLoadedJavaClasses = Java.enumerateLoadedClassesSync();
                 applyPreAppLoadingInstrumentation(configs["jvm_hooks"]);
             });
 
             Java.perform(function () {
-                // Upadate list of loaded classes.
+                /* Upadate list of loaded classes. */
                 cachedLoadedJavaClasses = Java.enumerateLoadedClassesSync();
                 applyPostAppLoadingInstrumentation();
             });
