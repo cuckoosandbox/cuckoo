@@ -1151,7 +1151,7 @@ class Signature(object):
 
     def get_apkinfo(self, section=None, default={}):
         """Return the apkinfo results for this analysis."""
-        apkinfo = self.get_results("apkinfo", {})
+        apkinfo = self.get_results("static", {}).get("apkinfo", {})
         return apkinfo if section is None else apkinfo.get(section, default)
 
     def get_droidmon(self, section=None, default={}):
