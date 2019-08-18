@@ -1,12 +1,72 @@
-Processor	: ARMv7 Processor rev 0 (v7l)
-BogoMIPS	: 366.18
-Features	: swp half thumb fastmult vfp edsp neon vfpv3 
+processor	: 0
+BogoMIPS	: 3.84
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32
 CPU implementer	: 0x41
-CPU architecture: 7
+CPU architecture: 8
 CPU variant	: 0x0
-CPU part	: 0xc08
-CPU revision	: 0
+CPU part	: 0xd03
+CPU revision	: 4
 
-Hardware	: Qualcomm MSM 8974 HAMMERHEAD (Flattened Device Tree)
-Revision	: 0000
-Serial		: 0000000000000000
+processor	: 1
+BogoMIPS	: 3.84
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 4
+
+processor	: 2
+BogoMIPS	: 3.84
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 4
+
+processor	: 3
+BogoMIPS	: 3.84
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 4
+
+processor	: 4
+BogoMIPS	: 3.84
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 4
+
+processor	: 5
+BogoMIPS	: 3.84
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 4
+
+processor	: 6
+BogoMIPS	: 3.84
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 4
+
+processor	: 7
+BogoMIPS	: 3.84
+Features	: fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer	: 0x41
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 4
+
