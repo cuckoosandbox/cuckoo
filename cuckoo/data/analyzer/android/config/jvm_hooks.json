@@ -1,52 +1,7 @@
 [
     {
         "class": "android.telephony.TelephonyManager",
-        "method": "getDeviceId",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
-        "method": "getSubscriberId",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
-        "method": "getLine1Number",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
-        "method": "getNetworkOperator",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
-        "method": "getSimSerialNumber",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
-        "method": "getSimOperatorName",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
-        "method": "getSimCountryIso",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
-        "method": "getNetworkCountryIso",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
         "method": "getDeviceSoftwareVersion",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.TelephonyManager",
-        "method": "getImei",
         "category": "services"
     },
     {
@@ -55,14 +10,119 @@
         "category": "services"
     },
     {
+        "class": "android.app.ActivityManager",
+        "method": "getRunningAppProcesses",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ActivityManager",
+        "method": "getRunningTasks",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ActivityManager",
+        "method": "getRunningServices",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ActivityManager",
+        "method": "killBackgroundProcesses",
+        "category": "services"
+    },
+    {
+        "class": "android.app.usage.UsageStatsManager",
+        "method": "queryUsageStats",
+        "category": "services"
+    },
+    {
+        "class": "android.accounts.AccountManager",
+        "method": "getAccountsByType",
+        "category": "services"
+    },
+    {
+        "class": "android.accounts.AccountManager",
+        "method": "getAccounts",
+        "category": "services"
+    },
+    {
+        "class": "android.media.AudioRecord",
+        "method": "startRecording",
+        "category": "services"
+    },
+    {
+        "class": "android.media.MediaRecorder",
+        "method": "start",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ApplicationPackageManager",
+        "method": "getInstalledPackages",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ApplicationPackageManager",
+        "method": "getInstalledApplications",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ApplicationPackageManager",
+        "method": "setComponentEnabledSetting",
+        "category": "services"
+    },
+    {
+        "class": "android.location.Location",
+        "method": "getLatitude",
+        "category": "services"
+    },
+    {
+        "class": "android.location.Location",
+        "method": "getLongitude",
+        "category": "services"
+    },
+    {
+        "class": "android.app.NotificationManager",
+        "method": "notify",
+        "category": "services"
+    },
+    {
+        "class": "android.app.AlarmManager",
+        "method": "setAlarmClock",
+        "category": "services"
+    },
+    {
+        "class": "android.app.AlarmManager",
+        "method": "set",
+        "category": "services"
+    },
+    {
+        "class": "android.telephony.SmsManager",
+        "method": "sendDataMessage",
+        "category": "services"
+    },
+    {
+        "class": "android.telephony.SmsManager",
+        "method": "sendTextMessage",
+        "category": "services"
+    },
+    {
         "class": "android.telephony.TelephonyManager",
         "method": "listen",
         "category": "binder"
     },
     {
-        "class": "android.net.wifi.WifiInfo",
-        "method": "getMacAddress",
-        "category": "services"
+        "class": "android.app.ContextImpl",
+        "method": "registerReceiver",
+        "category": "binder"
+    },
+    {
+        "class": "android.app.ActivityThread",
+        "method": "handleReceiver",
+        "category": "binder"
+    },
+    {
+        "class": "android.content.BroadcastReceiver",
+        "method": "abortBroadcast",
+        "category": "binder"
     },
     {
         "class": "android.app.SharedPreferencesImpl$EditorImpl",
@@ -110,6 +170,11 @@
         "category": "content"
     },
     {
+        "class": "android.content.ContentResolver",
+        "method": "registerContentObserver",
+        "category": "content"
+    },
+    {
         "class": "android.database.sqlite.SQLiteDatabase",
         "method": "insert",
         "category": "content"
@@ -122,11 +187,6 @@
     {
         "class": "android.database.sqlite.SQLiteDatabase",
         "method": "delete",
-        "category": "content"
-    },
-    {
-        "class": "android.database.sqlite.SQLiteDatabase",
-        "method": "execSQL",
         "category": "content"
     },
     {
@@ -170,29 +230,24 @@
         "category": "dynload"
     },
     {
-        "class": "android.app.ActivityManager",
-        "method": "getRunningAppProcesses",
-        "category": "services"
+        "class": "dalvik.system.PathClassLoader",
+        "method": "$init",
+        "category": "dynload"
     },
     {
-        "class": "android.app.ActivityManager",
-        "method": "getRunningTasks",
-        "category": "services"
+        "class": "dalvik.system.DexClassLoader",
+        "method": "$init",
+        "category": "dynload"
     },
     {
-        "class": "android.app.ActivityManager",
-        "method": "getRunningServices",
-        "category": "services"
+        "class": "dalvik.system.DexFile",
+        "method": "loadDex",
+        "category": "dynload"
     },
     {
-        "class": "android.app.ActivityManager",
-        "method": "killBackgroundProcesses",
-        "category": "services"
-    },
-    {
-        "class": "android.app.usage.UsageStatsManager",
-        "method": "queryUsageStats",
-        "category": "services"
+        "class": "dalvik.system.InMemoryDexClassLoader",
+        "method": "$init",
+        "category": "dynload"
     },
     {
         "class": "android.os.Process",
@@ -202,6 +257,16 @@
     {
         "class": "android.os.Process",
         "method": "start",
+        "category": "process"
+    },
+    {
+        "class": "java.lang.ProcessBuilder",
+        "method": "start",
+        "category": "process"
+    },
+    {
+        "class": "android.os.Debug",
+        "method": "isDebuggerConnected",
         "category": "process"
     },
     {
@@ -218,21 +283,6 @@
         "class": "android.app.Activity",
         "method": "startService",
         "category": "intent"
-    },
-    {
-        "class": "android.app.ContextImpl",
-        "method": "registerReceiver",
-        "category": "binder"
-    },
-    {
-        "class": "android.app.ActivityThread",
-        "method": "handleReceiver",
-        "category": "binder"
-    },
-    {
-        "class": "android.content.BroadcastReceiver", 
-        "method": "abortBroadcast", 
-        "category": "binder"
     },
     {
         "class": "android.util.Base64",
@@ -260,86 +310,6 @@
         "category": "crypto"
     },
     {
-        "class": "java.lang.ProcessBuilder",
-        "method": "start",
-        "category": "process"
-    },
-    {
-        "class": "android.accounts.AccountManager",
-        "method": "getAccountsByType",
-        "category": "services"
-    },
-    {
-        "class": "android.accounts.AccountManager",
-        "method": "getAccounts",
-        "category": "services"
-    },
-    {
-        "class": "android.media.AudioRecord",
-        "method": "startRecording",
-        "category": "services"
-    },
-    {
-        "class": "android.media.MediaRecorder",
-        "method": "start",
-        "category": "services"
-    },
-    {
-        "class": "android.app.ApplicationPackageManager",
-        "method": "getInstalledPackages",
-        "category": "services"
-    },
-    {
-        "class": "android.app.ApplicationPackageManager",
-        "method": "getInstalledApplications",
-        "category": "services"
-    },
-    {
-        "class": "android.app.ApplicationPackageManager",
-        "method": "setComponentEnabledSetting",
-        "category": "services"
-    },
-    {
-        "class": "android.os.Debug",
-        "method": "isDebuggerConnected",
-        "category": "process"
-    },
-    {
-        "class": "android.location.Location",
-        "method": "getLatitude",
-        "category": "services"
-    },
-    {
-        "class": "android.location.Location",
-        "method": "getLongitude",
-        "category": "services"
-    },
-    {
-        "class": "android.app.NotificationManager",
-        "method": "notify",
-        "category": "services"
-    },
-    {
-        "class": "android.app.AlarmManager",
-        "method": "setAlarmClock",
-        "category": "services"
-    },
-    {
-        "class": "android.app.AlarmManager",
-        "method": "set",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.SmsManager",
-        "method": "sendDataMessage",
-        "category": "services"
-    },
-    {
-        "class": "android.telephony.SmsManager",
-        "method": "sendTextMessage",
-        "category": "services"
-    },
-    {
         "class": "java.lang.reflect.Field",
         "method": "get",
         "category": "reflection"
@@ -355,48 +325,18 @@
         "category": "reflection"
     },
     {
-        "class": "java.io.File",
-        "method": "exists",
-        "category": "file"
-    },
-    {
         "class": "sun.net.spi.DefaultProxySelector",
         "method": "select",
         "category": "network"
     },
     {
-        "class": "android.os.SystemProperties", 
-        "method": "get", 
-        "category": "content"
-    },
-    {
-        "class": "java.io.FileInputStream", 
-        "method": "read", 
+        "class": "java.io.FileInputStream",
+        "method": "read",
         "category": "file"
     },
     {
-        "class": "java.io.FileOutputStream", 
-        "method": "write", 
+        "class": "java.io.FileOutputStream",
+        "method": "write",
         "category": "file"
-    },
-    {
-        "class": "dalvik.system.PathClassLoader",
-        "method": "$init",
-        "category": "dynload"
-    },
-    {
-        "class": "dalvik.system.DexClassLoader",
-        "method": "$init",
-        "category": "dynload"
-    },
-    {
-        "class": "dalvik.system.DexFile",
-        "method": "loadDex",
-        "category": "dynload"
-    },
-    {
-        "class": "dalvik.system.InMemoryDexClassLoader",
-        "method": "$init",
-        "category": "dynload"
     }
 ]
