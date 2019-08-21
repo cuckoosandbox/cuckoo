@@ -205,21 +205,19 @@ tmpdir=$(mktemp -d "tmp.XXXX")
 echo "Downloading the prebuilt Python interpreter for your device.."
 wget -qO- "https://github.com/muhzii/community/raw/master/prebuilt/Python3.7/android-${arch}.tar.gz" | tar xz -C "$tmpdir"
 
-echo "Pushing Python to the device"
+echo "Copying the Python interpreter to the device.."
 $adb push "$tmpdir/usr" "$device_tmp"
 echo ""
 
-# Push the Cuckoo agent.
-echo "Pushing the cuckoo agent"
-$adb push "$CWD/agent/agent.py" "$device_tmp"
-$adb push "$CWD/agent/android-agent.sh" "$device_tmp"
-$adb shell chmod 06755 "$device_tmp/android-agent.sh"
-echo ""
-
-# Download & Install the ImportContacts application.
-echo "Downloading and installing ImportContacts.apk"
+# Download, install & run the ImportContacts application.
+echo "Downloading and installing ImportContacts.apk.."
 wget -qP "$tmpdir" "https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/apps/ImportContacts.apk"
 $adb install "$tmpdir/ImportContacts.apk"
+
+echo "Generating fake phone contacts.."
+$adb shell am start -n "com.amossys.hooker.generatecontacts/com.amossys.hooker.generatecontacts.ImportContacts" >/dev/null
+$adb logcat -m4 -s "GenerateContacts" >/dev/null
+$adb uninstall "com.amossys.hooker.generatecontacts" >/dev/null
 echo ""
 
 # Download & push fake drivers and cpuinfo
@@ -235,7 +233,10 @@ echo ""
 $adb shell setenforce 0
 
 # Start the Cuckoo agent.
-echo "Starting the cuckoo agent.."
+echo "Starting the cuckoo agent on the device.."
+$adb push "$CWD/agent/agent.py" "$device_tmp"
+$adb push "$CWD/agent/android-agent.sh" "$device_tmp"
+$adb shell chmod 06755 "$device_tmp/android-agent.sh"
 $adb shell "$device_tmp/android-agent.sh"
 echo ""
 
