@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2014 The MITRE Corporation.
-# Copyright (C) 2015-2018 Cuckoo Foundation.
+# Copyright (C) 2015-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -7,19 +7,18 @@ import bs4
 import logging
 import re
 import requests
-import socket
 import subprocess
 import time
 import wakeonlan.wol
-import xmlrpclib
+import json
 
 from cuckoo.common.abstracts import Machinery
 from cuckoo.common.constants import CUCKOO_GUEST_PORT
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooMachineError
-from cuckoo.common.utils import TimeoutServer
 
 log = logging.getLogger(__name__)
+
 
 class Physical(Machinery):
     """Manage physical sandboxes."""
@@ -142,23 +141,29 @@ class Physical(Machinery):
 
         # The status is only used to determine whether the Guest is running
         # or whether it is in a stopped status, therefore the timeout can most
-        # likely be fairly arbitrary. TODO This is a temporary fix as it is
-        # not compatible with the new Cuckoo Agent, but it will have to do.
-        url = "http://{0}:{1}".format(machine.ip, CUCKOO_GUEST_PORT)
-        server = TimeoutServer(url, allow_none=True, timeout=60)
+        # likely be fairly arbitrary.
+        url = "http://{0}:{1}/status".format(machine.ip, CUCKOO_GUEST_PORT)
 
         try:
-            status = server.get_status()
-        except xmlrpclib.Fault as e:
-            # Contacted Agent, but it threw an error.
-            log.debug("Agent error: %s (%s) (Error: %s).",
-                      machine.id, machine.ip, e)
-            return self.ERROR
-        except socket.error as e:
+            r = requests.get(url, timeout=2)
+            if r.status_code != 200:
+                # Contacted Agent, but it threw an error.
+                log.debug("Agent error: %s (%s) (Error: %s).",
+                          machine.id, machine.ip, r.status_code)
+                return self.ERROR
+
+            status = json.loads(r.text)
+
+        except requests.exceptions.RequestException as e:
             # Could not contact agent.
             log.debug("Agent unresponsive: %s (%s) (Error: %s).",
                       machine.id, machine.ip, e)
             return self.STOPPED
+        except ValueError as e:
+            # Contacted Agent, but the returned json is not valid.
+            log.debug("Agent error: %s (%s) (Error: %s).",
+                      machine.id, machine.ip, e)
+            return self.ERROR
         except Exception as e:
             # TODO Handle this better.
             log.debug("Received unknown exception: %s.", e)
