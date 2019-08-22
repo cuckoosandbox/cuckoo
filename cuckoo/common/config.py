@@ -509,6 +509,12 @@ class Config(object):
                 "pid_generic": List(String, None),
             },
         },
+        "multi": {
+            "multi": {
+                "machinery": List(String, "physical"),
+                "machines": List(String, "multi1")
+            }
+        },
         "physical": {
             "physical": {
                 "machines": List(String, "physical1"),
