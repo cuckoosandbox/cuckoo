@@ -118,6 +118,7 @@ if __name__ == "__main__":
     # file
     add_hook("java.io.FileInputStream", "read", FILE)
     add_hook("java.io.FileOutputStream", "write", FILE)
+    add_hook("libcore.io.IoBridge", "open", FILE)
 
     # write the json configuration file
     with open('jvm_hooks.json', 'w') as f:

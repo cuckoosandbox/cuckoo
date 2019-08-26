@@ -338,5 +338,10 @@
         "class": "java.io.FileOutputStream",
         "method": "write",
         "category": "file"
+    },
+    {
+        "class": "libcore.io.IoBridge",
+        "method": "open",
+        "category": "file"
     }
 ]

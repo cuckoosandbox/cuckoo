@@ -693,50 +693,27 @@ function setupEnv () {
         }
     };
 
-    const spoofIoBridge = function (args, self) {
-        const path = args[0];
-
-        let replacedPath = path;
-        if (path === "/proc/tty/drivers") {
-            try {
-                new File(fakeDriversFilePath);
-                replacedPath = fakeDriversFilePath;
-            } catch (e) {
-                /* file not found */
-            }
-        } else if (path === "/proc/cpuinfo") {
-            try {
-                new File(fakeCpuinfoFilePath);
-                replacedPath = fakeCpuinfoFilePath;
-            } catch (e) {
-                /* file not found */
-            }
-        }
-        return this.open(replacedPath, args[1]);
-    };
-
     /* Patch framework APIs */
     const patches = [
-        [new HookConfig("android.telephony.TelephonyManager", "getLine1Number", "service"), randomPhoneNumber],
-        [new HookConfig("android.telephony.TelephonyManager", "getDeviceId", "service"), randomImei],
-        [new HookConfig("android.telephony.TelephonyManager", "getSubscriberId", "service"), randomSubscriberId],
-        [new HookConfig("android.telephony.TelephonyManager", "getImei", "service"), randomImei],
-        [new HookConfig("android.telephony.TelephonyManager", "getMeid", "service"), null],
-        [new HookConfig("android.telephony.TelephonyManager", "getNetworkOperatorName", "service"), "AT&T"],
-        [new HookConfig("android.telephony.TelephonyManager", "getSimOperatorName", "service"), "AT&T"],
-        [new HookConfig("android.telephony.TelephonyManager", "getNetworkCountryIso", "service"), "us"],
-        [new HookConfig("android.telephony.TelephonyManager", "getSimCountryIso", "service"), "us"],
-        [new HookConfig("android.telephony.TelephonyManager", "getPhoneType", "service"), 1],
-        [new HookConfig("android.telephony.TelephonyManager", "getNetworkOperator", "service"), mcc + mnc],
-        [new HookConfig("android.telephony.TelephonyManager", "getSimSerialNumber", "service"), randomSimSerialNumber],
-        [new HookConfig("android.telephony.TelephonyManager", "getVoiceMailNumber", "service"), randomPhoneNumber],
-        [new HookConfig("android.app.ActivityManager", "isUserAMonkey", "service"), false],
-        [new HookConfig("android.os.Build", "getSerial", "content"), Build.SERIAL.value],
-        [new HookConfig("android.os.SystemProperties", "get", "content"), spoofSystemProperties],
-        [new HookConfig("java.io.File", "exists", "file"), spoofFileCheck],
-        [new HookConfig("libcore.io.IoBridge", "open", "file"), spoofIoBridge],
-        [new HookConfig("android.location.LocationManager", "getLastKnownLocation", "service"), fakeLocation],
-        [new HookConfig("android.net.wifi.WifiInfo", "getMacAddress", "network"), fakeMacAddress]
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getLine1Number", "service"), randomPhoneNumber],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getDeviceId", "service"), randomImei],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getSubscriberId", "service"), randomSubscriberId],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getImei", "service"), randomImei],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getMeid", "service"), null],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getNetworkOperatorName", "service"), "AT&T"],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getSimOperatorName", "service"), "AT&T"],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getNetworkCountryIso", "service"), "us"],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getSimCountryIso", "service"), "us"],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getPhoneType", "service"), 1],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getNetworkOperator", "service"), mcc + mnc],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getSimSerialNumber", "service"), randomSimSerialNumber],
+        [new JavaHookConfig("android.telephony.TelephonyManager", "getVoiceMailNumber", "service"), randomPhoneNumber],
+        [new JavaHookConfig("android.app.ActivityManager", "isUserAMonkey", "service"), false],
+        [new JavaHookConfig("android.os.Build", "getSerial", "content"), Build.SERIAL.value],
+        [new JavaHookConfig("android.os.SystemProperties", "get", "content"), spoofSystemProperties],
+        [new JavaHookConfig("java.io.File", "exists", "file"), spoofFileCheck],
+        [new JavaHookConfig("android.location.LocationManager", "getLastKnownLocation", "service"), fakeLocation],
+        [new JavaHookConfig("android.net.wifi.WifiInfo", "getMacAddress", "network"), fakeMacAddress]
     ];
     patches.forEach((patch) => patchMethodCall.apply(this, patch));
 }
