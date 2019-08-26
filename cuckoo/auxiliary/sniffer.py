@@ -40,7 +40,7 @@ class Sniffer(Auxiliary):
 
         # Check that tcpdump has access using current account
         mode = os.stat(tcpdump).st_mode
-        if bool(mode & S_ISUID) == True:
+        if bool(mode & S_ISUID) is True:
             log.error("Tcpdump is not accessible from this user, "
                       "network capture aborted")
             return False
