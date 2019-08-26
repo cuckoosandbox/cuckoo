@@ -1082,6 +1082,7 @@ class AndroidPackage(object):
         from androguard.misc import AnalyzeAPK
         logging.getLogger("androguard.dvm").setLevel(logging.WARNING)
         logging.getLogger("androguard.analysis").setLevel(logging.WARNING)
+        logging.getLogger("androguard.misc").setLevel(logging.WARNING)
         logging.getLogger("androguard.apk").setLevel(logging.CRITICAL)
 
         try:
