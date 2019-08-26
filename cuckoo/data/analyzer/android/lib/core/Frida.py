@@ -297,15 +297,36 @@ class AgentHandler(object):
         pid, api_call = message.splitlines()
         self._log_event(int(pid), "jvmHook", api_call)
 
-    def _handle_fileDrop(self, message):
-        """Handle fileDrop events."""
-        self.analyzer.files.add_file(message)
+    def _handle_filemon(self, event_type, pid, data):
+        """Generic handler for file operations."""
+        event_data = {}
+        event_data[event_type] = data
+        self._log_event(int(pid), "filemon", json.dumps(event_data))
+
+    def _handle_fileRead(self, message):
+        """Handle fileRead events."""
+        pid, filepath = message.splitlines()
+        self._handle_filemon("fileRead", pid, filepath)
+
+    def _handle_fileWrite(self, message):
+        """Handle fileWrite events."""
+        pid, filepath = message.splitlines()
+        self._handle_filemon("fileWrite", pid, filepath)
+
+    def _handle_fileCreate(self, message):
+        """Handle fileCreate events."""
+        pid, filepath = message.splitlines()
+        self.analyzer.files.add_file(filepath)
+        self._handle_filemon("fileCreate", pid, filepath)
 
     def _handle_fileDelete(self, message):
         """Handle fileDelete events."""
-        self.analyzer.files.add_file(message)
+        pid, filepath = message.splitlines()
+        self._handle_filemon("fileDelete", pid, filepath)
 
     def _handle_fileMove(self, message):
         """Handle fileMove events."""
-        oldfilepath, newfilepath = message.split(",")
+        pid, arg = message.splitlines()
+        oldfilepath, newfilepath = arg.split(",")
         self.analyzer.files.move_file(oldfilepath, newfilepath)
+        self._handle_filemon("fileMove", pid, (oldfilepath, newfilepath))

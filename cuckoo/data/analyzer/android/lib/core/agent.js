@@ -101,7 +101,7 @@ function makeJavaMethodImplCallback (hookConfig) {
         const isCalledFromOverload = callStack[currentCallIdx] === callStack[currentCallIdx-1];
 
         if (!isCalledFromOverload) {
-            LOG("jvmHook", hookData, true);
+            LOG("jvmHook", hookData);
         }
     }
 }
@@ -359,7 +359,7 @@ function loadOkHttpHook () {
 
         const hookData = makeJavaMethodHookData(hookConfig, arguments, null, returnValue);
         hookData.thisObject = self;
-        LOG("jvmHook", hookData, true);
+        LOG("jvmHook", hookData);
 
         return returnValue;
     };
@@ -407,7 +407,7 @@ function loadOkHttp3Hook () {
 
                 const hookData = makeJavaMethodHookData(hookConfig, null, null, null);
                 hookData.thisObject = self;
-                LOG("jvmHook", hookData, true);
+                LOG("jvmHook", hookData);
 
                 return response;
             }
@@ -498,9 +498,8 @@ function generateRandomNumber(length, isHex=false) {
  * 
  * @param eventType Type of message/ event.
  * @param message The payload.
- * @param sendPid Send process id as source of event.
  */
-function LOG (eventType, message, sendPid=false) {
+function LOG (eventType, message) {
     if (eventType === "error") {
         setTimeout(() => { throw message; }, 0);
     } else {
@@ -508,11 +507,7 @@ function LOG (eventType, message, sendPid=false) {
             message = JSON.stringify(message);
         }
 
-        if (sendPid) {
-            send(eventType + "\n" + Process.id + "\n" + message);
-        } else {
-            send(eventType + "\n" + message);
-        }
+        send(eventType + "\n" + Process.id + "\n" + message);
     }
 }
 
@@ -554,7 +549,7 @@ function setupEnv () {
             }
 
             const hookData = makeJavaMethodHookData(hookConfig, arguments, this, returnValue);
-            LOG("jvmHook", hookData, true);
+            LOG("jvmHook", hookData);
             return returnValue;
         };
     };
@@ -620,9 +615,6 @@ function setupEnv () {
         "/vendor/bin/qemu-props", "/dev/__properties__/u:object_r:qemu_cmdline:s0",
         "/dev/__properties__/u:object_r:qemu_prop:s0"  
     ];
-
-    const fakeDriversFilePath = "/data/local/tmp/fake-drivers";
-    const fakeCpuinfoFilePath = "/data/local/tmp/fake-cpuinfo";
 
     const Location = Java.use("android.location.Location");
     const fakeLocation = Location.$new("gps");
@@ -735,68 +727,74 @@ function init () {
     /* Native functions */
     const lstat = new NativeFunction(lstatPtr, "int", ["pointer", "pointer"]);
 
-    /* Check if file exists */
-    const exists = function (fpathPtr) {
+    /* lstat() wrapper */
+    const fileExists = function (filepathPtr) {
         const maxStatStructSize = 20 * 8;
         const statStruct = Memory.alloc(maxStatStructSize);
-        return lstat(fpathPtr, statStruct) === 0;
+
+        return lstat(filepathPtr, statStruct) === 0;
     };
 
-    /* Neutralize unlink calls */
+    /* Neutralize unlink[at]() calls */
+    const unlinkImplCallback = function (filepath) {
+        LOG("fileDelete", ptr(filepath).readUtf8String());
+    };
     Interceptor.replace(unlinkPtr, new NativeCallback(
-        function (pathnamePtr) {
-            LOG("fileDelete", ptr(pathnamePtr).readUtf8String());
-        },
+        function (pathname) { unlinkImplCallback(pathname); },
         "int",
         ["pointer"]
     ));
     Interceptor.replace(unlinkatPtr, new NativeCallback(
-        function (dirfd, pathnamePtr, flags) {
-            LOG("fileDelete", ptr(pathnamePtr).readUtf8String());
-        },
+        function (dirfd, pathname, flags) { unlinkImplCallback(pathname); },
         "int",
         ["int", "pointer", "int"]
     ));
 
-    /* Notify when a file is about to be created */
+    /* Intercept open[at]() calls */
+    const openInterceptCallback = function (filepathParam, flagsParam) {
+        const flags = flagsParam.toInt32();
+        const filepath = filepathParam.readUtf8String();
+
+        if (!fileExists(filepathParam) && flags & 0o100 !== 0) {
+            LOG("fileCreate", filepath);
+        }
+
+        if (flags & 0o11 === 0 || flags & 0o2 !== 0) {
+            LOG("fileRead", filepath);
+        }
+
+        if (flags & 0o1 !== 0 || flags & 0o2 !== 0) {
+            LOG("fileWrite", filepath);
+        }
+    };
     Interceptor.attach(openPtr, {
-        onEnter: function (args) {
-            const createIfNotFound = args[1].toInt32() & 0o100 !== 0;
-
-            if (!exists(args[0]) && createIfNotFound) {
-                LOG("fileDrop", args[0].readUtf8String());
-            }
-        }
+        onEnter: function (args) { openInterceptCallback(args[0], args[1]); }
     });
-    Interceptor.attach(openatPtr, {
-        onEnter: function (args) {
-            const createIfNotFound = args[2].toInt32() & 0o100 !== 0;
-
-            if (!exists(args[1]) && createIfNotFound) {
-                LOG("fileDrop", args[1].readUtf8String());
-            }
-        }
+    Interceptor.attach(openatPtr, { 
+        onEnter: function (args) { openInterceptCallback(args[1], args[2]); }
     });
+
+    /* Intercept creat() calls */
     Interceptor.attach(creatPtr, {
-        onEnter: function (args) {
-            if (!exists(args[0])) {
-                LOG("fileDrop", args[0].readUtf8String());
+        onEnter: function (args) { 
+            if (!fileExists(args[0])) {
+                LOG("fileCreate", args[0].readUtf8String());
             }
         }
     });
 
-    /* Notify when a file is about to get relocated */
+    /* Intercept rename[at]() calls */
+    const renameInterceptCallback = function (oldfilepathParam, newfilepathParam) {
+        const oldfilepath = oldfilepathParam.readUtf8String();
+        const newfilepath = newfilepathParam.readUtf8String();
+
+        LOG("fileMoved", oldfilepath + "," + newfilepath);
+    };
     Interceptor.attach(renamePtr, {
-        onEnter: function (args) {
-            const message = args[0].readUtf8String() + "," + args[1].readUtf8String();
-            LOG("fileMoved", message);
-        }
+        onEnter: function (args) { renameInterceptCallback(args[0], args[1]); }
     });
     Interceptor.attach(renameatPtr, {
-        onEnter: function (args) {
-            const message = args[1].readUtf8String() + "," + args[3].readUtf8String();
-            LOG("fileMoved", message);
-        }
+        onEnter: function (args) { renameInterceptCallback(args[1], args[3]); }
     });
 }
 

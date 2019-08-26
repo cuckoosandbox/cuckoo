@@ -15,7 +15,7 @@ from cuckoo.core.extract import ExtractManager
 
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
-from .platform.android import AndroidRuntime
+from .platform.android import AndroidRuntime, AndroidFileMonitor
 
 log = logging.getLogger(__name__)
 
@@ -298,6 +298,7 @@ class BehaviorAnalysis(Processing):
             WindowsMonitor(self, task_id=self.task["id"]),
             LinuxSystemTap(self),
             AndroidRuntime(self),
+            AndroidFileMonitor(self),
 
             # Reboot information.
             RebootInformation(self),
