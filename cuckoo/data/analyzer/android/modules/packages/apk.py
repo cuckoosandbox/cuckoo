@@ -57,9 +57,9 @@ class Apk(Package):
 
             if p.returncode:
                 raise OSError(err)
+            log.info("Sample installed successfully.")
         except OSError as e:
             raise CuckooPackageError("Error installing sample: %s" % e)
-        log.info("Sample installed successfully.")
 
     def _execute_app(self):
         """Execute sample via activity manager.
@@ -81,11 +81,11 @@ class Apk(Package):
             
             if p.returncode:
                 raise OSError(err.decode())
+            log.info("Executed package activity: %s", out.decode())
         except OSError as e:
             raise CuckooPackageError(
                 "Error executing package activity: %s" % e
             )
-        log.info("Executed package activity: %s", out.decode())
 
     def _get_pid(self):
         """Get PID of an Android application process via its package name
