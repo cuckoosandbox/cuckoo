@@ -9,7 +9,7 @@ import warnings
 from base64 import b64encode
 
 from cuckoo.common.abstracts import Report
-from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.whitelist import (
     is_whitelisted_mispdomain, is_whitelisted_mispip, is_whitelisted_mispurl,
     is_whitelisted_misphash
@@ -84,15 +84,15 @@ class MISP(Report):
         for entry in results.get("screenshots", []):
             filepath = entry.get("path")
             filename = os.path.basename(filepath)
-            with open(filepath, "rb") as f:
-                # .decode("utf-8") in order to avoid the b"" format
-                img_data = b64encode(f.read()).decode("utf-8")
+            with open(filepath, 'rb') as f:
+                # .decode('utf-8') in order to avoid the b'' format
+                img_data = b64encode(f.read()).decode('utf-8')
 
             report.add_attribute("sandbox-file", value=filename,
-                                 data=img_data, type="attachment",
+                                 data=img_data, type='attachment',
                                  category="External analysis")
 
-        self.misp.add_object(event["Event"]["id"], report)
+        self.misp.add_object(event['Event']['id'], report)
 
     def dropped_files(self, results, event):
         """
@@ -150,10 +150,10 @@ class MISP(Report):
     def family(self, results, event):
         for config in results.get("metadata", {}).get("cfgextr", []):
             self.misp.add_detection_name(
-                event, config["family"], "External analysis"
+                event, config["family"], "Payload type"
             )
             for cnc in config.get("cnc", []):
-                self.misp.add_url(event, cnc)
+                self.misp.add_url(event, cnc, comment="cnc")
             for url in config.get("url", []):
                 self.misp.add_url(event, url)
             for mutex in config.get("mutex", []):
@@ -200,14 +200,15 @@ class MISP(Report):
             markslist = ", ".join([x for x in marks if x and x != " "])
 
             data = "%s - (%s)" % (sig["description"], markslist)
-            self.misp.add_internal_comment(event, data)
+            self.misp.add_internal_comment(event, data, category="External analysis")
             for att, description in sig["ttp"].items():
                 if not description:
                     log.warning("Description for %s is not found", att)
                     continue
 
                 self.misp.add_internal_comment(
-                    event, "TTP: %s, short: %s" % (att, description["short"])
+                    event, "TTP: %s, short: %s" % (att, description["short"]),
+                    category="External analysis"
                 )
 
     def run(self, results):
@@ -233,7 +234,7 @@ class MISP(Report):
             return
 
         if not url or not apikey:
-            raise CuckooProcessingError(
+            raise CuckooReportError(
                 "Please configure the URL and API key for your MISP "
                 "instance."
             )
@@ -265,12 +266,13 @@ class MISP(Report):
 
         if upload_sample:
             target = results.get("target", {})
-            if target.get("category") == "file" and target.get("file"):
+            f = target.get("file", {})
+            if target.get("category") == "file" and f:
                 self.misp.upload_sample(
-                    filename=os.path.basename(self.task["target"]),
-                    filepath_or_bytes=self.task["target"],
+                    filename=os.path.basename(f["name"]),
+                    filepath_or_bytes=f["path"],
                     event_id=event["Event"]["id"],
-                    category="External analysis",
+                    category="Payload delivery",
                     comment="Sample run",
                 )
 
