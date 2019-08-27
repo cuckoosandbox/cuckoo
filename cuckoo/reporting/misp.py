@@ -94,6 +94,59 @@ class MISP(Report):
 
         self.misp.add_object(event["Event"]["id"], report)
 
+    def dropped_files(self, results, event):
+        """
+        Add all the dropped files as MISP attributes.
+        """
+        from pymisp import MISPEvent
+
+        # Upload all the dropped files at once
+        filepaths = [r.get("path") for r in results.get("dropped", [])]
+        if not filepaths:
+            return
+
+        try:
+            self.misp.upload_samplelist(
+                    filepaths=filepaths,
+                    event_id=event["Event"]["id"],
+                    category="Artifacts dropped",
+                    comment="Dropped file",
+            )
+        except:
+            log.error(
+                "Couldn't upload the dropped file, maybe "
+                "the max upload size has been reached."
+            )
+            return False
+
+        # Load the event from MISP (we cannot use event as it
+        # does not contain the sample uploaded above, nor it is
+        # a MISPEvent but a simple dict)
+        e = MISPEvent()
+        e.from_dict(Event=self.misp.get_event(event["Event"]["id"])["Event"])
+        dropped_files = {
+                f.get_attributes_by_relation("sha1")[0].value : f
+                for f in e.objects if f["name"] == "file"
+        }
+
+        # Add further details on the dropped files
+        for entry in results.get("dropped", []):
+            # Find the corresponding object
+            sha1 = entry.get("sha1")
+            obj = dropped_files[sha1]
+
+            # Add the real location of the dropped file (during the analysis)
+            real_filepath = entry.get("filepath")
+            obj.add_attribute("fullpath", real_filepath)
+
+            # Add Yara matches if any
+            for match in entry.get("yara", []):
+                desc = match["meta"]["description"]
+                obj.add_attribute("text", value=desc, comment="Yara match")
+
+        # Update the event
+        self.misp.update_event(event_id=event["Event"]["id"], event=e)
+
     def family(self, results, event):
         for config in results.get("metadata", {}).get("cfgextr", []):
             self.misp.add_detection_name(
@@ -218,6 +271,7 @@ class MISP(Report):
                     filepath_or_bytes=self.task["target"],
                     event_id=event["Event"]["id"],
                     category="External analysis",
+                    comment="Sample run",
                 )
 
         self.signature(results, event)
@@ -233,5 +287,8 @@ class MISP(Report):
 
         if "screenshots" in mode:
             self.screenshots(results, event)
+
+        if "dropped_files" in mode:
+            self.dropped_files(results, event)
 
         self.family(results, event)
