@@ -14,6 +14,7 @@ import zipfile
 
 from django.http import JsonResponse, HttpResponse
 from wsgiref.util import FileWrapper
+from django.views.decorators.csrf import csrf_exempt
 
 from cuckoo.common.exceptions import CuckooFeedbackError
 from cuckoo.common.files import Folders
@@ -89,6 +90,7 @@ class AnalysisApi(object):
             return json_error_response(str(e))
 
     @api_post
+    @csrf_exempt
     def tasks_info(request, body):
         task_ids = body.get("task_ids", [])
         if not list_of_ints(task_ids):
