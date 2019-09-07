@@ -47,8 +47,9 @@ before_install:
         pip install psycopg2 mysql-python m2crypto==0.24.0 weasyprint==0.36
     else
         brew update || brew update
-        brew install libmagic cairo pango mongodb
-        brew services start mongodb
+        brew tap mongodb/brew
+        brew install libmagic cairo pango mongodb-community
+        brew services start mongodb-community
         # The following wasn't required in the past and therefore may become
         # obsolete once again in the future. Let's wait and see.
         wget https://bootstrap.pypa.io/get-pip.py

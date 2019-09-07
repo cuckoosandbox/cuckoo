@@ -26,7 +26,10 @@ class AnalysisInfo(Processing):
 
         db = Database()
         dbtask = db.view_task(self.task["id"], details=True)
-        dbmachine = db.view_machine(self.machine["name"])
+
+        dbmachine = None
+        if self.machine:
+            dbmachine = db.view_machine(self.machine["name"])
 
         # Fetch the task.
         if dbtask:

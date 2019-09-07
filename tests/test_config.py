@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2018 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -1199,12 +1199,12 @@ interface = virbr0
     assert cfg["avd"]["avd"]["mode"] == "headless"
     assert cfg["avd"]["avd"]["emulator_path"] == "/home/cuckoo/Android/Sdk/emulator/emulator"
     assert cfg["avd"]["avd"]["adb_path"] == "/home/cuckoo/Android/Sdk/platform-tools/adb"
+    assert cfg["avd"]["avd"]["interface"] == "cuckoo_avd_br"
     assert cfg["avd"]["avd"]["machines"] == ["cuckoo1"]
     assert cfg["avd"]["cuckoo1"]["label"] == "cuckoo1"
     assert cfg["avd"]["cuckoo1"]["platform"] == "android"
-    assert cfg["avd"]["cuckoo1"]["ip"] == "127.0.0.1"
+    assert cfg["avd"]["cuckoo1"]["ip"] == "10.3.2.2"
     assert cfg["avd"]["cuckoo1"]["snapshot"] == "cuckoo_snapshot"
-    assert cfg["avd"]["cuckoo1"]["resultserver_ip"] == "10.0.2.2"
 
 
 class FullMigration(object):

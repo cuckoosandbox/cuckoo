@@ -186,7 +186,6 @@ do_setup(
     },
     install_requires=[
         "alembic==1.0.10",
-        "androguard==3.3.5",
         "beautifulsoup4==4.5.3",
         "chardet==2.3.0",
         "click==6.6",
@@ -204,6 +203,9 @@ do_setup(
         "jsbeautifier==1.6.2",
         "oletools==0.51",
         "peepdf>=0.4.2, <0.5",
+        "networkx==2.2", 
+        "matplotlib==2.2.4",
+        "androguard==3.3.5",
         "pefile2==1.2.11",
         "pillow==3.2",
         "pyelftools==0.24",
