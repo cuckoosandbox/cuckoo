@@ -26,7 +26,6 @@ import sys
 import time
 import shutil
 import random
-import string
 import tarfile
 import getpass
 import logging
