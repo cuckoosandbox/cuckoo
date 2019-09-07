@@ -512,25 +512,6 @@ class AnalysisManager(threading.Thread):
                 vmname=self.machine.name
             )
 
-            # In case this is a NAT-based configuration, we try to set up port 
-            # forwarding for the Cuckoo agent using the machinery.
-            if self.machine.ip == "127.0.0.1":
-                try:
-                    self.guest_manager.port = machinery.port_forward(
-                        self.machine.label, 
-                        self.guest_manager.port
-                    )
-                except NotImplementedError:
-                    log.error(
-                        "Port forwarding support has not been implemented for "
-                        "this machinery to run with NAT-based configurations."
-                    )
-                except CuckooMachineError as e:
-                    log.error(
-                        "Failed to set up port forwarding for the machine '%s' "
-                        "configured to run with NAT: %s", self.machine.name, e
-                    )
-
             # retrieve the port used for remote control
             if control_enabled:
                 try:

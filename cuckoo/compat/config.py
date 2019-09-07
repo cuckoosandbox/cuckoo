@@ -729,14 +729,14 @@ def _206_207(c):
             "mode": "headless",
             "emulator_path": "/home/cuckoo/Android/Sdk/emulator/emulator",
             "adb_path": "/home/cuckoo/Android/Sdk/platform-tools/adb",
+            "interface": "cuckoo_avd_br",
             "machines": ["cuckoo1"],
         },
         "cuckoo1": {
             "label": "cuckoo1",
             "platform": "android",
-            "ip": "127.0.0.1",
+            "ip": "10.3.2.2",
             "snapshot": "cuckoo_snapshot",
-            "resultserver_ip": "10.0.2.2",
         },
     }
     c["processing"].pop("apkinfo", None)

@@ -6,11 +6,14 @@
 import os
 import time
 import socket
+import select
 import logging
 import subprocess
 
 from cuckoo.common.abstracts import Machinery
+from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooCriticalError, CuckooMachineError
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -47,13 +50,8 @@ class Avd(Machinery):
 
         try:
             # Restart the adb server.
-            subprocess.check_call([
-                self.options.avd.adb_path, "kill-server"
-            ])
-
-            subprocess.check_call([
-                self.options.avd.adb_path, "start-server"
-            ])
+            subprocess.check_call([self.options.avd.adb_path, "kill-server"])
+            subprocess.check_call([self.options.avd.adb_path, "start-server"])
         except subprocess.CalledProcessError as e:
             log.error("Unable to restart the adb server: %s", e)
 
@@ -63,53 +61,84 @@ class Avd(Machinery):
         @param task: task object.
         """
         log.debug("Starting vm %s", label)
+
+        vmname = self.db.view_machine_by_label(label).name
+        vm_state_timeout = config("cuckoo:timeouts:vm_state")
+
         try:
             args = [
-                self.options.avd.emulator_path,
+                "sudo", self.options.avd.emulator_path,
                 "@%s" % label,
                 "-no-snapshot-save",
-                "-netspeed", "full",
-                "-netdelay", "none",
-                "-tcpdump", self.pcap_path(task.id)
+                "-net-tap", "tap_%s" % vmname,
+                "-net-tap-script-up", cwd("stuff", "setup-hostnet-avd.sh")
             ]
 
             # In headless mode we remove the audio, and window support.
             if self.options.avd.mode == "headless":
                 args += ["-no-audio", "-no-window"]
 
-            # If a proxy address has been provided for this analysis, then we have
-            # to pass the proxy address along to the emulator command. The
-            # mitmproxy instance is not located at the resultserver's IP address
-            # though, so we manually replace the IP address by localhost.
-            if "proxy" in task.options:
-                _, port = task.options["proxy"].split(":")
-                args += ["-http-proxy", "http://127.0.0.1:%s" % port]
-
-            # Retrieve snapshot name for this machine to load it.
+            # Retrieve the snapshot name for this machine to load it.
             for machine in self.machines():
                 if machine.label == label:
                     args += ["-snapshot", machine.snapshot]
                     break
 
-            # Create a socket server to receive the console port of the emulator.
+            # Create a socket server to acquire the console port of the emulator.
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.setblocking(0)
             s.bind(("127.0.0.1", 0))
-            s.listen(5)
-
-            args += ["-report-console", "tcp:" + str(s.getsockname()[1])]
+            s.listen(0)
+            args += ["-report-console", "tcp:%s" % s.getsockname()[1]]
 
             # Start the emulator process..
-            subprocess.Popen(
+            emu_conn = None
+            proc = subprocess.Popen(
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
-            console_port = s.accept()[0].recv(1024)
-            self._emulators[label] = "emulator-" + console_port
+
+            rlist = [s]
+            time_cnt = 0
+            while True:
+                if proc.poll() is not None:
+                    out, err = proc.communicate()
+                    # Grab emulator error message from stderr & stdout
+                    exc_info = ""
+                    for line in out.splitlines():
+                        if "emulator: ERROR: " in line:
+                            exc_info += "%s\n" % line
+                    exc_info += err
+
+                    raise OSError(exc_info.rstrip())
+
+                rds, _, _ = select.select(rlist, [], [], 0)
+                sock2read = rds.pop() if rds else None
+                if sock2read == s:
+                    emu_conn, _ = s.accept()
+                    emu_conn.setblocking(0)
+                    rlist[0] = emu_conn
+                elif emu_conn and sock2read == emu_conn:
+                    emu_port = emu_conn.recv(1024)
+                    break
+
+                if time_cnt < vm_state_timeout:
+                    time.sleep(1)
+                    time_cnt += 1
+                else:
+                    proc.kill()
+                    raise OSError("timed out")
+
+            self._emulators[label] = "emulator-%s" % emu_port
         except OSError as e:
             raise CuckooMachineError(
                 "Emulator failed starting machine %s: %s" % (label, e)
             )
+        except IOError as e:
+            raise CuckooMachineError(e)
         finally:
             s.close()
+            if emu_conn:
+                emu_conn.close()
 
         self._wait_status_ready(label)
 
@@ -120,14 +149,20 @@ class Avd(Machinery):
         log.debug(
             "Waiting for machine %s to become available.", label
         )
+
         try:
             args = [
                 self.options.avd.adb_path,
                 "-s", self._emulators[label],
                 "wait-for-device"
             ]
-            subprocess.check_call(args)
-        except subprocess.CalledProcessError as e:
+            p = subprocess.Popen(
+                args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            _, err = p.communicate()
+            if p.returncode != 0:
+                raise OSError(err)
+        except OSError as e:
             raise CuckooMachineError("Failed to issue adb command: %s" % e)
 
     def stop(self, label):
@@ -137,68 +172,24 @@ class Avd(Machinery):
         """
         log.debug("Stopping vm %s", label)
 
+        if not label in self._emulators.keys():
+            return
+
         try:
             args = [
                 self.options.avd.adb_path,
                 "-s", self._emulators[label],
                 "emu", "kill"
             ]
-            subprocess.check_call(args)
-
-            del self._emulators[label]
-        except subprocess.CalledProcessError as e:
-            raise CuckooMachineError(
-                "Emulator failed stopping the machine: %s" % e
-            )
-
-    def port_forward(self, label, dport):
-        """Configure port forwarding for a vm.
-        @param label: virtual machine name.
-        @param dport: destination port on the vm.
-        @return: host forwarding port.
-        @raise CuckooMachineError: when unable to set up forwarding.
-        """
-        # Make sure the destination port is up and running on the device side
-        # before setting up port forwarding. This is a workaround, so that we
-        # create no assumptions later about its connection state, where we will
-        # only be doing checks on the forwarding port returned from this method.
-        while True:
-            try:
-                args = [
-                    self.options.avd.adb_path,
-                    "-s", self._emulators[label],
-                    "shell", 
-                    "cat", "/proc/net/tcp"
-                ]
-                p = subprocess.Popen(
-                    args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                )
-                output, err = p.communicate()
-
-                if p.returncode:
-                    raise OSError(err)
-            except OSError as e:
-                log.error("Failed to execute adb command: %s" % e)
-
-            if format(dport, "04X") in output:
-                break
-
-        try:
-            args = [
-                self.options.avd.adb_path,
-                "-s", self._emulators[label],
-                "forward", "tcp:0", "tcp:%s" % dport
-            ]
             p = subprocess.Popen(
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
-            output, err = p.communicate()
-
-            if p.returncode:
+            _, err = p.communicate()
+            if p.returncode != 0:
                 raise OSError(err)
+
+            del self._emulators[label]
         except OSError as e:
             raise CuckooMachineError(
-                "Adb failed to set up port forwarding: %s" % e
+                "Emulator failed stopping the machine: %s" % e
             )
-
-        return int(output.splitlines()[0])

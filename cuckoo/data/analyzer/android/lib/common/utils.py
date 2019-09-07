@@ -2,6 +2,7 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import re
 import os
 import random
 import string
@@ -73,8 +74,8 @@ def equal_dicts(d1, d2, ignore_keys):
             return False
     return True
 
-# https://stackoverflow.com/a/24349916/7267323
 # Compare two xml.etree.ElementTree nodes
+# https://stackoverflow.com/a/24349916/7267323
 def etree_compare(e1, e2, ignore_attrib_keys):
     if e1.tag != e2.tag:
         return False
@@ -86,4 +87,6 @@ def etree_compare(e1, e2, ignore_attrib_keys):
         return False
     if len(e1) != len(e2):
         return False
-    return all(etree_compare(c1, c2, ignore_attrib_keys) for c1, c2 in zip(e1, e2))
+    return all(
+        etree_compare(c1, c2, ignore_attrib_keys) for c1, c2 in zip(e1, e2)
+    )
