@@ -93,7 +93,7 @@ class Files(object):
         """Update files list, as file is being relocated."""
         if oldfilepath in self.files:
             self.files.pop(self.files.index(oldfilepath))
-        
+
         self.files.append(newfilepath)
 
     def dump_files(self):
@@ -104,8 +104,8 @@ class Files(object):
 class Analyzer(object):
     """Cuckoo Android analyzer.
 
-    This class handles the initialization, execution, and termination of 
-    the analysis routine. It includes running auxiliary modules, starting 
+    This class handles the initialization, execution, and termination of
+    the analysis routine. It includes running auxiliary modules, starting
     an analysis package, instrumenting it, and keeping track of the analysis
     status.
     """
@@ -321,7 +321,7 @@ if __name__ == "__main__":
             log.critical(error_exc)
         else:
             sys.stderr.write("{0}\n".format(error_exc))
-        
+
         data = {
             "status": "exception",
             "description": error_exc
@@ -330,5 +330,5 @@ if __name__ == "__main__":
     # back to the agent, notifying that it can report back to the host.
     finally:
         # Establish connection with the new agent.
-        urllib.request.urlopen("http://127.0.0.1:8000/status", 
+        urllib.request.urlopen("http://127.0.0.1:8000/status",
                                urllib.parse.urlencode(data).encode()).read()
