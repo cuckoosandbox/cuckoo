@@ -163,7 +163,9 @@ class Avd(Machinery):
             if p.returncode != 0:
                 raise OSError(err)
         except OSError as e:
-            raise CuckooMachineError("Failed to issue adb command: %s" % e)
+            raise CuckooMachineError(
+                "Failed to issue adb command wait-for-device: %s" % e
+            )
 
     def stop(self, label):
         """Stop a virtual machine.
@@ -173,7 +175,9 @@ class Avd(Machinery):
         log.debug("Stopping vm %s", label)
 
         if not label in self._emulators.keys():
-            return
+            raise CuckooMachineError(
+                "Trying to stop a machine that wasn't started: %s" % label
+            )
 
         try:
             args = [
@@ -191,5 +195,5 @@ class Avd(Machinery):
             del self._emulators[label]
         except OSError as e:
             raise CuckooMachineError(
-                "Emulator failed stopping the machine: %s" % e
+                "Emulator failed to stop the machine: %s" % e
             )
