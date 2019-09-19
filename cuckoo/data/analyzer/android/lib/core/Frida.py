@@ -5,6 +5,8 @@
 import os
 import json
 import logging
+import collections
+import threading
 
 from datetime import datetime
 
@@ -21,6 +23,51 @@ AGENT_PATH = "lib/core/agent.js"
 
 log = logging.getLogger(__name__)
 
+
+class PipeController(object):
+    """Schedule handling of event messages on Frida's pipe."""
+
+    def __init__(self):
+        self._pending = collections.deque([])
+        self._lock = threading.Lock()
+        self._running = False
+        self._worker = None
+
+    def run(self):
+        """Start the pipe controller."""
+        self._running = True
+
+        if not self._worker:
+            self._worker = threading.Thread(target=self._run)
+            self._worker.start()
+
+    def _run(self):
+        """Looper for the task queue."""
+        while self._running:
+            task = None
+            with self._lock:
+                if self._pending:
+                    task = self._pending.popleft()
+            if task:
+                try:
+                    task()
+                except Exception as e:
+                    log.error(e)
+
+    def stop(self):
+        """Stop the pipe controller."""
+        self._running = False
+
+        if self._worker:
+            self._worker.join()
+
+    def schedule(self, fn):
+        """Schedule a new task on the pipe.
+        @param fn: A function task.
+        """
+        with self._lock:
+            self._pending.append(fn)
+
 class Client(object):
     """Interface of Frida's client. Used for sample instrumentation.
     https://github.com/frida/frida
@@ -34,6 +81,8 @@ class Client(object):
                 "Failed to import Frida's Python bindings.. Check your guest "
                 "installation."
             )
+
+        self.pipe_ctrl = PipeController()
 
         self.processes = {}
         self.sessions = {}
@@ -118,7 +167,7 @@ class Client(object):
             )
 
     def _start_session(self, pid):
-        """Initiate a frida session with the application
+        """Initiate a frida session with a process.
         @param pid: Process id.
         """
         try:
@@ -127,7 +176,7 @@ class Client(object):
         except frida.ProcessNotFoundError:
             raise CuckooFridaError(
                 "Failed to initiate a frida session with the application "
-                "process."
+                "process: %s." % pid
             )
 
         session.enable_child_gating()
@@ -147,15 +196,20 @@ class Client(object):
             with open(filepath, "r") as fd:
                 s = self.sessions[pid]
                 script = s.create_script(fd.read(), runtime='v8')
-                script.on("message", self.agent_handler.on_receive)
+
+                def schedule_msg_rcv(message, payload):
+                    handler = lambda: self.agent_handler.on_receive(message)
+                    self.pipe_ctrl.schedule(handler)
+
+                script.on("message", schedule_msg_rcv)
                 script.load()
                 self.scripts[pid] = script
             log.info("Script loaded successfully")
         except frida.TransportError:
             raise CuckooFridaError("Failed to inject instrumentation script")
 
-    def load_agent(self, pid):
-        """Load our instrumentation agent into the process and start it.
+    def _load_agent(self, pid):
+        """Load the instrumentation agent into the process and start it.
         @param pid: Process id.
         """
         if not os.path.exists(AGENT_PATH):
@@ -181,7 +235,7 @@ class Client(object):
 
         return Agent(pid, self.scripts[pid])
 
-    def terminate_session(self, pid):
+    def _terminate_session(self, pid):
         """Terminate an attached session.
         @param pid: Process id.
         """
@@ -202,21 +256,39 @@ class Client(object):
 
         log.info("Frida session is terminated")
 
+    def start(self, pid):
+        """Start the Frida client on the given PID
+        @param pid: Process id.
+        """
+        self.pipe_ctrl.run()
+        self.pipe_ctrl.schedule(lambda: self._load_agent(pid))
+
+    def abort(self):
+        """Abort the Frida client."""
+        # TODO: terminate frida sessions without breaking the instrumentation
+        self.pipe_ctrl.stop()
+
     def _on_child_added(self, pid):
         """A callback function. Called when a new child is added.
         @param pid: Process id of child.
         """
+        self.pipe_ctrl.schedule(lambda: self._load_agent(pid))
+
         if self._on_child_added_callback:
-            self._on_child_added_callback(pid)
+            self.pipe_ctrl.schedule(
+                lambda: self._on_child_added_callback(pid)
+            )
 
     def _on_child_removed(self, pid):
         """A callback function. Called when a child is removed.
         @param pid: Process id of child.
         """
-        self.terminate_session(pid)
+        self.pipe_ctrl.schedule(lambda: self._terminate_session(pid))
 
         if self._on_child_removed_callback:
-            self._on_child_removed_callback(pid)
+            self.pipe_ctrl.schedule(
+                lambda: self._on_child_removed_callback(pid)
+            )
 
 class Agent(object):
     """RPC interface of Frida's agent."""
@@ -249,7 +321,7 @@ class AgentHandler(object):
         self.analyzer = analyzer
         self.loggers = {}
 
-    def on_receive(self, message, payload):
+    def on_receive(self, message):
         """A callback function invoked upon receiving an event message
         from Frida's agent.
         """
@@ -259,7 +331,7 @@ class AgentHandler(object):
                 header = split_msg[0]
                 message = "\n".join(split_msg[1:])
 
-                # Determine handler based on event..
+                # Determine handler based on event type..
                 handler = getattr(self, "_handle_%s" % header, None)
                 if handler:
                     handler(message)
@@ -288,7 +360,9 @@ class AgentHandler(object):
             logger.addHandler(fh)
 
             self.loggers[event_id] = logger
-            logger.info(json.dumps(self.client.processes[pid]))
+            
+            if pid in self.client.processes:
+                logger.info(json.dumps(self.client.processes[pid]))
 
         self.loggers[event_id].info(data)
 

@@ -58,33 +58,27 @@ class Package(object):
 
     def instrument(self):
         """Start instrumentation of analysis package."""
-        if self.frida_client:
-            # callbacks for newly-created children.
-            self.frida_client.on_child_added_callback = self._instrument
-            self.frida_client.on_child_removed_callback = self.remove_pid
+        if not self.frida_client:
+            log.error(
+                "Failed to instrument the analysis package. Frida is not "
+                "installed properly."
+            )
+            return
+
+        # callbacks for newly-created children.
+        self.frida_client.on_child_added_callback = self.add_pid
+        self.frida_client.on_child_removed_callback = self.remove_pid
 
         if len(self.pids):
             # First pid in the list denotes the parent.
             pid = self.pids[0]
-
             # Instrument the process.
-            self._instrument(pid)
+            self.frida_client.start(pid)
         else:
             log.error(
                 "Failed to instrument the analysis package. No running "
                 "processes found."
             )
-
-    def _instrument(self, pid):
-        """Instrument a new process.
-        @param pid: Process id.
-        """
-        # Add the pid to the list of monitored processes.
-        self.add_pid(pid)
-
-        if self.frida_client:
-            # Apply instrumentation with Frida.
-            self.frida_client.load_agent(pid)
 
     def execute(self, target):
         """Execute the sample.
@@ -111,8 +105,9 @@ class Package(object):
 
     def finish(self):
         """Finish run."""
+        self.frida_client.abort()
+
         for pid in self.pids[::-1]:
-            # TODO: terminate frida sessions
             Process(pid).dump_memory()
             Process(pid).kill()
 
