@@ -14,7 +14,7 @@ Arguments:
   device_arch   CPU architecture of the target Android device.
 "
 python_version=e09359112e250268eca209355abeb17abf822486
-frida_version=0675862c5eff6638ace2196e563ab83fa7adf1bc
+frida_version=376cba19b405064ed69f1861486eb517da34307f
 host_arch=x86_64
 
 # Get command line argument
