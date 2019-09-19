@@ -230,23 +230,8 @@
         "category": "dynload"
     },
     {
-        "class": "dalvik.system.PathClassLoader",
-        "method": "$init",
-        "category": "dynload"
-    },
-    {
-        "class": "dalvik.system.DexClassLoader",
-        "method": "$init",
-        "category": "dynload"
-    },
-    {
         "class": "dalvik.system.DexFile",
         "method": "loadDex",
-        "category": "dynload"
-    },
-    {
-        "class": "dalvik.system.InMemoryDexClassLoader",
-        "method": "$init",
         "category": "dynload"
     },
     {
@@ -328,20 +313,5 @@
         "class": "sun.net.spi.DefaultProxySelector",
         "method": "select",
         "category": "network"
-    },
-    {
-        "class": "java.io.FileInputStream",
-        "method": "read",
-        "category": "file"
-    },
-    {
-        "class": "java.io.FileOutputStream",
-        "method": "write",
-        "category": "file"
-    },
-    {
-        "class": "libcore.io.IoBridge",
-        "method": "open",
-        "category": "file"
     }
 ]

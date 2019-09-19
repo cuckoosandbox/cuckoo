@@ -120,7 +120,24 @@ function unboxGenericObjectValue (obj) {
             return null;
         }
 
-        const jObject = Java.cast(obj, Java.use(obj.$className));
+        let objKlass;
+        const contextClassLoader = Java.classFactory.loader;
+        for (const loader of cachedClassLoaders) {
+            Java.classFactory.loader = loader;
+
+            try {
+                objKlass = Java.use(obj.$className);
+            } catch (e) {
+                /* class not found exception - try another class loader */
+            }
+        }
+        Java.classFactory.loader = contextClassLoader;
+
+        if (!objKlass) {
+            return null;
+        }
+
+        const jObject = Java.cast(obj, objKlass);
         const typesParser = new JavaTypesParser();
         return typesParser.parse(jObject);
     } else if (Array.isArray(obj)) {
@@ -206,7 +223,7 @@ class JavaTypesParser {
         this.unboxJavaLangClass = function (classObj) {
             return {
                 "class_name": classObj.getName() 
-            }
+            };
         };
 
         this.unboxJavaLangReflectMethod = function (methodObj) {
@@ -214,7 +231,7 @@ class JavaTypesParser {
             return {
                 "class_name": class_name,
                 "method_name": methodObj.getName()
-            }
+            };
         };
 
         this.unboxJavaLangReflectField = function (fieldObj) {
@@ -222,7 +239,7 @@ class JavaTypesParser {
             return {
                 "class_name": class_name,
                 "field_name": fieldObj.getName()
-            }
+            };
         };
 
         this.unboxJavaIoFile = function (fileObj) {
@@ -266,12 +283,17 @@ class JavaTypesParser {
         };
 
         this.unboxAndroidContentIntent = function (intentObj) {
+            let componentToString = null;
+            if (intentObj.getComponent() !== null) {
+                componentToString = intentObj.getComponent().flattenToString();
+            }
+
             return {
                 "action": intentObj.getAction(),
                 "data": intentObj.getDataString(),
                 "package": intentObj.getPackage(),
                 "type": intentObj.getType(),
-                "component": intentObj.getComponent().flattenToString(),
+                "component": componentToString,
                 "extras": unboxGenericObjectValue(intentObj.getExtras())
             };
         };
@@ -290,11 +312,11 @@ class JavaTypesParser {
         };
 
         this.unboxAndroidOsBundle = function (bundleObj) {
-            return unboxGenericObjectValue(bundleObj);
+            return this.unboxJavaUtilMap(bundleObj);
         };
 
         this.unboxAndroidContentContentValues = function (valuesObj) {
-            return unboxGenericObjectValue(valuesObj);
+            return this.unboxJavaUtilMap(valuesObj);
         };
 
         this.unboxJavaUtilIterator = function (iteratorObj) {
@@ -333,15 +355,16 @@ class JavaTypesParser {
 
 function loadOkHttpHook () {
     const httpUrlConnectionImplClassName = "com.android.okhttp.internal.huc.HttpURLConnectionImpl";
-    if (!isClassNameOnClasspath(httpUrlConnectionImplClassName)) {
-        return;
+    try {
+        Java.use(httpUrlConnectionImplClassName);
+    } catch (e) {
+        return;  /* class not found. */
     }
 
-    const hookConfig = new JavaHookConfig(httpUrlConnectionImplClassName, "execute", "network");
-
     const RetryableSink = Java.use("com.android.okhttp.internal.http.RetryableSink");
-    const HttpUrlConnectionImpl = Java.use(httpUrlConnectionImpleClassName);
+    const HttpUrlConnectionImpl = Java.use(httpUrlConnectionImplClassName);
 
+    const hookConfig = new JavaHookConfig(httpUrlConnectionImplClassName, "execute", "network");
     HttpUrlConnectionImpl.execute.implementation = function (readResponse) {
         this.httpEngine.value.bufferRequestBody.value = true;
         const returnValue = this.execute(readResponse);
@@ -366,17 +389,17 @@ function loadOkHttpHook () {
 }
 
 function loadOkHttp3Hook () {
-    const okhttpClientClassName = "okhttp3.OkHttpClient";
-    if (!isClassNameOnClasspath(okhttpClientClassName)) {
-        return;
+    const builderClassName = "okhttp3.OkHttpClient$Builder";
+    try {
+        Java.use(builderClassName);
+    } catch (e) {
+        return;  /* class not found. */
     }
 
-    const hookConfig = new HookConfig(okhttpClientClassName, "", "network");
-
-    const Builder = Java.use("okhttp3.OkHttpClient$Builder");
     const Buffer = Java.use("com.android.okhttp.okio.Buffer");
     const Interceptor = Java.use("okhttp3.Interceptor");
 
+    const hookConfig = new JavaHookConfig(okhttpClientClassName, "", "network");
     const TrafficLoggerInterceptor = Java.registerClass({
         name: "okhttp3.TrafficLoggerInterceptor",
         implements: [Interceptor],
@@ -414,6 +437,7 @@ function loadOkHttp3Hook () {
         }
     });
 
+    const Builder = Java.use(builderClassName);
     Builder.build.implementation = function() {
         this.interceptors().add(TrafficLoggerInterceptor.$new());
         return this.build();
@@ -456,17 +480,6 @@ function isAsciiString (byteArray) {
         }
     }
     return true;
-}
-
-function isClassNameOnClasspath (name) {
-    let isOnClasspath = false;
-    for (const className of cachedLoadedJavaClasses) {
-        if (className.includes(name)) {
-            isOnClasspath = true;
-            break
-        }
-    }
-    return isOnClasspath;
 }
 
 function pick (iterable) {
@@ -519,6 +532,9 @@ function applyPostAppLoadingInstrumentation () {
  * Bootstrapping procedure for java runtime analysis.
  */
 function applyPreAppLoadingInstrumentation (jvmHooksConfig) {
+    setupEnv();
+    hookDexClassLoaders();
+
     loadOkHttpHook();
 
     /* Load hooks from configuration object */
@@ -530,8 +546,30 @@ function applyPreAppLoadingInstrumentation (jvmHooksConfig) {
     });
 }
 
+function hookDexClassLoaders () {
+    const loaders = [
+        "dalvik.system.PathClassLoader",
+        "dalvik.system.DexClassLoader",
+        "dalvik.system.InMemoryDexClassLoader"
+    ];
+
+    loaders.forEach(loaderClassName => {
+        const loaderKlass = Java.use(loaderClassName);
+        const hookConfig = new JavaHookConfig(loaderClassName, "$init", "dynload");
+        loaderKlass.$init.overloads.forEach(overload => {
+            overload.implementation = function () {
+                cachedClassLoaders.push(Java.retain(this));
+
+                const returnValue = overload.apply(this, arguments);
+                LOG("jvmHook", makeJavaMethodHookData(hookConfig, arguments, this, returnValue));
+                return returnValue;
+            };
+        });
+    });
+}
+
 /**
- * Setup the emulated environment to defeat emulation detection.
+ * Setup the emulated environment to hinder emulation detection.
  */
 function setupEnv () {
     const patchMethodCall = function (hookConfig, returnValuePatch) {
@@ -547,9 +585,7 @@ function setupEnv () {
             } else {
                 returnValue = returnValuePatch;
             }
-
-            const hookData = makeJavaMethodHookData(hookConfig, arguments, this, returnValue);
-            LOG("jvmHook", hookData);
+            LOG("jvmHook", makeJavaMethodHookData(hookConfig, arguments, this, returnValue));
             return returnValue;
         };
     };
@@ -740,12 +776,12 @@ function init () {
         LOG("fileDelete", ptr(filepath).readUtf8String());
     };
     Interceptor.replace(unlinkPtr, new NativeCallback(
-        function (pathname) { unlinkImplCallback(pathname); },
+        function (pathname) { unlinkImplCallback(pathname); return 0; },
         "int",
         ["pointer"]
     ));
     Interceptor.replace(unlinkatPtr, new NativeCallback(
-        function (dirfd, pathname, flags) { unlinkImplCallback(pathname); },
+        function (dirfd, pathname, flags) { unlinkImplCallback(pathname); return 0; },
         "int",
         ["int", "pointer", "int"]
     ));
@@ -755,16 +791,18 @@ function init () {
         const flags = flagsParam.toInt32();
         const filepath = filepathParam.readUtf8String();
 
-        if (!fileExists(filepathParam) && flags & 0o100 !== 0) {
+        if (!fileExists(filepathParam) && (flags & 0o100) !== 0) {
             LOG("fileCreate", filepath);
         }
 
-        if (flags & 0o11 === 0 || flags & 0o2 !== 0) {
-            LOG("fileRead", filepath);
-        }
+        if (!filepath.includes("frida")) {
+            if ((flags & 0o3) === 0 || (flags & 0o2) !== 0) {
+                LOG("fileRead", filepath);
+            }
 
-        if (flags & 0o1 !== 0 || flags & 0o2 !== 0) {
-            LOG("fileWrite", filepath);
+            if ((flags & 0o1) !== 0 || (flags & 0o2) !== 0) {
+                LOG("fileWrite", filepath);
+            }
         }
     };
     Interceptor.attach(openPtr, {
@@ -776,7 +814,7 @@ function init () {
 
     /* Intercept creat() calls */
     Interceptor.attach(creatPtr, {
-        onEnter: function (args) { 
+        onEnter: function (args) {
             if (!fileExists(args[0])) {
                 LOG("fileCreate", args[0].readUtf8String());
             }
@@ -799,7 +837,7 @@ function init () {
 }
 
 var api = new Api();
-var cachedLoadedJavaClasses;
+var cachedClassLoaders = [];
 
 rpc.exports = {
     api: function (api_method, args) {
@@ -809,15 +847,14 @@ rpc.exports = {
         init();
 
         if (Java.available) {
+            cachedClassLoaders.push(Java.classFactory.loader);
+
             Java.performNow(function () {
-                setupEnv();
-                cachedLoadedJavaClasses = Java.enumerateLoadedClassesSync();
                 applyPreAppLoadingInstrumentation(configs["jvm_hooks"]);
             });
 
             Java.perform(function () {
-                /* Upadate list of loaded classes. */
-                cachedLoadedJavaClasses = Java.enumerateLoadedClassesSync();
+                cachedClassLoaders.push(Java.classFactory.loader);
                 applyPostAppLoadingInstrumentation();
             });
         }

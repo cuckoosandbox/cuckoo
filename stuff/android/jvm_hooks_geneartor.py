@@ -84,10 +84,7 @@ if __name__ == "__main__":
     add_hook("java.lang.Runtime", "load", DYNLOAD)
     add_hook("java.lang.Runtime", "loadLibrary", DYNLOAD)
     add_hook("java.lang.Runtime", "exec", DYNLOAD)
-    add_hook("dalvik.system.PathClassLoader", "$init", DYNLOAD)
-    add_hook("dalvik.system.DexClassLoader", "$init", DYNLOAD)
     add_hook("dalvik.system.DexFile", "loadDex", DYNLOAD)
-    add_hook("dalvik.system.InMemoryDexClassLoader", "$init", DYNLOAD)
 
     # process
     add_hook("android.os.Process", "killProcess", PROCESS)
@@ -114,11 +111,6 @@ if __name__ == "__main__":
 
     # network
     add_hook("sun.net.spi.DefaultProxySelector", "select", NETWORK)
-
-    # file
-    add_hook("java.io.FileInputStream", "read", FILE)
-    add_hook("java.io.FileOutputStream", "write", FILE)
-    add_hook("libcore.io.IoBridge", "open", FILE)
 
     # write the json configuration file
     with open('jvm_hooks.json', 'w') as f:
