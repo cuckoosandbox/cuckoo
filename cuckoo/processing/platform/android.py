@@ -109,7 +109,7 @@ class JVMHookParser(object):
             method = api_call["method"]
             api = _class + "." + method
 
-            time = dateutil.parser.parse(api_call["time"])
+            time = dateutil.parser.parse(api_call["time"]).replace(tzinfo=None)
             arguments = self.make_arguments(api_call["args"])
 
             yield {
