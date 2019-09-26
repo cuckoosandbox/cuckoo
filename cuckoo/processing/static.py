@@ -7,6 +7,7 @@ import bs4
 import hashlib
 import ctypes
 import datetime
+import entropy
 import logging
 import oletools.olevba
 import oletools.oleobj
@@ -1112,6 +1113,7 @@ class AndroidPackage(object):
         apkinfo["manifest"] = manifest
         apkinfo["static_calls"] = static_calls
         apkinfo["files"] = self._apk_files()
+        apkinfo["encrypted_assets"] = self._get_encrypted_assets()
         apkinfo["methods"] = self._get_methods()
         apkinfo["classes"] = self._get_classes()
         apkinfo["is_signed_v1"] = self.apk.is_signed_v1()
@@ -1121,7 +1123,25 @@ class AndroidPackage(object):
 
         return apkinfo
 
+    def _get_encrypted_assets(self):
+        """Returns a list of files in the APK assets that have high entropy."""
+        files = []
+        for filename, filetype in self.apk.get_files_types().items():
+            if "assets" in filename:
+                buf = self.apk.zip.read(filename)
+                file_entropy = entropy.shannon_entropy(buf)
+                if file_entropy > 0.9:
+                    files.append({
+                        "name": filename,
+                        "entropy": file_entropy,
+                        "size": len(buf),
+                        "type": filetype,
+                    })
+
+        return files
+
     def _get_detailed_permissions(self):
+        """Return a list of all permission requests by the application."""
         perms = []
         for k, v in self.apk.get_details_permissions().items():
             perms.append({
@@ -1133,6 +1153,7 @@ class AndroidPackage(object):
         return perms
 
     def _get_classes(self):
+        """Return a list of all classes compiled in the application"""
         classes = []
         for ca in self.analysis.get_classes():
             if ca.is_external():
@@ -1143,6 +1164,7 @@ class AndroidPackage(object):
         return classes
 
     def _get_permission_usage(self, permission):
+        """Generator for MethodClassAnalysis object for permission api usage."""
         from androguard.core.androconf import load_api_specific_resource_module
 
         permmap = load_api_specific_resource_module('api_permission_mappings', None)
@@ -1156,6 +1178,7 @@ class AndroidPackage(object):
                     yield mca
 
     def _get_permission_calls(self):
+        """Return a list of calls requesting a permission."""
         calls = []
         for perm in self.apk.get_permissions():
             for mca in self._get_permission_usage(perm):
@@ -1170,9 +1193,13 @@ class AndroidPackage(object):
         return calls
 
     def _get_crypto_calls(self):
+        """Return a list of calls to javax.crypto"""
         return self._get_calls_to("Ljavax/crypto/.*")
 
     def _get_calls_to(self, class_name):
+        """Return a list of all calls to a class name pattern.
+        @param class_name: pattern to look for.
+        """
         from androguard.core.analysis.analysis import ExternalMethod
 
         calls = []
@@ -1191,16 +1218,19 @@ class AndroidPackage(object):
         return calls
 
     def _get_reflection_calls(self):
+        """Return a list of calls to the reflection API."""
         return  \
             self._get_calls_to("Ljava/lang/reflect/Field.*") + \
             self._get_calls_to("Ljava/lang/reflect/Method.*")
 
     def _get_dynamic_code_calls(self):
+        """Return a list of calls to the ClassLoader APIs for dex files."""
         return \
             self._get_calls_to("Ldalvik/system/.*ClassLoader;") + \
             self._get_calls_to("Ldalvik/system/DexFile;")
 
     def _get_receivers_actions(self):
+        """Returns a list of all actions of the registered BroadcastReceivers."""
         actions = []
         for receiver in self.apk.get_receivers():
             filtr = self.apk.get_intent_filters("receiver", receiver)
@@ -1209,6 +1239,7 @@ class AndroidPackage(object):
         return actions
 
     def _get_methods(self, access_flags=None):
+        """Return a list of all methods compiled in the application"""
         methods = []
         for mca in self.analysis.get_methods():
             if mca.is_external():
