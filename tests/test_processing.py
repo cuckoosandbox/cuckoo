@@ -1326,12 +1326,12 @@ class TestBehavior(object):
 
         assert ba.run() == {
             'summary': {
-                u'fileDelete': [
+                u'file_deleted': [
                     u'/data/user/0/com.taxationtex.giristexation/cache/oat/x86',
                     u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
                     u'/data/user/0/com.taxationtex.giristexation/cache/oat'
                 ],
-                u'fileRead': [
+                u'file_read': [
                     u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/oat/x86/base.art',
                     u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/base.apk',
                     u'/system/framework/x86/boot.art',
@@ -1343,11 +1343,11 @@ class TestBehavior(object):
                     u'/data/dalvik-cache/x86/system@framework@boot.art',
                     u'/data/data/com.taxationtex.giristexation/cache/xwcnhfc.dex'
                 ],
-                u'fileCreate': [
+                u'file_created': [
                     u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
                     u'/data/user/0/com.taxationtex.giristexation/cache/ihzms'
                 ],
-                u'fileWrite': [
+                u'file_written': [
                     u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
                     u'/data/user/0/com.taxationtex.giristexation/cache/ihzms'
                 ],

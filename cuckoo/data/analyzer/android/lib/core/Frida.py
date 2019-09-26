@@ -380,27 +380,27 @@ class AgentHandler(object):
     def _handle_fileRead(self, message):
         """Handle fileRead events."""
         pid, filepath = message.splitlines()
-        self._handle_filemon("fileRead", pid, filepath)
+        self._handle_filemon("file_read", pid, filepath)
 
     def _handle_fileWrite(self, message):
         """Handle fileWrite events."""
         pid, filepath = message.splitlines()
-        self._handle_filemon("fileWrite", pid, filepath)
+        self._handle_filemon("file_written", pid, filepath)
 
     def _handle_fileCreate(self, message):
         """Handle fileCreate events."""
         pid, filepath = message.splitlines()
         self.analyzer.files.add_file(filepath)
-        self._handle_filemon("fileCreate", pid, filepath)
+        self._handle_filemon("file_created", pid, filepath)
 
     def _handle_fileDelete(self, message):
         """Handle fileDelete events."""
         pid, filepath = message.splitlines()
-        self._handle_filemon("fileDelete", pid, filepath)
+        self._handle_filemon("file_deleted", pid, filepath)
 
     def _handle_fileMove(self, message):
         """Handle fileMove events."""
         pid, arg = message.splitlines()
         oldfilepath, newfilepath = arg.split(",")
         self.analyzer.files.move_file(oldfilepath, newfilepath)
-        self._handle_filemon("fileMove", pid, (oldfilepath, newfilepath))
+        self._handle_filemon("file_moved", pid, (oldfilepath, newfilepath))
