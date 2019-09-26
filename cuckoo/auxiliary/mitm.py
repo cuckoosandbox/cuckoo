@@ -34,7 +34,7 @@ class MITM(Auxiliary):
                       "man in the middle interception aborted.", script)
             return
 
-        cert_path = cwd("analyzer", "windows", certificate)
+        cert_path = cwd("analyzer", self.machine.platform, certificate)
         if not os.path.exists(cert_path):
             log.error("Mitmdump root certificate not found at path \"%s\" "
                       "(real path \"%s\"), man in the middle interception "

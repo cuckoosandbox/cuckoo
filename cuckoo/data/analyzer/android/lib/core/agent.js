@@ -534,6 +534,7 @@ function applyPostAppLoadingInstrumentation () {
 function applyPreAppLoadingInstrumentation (jvmHooksConfig) {
     setupEnv();
     hookDexClassLoaders();
+    bypassCertificatePinning();
 
     loadOkHttpHook();
 
@@ -544,6 +545,41 @@ function applyPreAppLoadingInstrumentation (jvmHooksConfig) {
         );
         monitorJavaMethod(javaHookConfig);
     });
+}
+
+function bypassCertificatePinning() {
+    const CertificateFactory = Java.use("java.security.cert.CertificateFactory");
+    const FileInputStream = Java.use("java.io.FileInputStream");
+    const BufferedInputStream = Java.use("java.io.BufferedInputStream");
+    const KeyStore = Java.use("java.security.KeyStore");
+    const TrustManagerFactory = Java.use("javax.net.ssl.TrustManagerFactory");
+    const SSLContext = Java.use("javax.net.ssl.SSLContext");
+
+    /* Load the certificate authority */
+    let fis;
+    try {
+        fis = FileInputStream.$new("/data/local/tmp/cert.crt");
+    } catch (e) {
+        /* File not found exception */
+        return;
+    }
+    const bis = BufferedInputStream.$new(fis);
+    bis.close();
+
+    const ca = CertificateFactory.getInstance("X.509").generateCertificate(bis);
+
+    /* Create a KeyStore with the certificate */
+    const keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+    keyStore.load(null, null);
+    keyStore.setCertificateEntry("ca", ca);
+
+    /* Create a TrustManagerFactory for the KeyStore */
+    const tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    tmf.$init(keyStore);
+
+    SSLContext.$init.implementation = function(keyMgr, trustMgrs, secureRandom) {
+        SSLContext.$init(keyMgr, tmf.getTrustManagers(), secureRandom);
+    };
 }
 
 function hookDexClassLoaders () {
