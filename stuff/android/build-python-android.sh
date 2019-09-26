@@ -5,6 +5,9 @@
 
 # This script is for building the Python interpeter used for Android
 # malware analysis with cuckoo.
+#
+# NOTE: Make sure you have a stable internet connection while using
+# this script.
 
 usage="
 $(basename "$0") device_arch - Build the Python interpreter for Android.
@@ -167,6 +170,10 @@ export PYTHON_NAME="python3.7"
 
 make "build/tmp_thin-android-$target_arch/frida-python3.7/.frida-stamp"
 cp -r "$frida_src_dir/build/frida_thin-android-$target_arch/lib/python3.7/site-packages/"* "$py_android_builddir/usr/lib/python3.7/site-packages"
+if [ ! $? -eq 0 ]; then
+    echo "Failed to build Frida.. Exiting.."
+    exit 1
+fi
 # make clean
 
 # Create compressed output
