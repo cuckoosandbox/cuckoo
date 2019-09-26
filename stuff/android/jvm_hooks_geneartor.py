@@ -16,7 +16,7 @@ INTENT = "intent"
 CRYPTO = "crypto"
 REFLECTION = "reflection"
 NETWORK = "network"
-FILE = "file"
+GENERIC = "generic"
 
 
 if __name__ == "__main__":
@@ -42,6 +42,7 @@ if __name__ == "__main__":
     add_hook("android.media.AudioRecord", "startRecording", SERVICE)
     add_hook("android.media.MediaRecorder", "start", SERVICE)
     add_hook("android.app.ApplicationPackageManager", "getInstalledPackages", SERVICE)
+    add_hook("android.app.ApplicationPackageManager", "deletePackage", SERVICE)
     add_hook("android.app.ApplicationPackageManager", "getInstalledApplications", SERVICE)
     add_hook("android.app.ApplicationPackageManager", "setComponentEnabledSetting", SERVICE)
     add_hook("android.location.Location", "getLatitude", SERVICE)
@@ -51,14 +52,20 @@ if __name__ == "__main__":
     add_hook("android.app.AlarmManager", "set", SERVICE)
     add_hook("android.telephony.SmsManager", "sendDataMessage", SERVICE)
     add_hook("android.telephony.SmsManager", "sendTextMessage", SERVICE)
+    add_hook("android.os.PowerManager", "newWakeLock", SERVICE)
+    add_hook("android.app.ContextImpl", "getSystemService", SERVICE)
 
     # binder
     add_hook("android.telephony.TelephonyManager", "listen", BINDER)
-    add_hook("android.app.ContextImpl", "registerReceiver", BINDER)
-    add_hook("android.app.ActivityThread", "handleReceiver", BINDER)
-    add_hook("android.content.BroadcastReceiver", "abortBroadcast", BINDER)
+    add_hook("android.content.ContextWrapper", "bindService", BINDER)
 
     # preferences
+    add_hook("android.app.SharedPreferencesImpl", "contains", PREFERENCES)
+    add_hook("android.app.SharedPreferencesImpl", "getInt", PREFERENCES)
+    add_hook("android.app.SharedPreferencesImpl", "getFloat", PREFERENCES)
+    add_hook("android.app.SharedPreferencesImpl", "getLong", PREFERENCES)
+    add_hook("android.app.SharedPreferencesImpl", "getBoolean", PREFERENCES)
+    add_hook("android.app.SharedPreferencesImpl", "getString", PREFERENCES)
     add_hook("android.app.SharedPreferencesImpl$EditorImpl", "putFloat", PREFERENCES)
     add_hook("android.app.SharedPreferencesImpl$EditorImpl", "putBoolean", PREFERENCES)
     add_hook("android.app.SharedPreferencesImpl$EditorImpl", "putInt", PREFERENCES)
@@ -75,6 +82,15 @@ if __name__ == "__main__":
     add_hook("android.database.sqlite.SQLiteDatabase", "query", CONTENT)
     add_hook("android.database.sqlite.SQLiteDatabase", "delete", CONTENT)
     add_hook("android.database.sqlite.SQLiteDatabase", "execSQL", CONTENT)
+    add_hook("android.database.sqlite.SQLiteDatabase", "update", CONTENT)
+    add_hook("android.database.sqlite.SQLiteDatabase", "openDatabase", CONTENT)
+    add_hook("android.content.ContentValues", "put", CONTENT)
+    add_hook("android.provider.Settings.Secure", "getString", CONTENT)
+    add_hook("android.provider.Settings.Global", "getString", CONTENT)
+    add_hook("android.provider.Settings.Global", "getInt", CONTENT)
+    add_hook("android.content.res.AssetManager", "open", CONTENT)
+    add_hook("android.content.ClipboardManager", "getPrimaryClip", CONTENT)
+    add_hook("android.content.ClipboardManager", "setPrimaryClip", CONTENT)
 
     # dynamic loading
     add_hook("dalvik.system.BaseDexClassLoader", "findResource", DYNLOAD)
@@ -85,24 +101,47 @@ if __name__ == "__main__":
     add_hook("java.lang.Runtime", "loadLibrary", DYNLOAD)
     add_hook("java.lang.Runtime", "exec", DYNLOAD)
     add_hook("dalvik.system.DexFile", "loadDex", DYNLOAD)
+    add_hook("dalvik.system.DexFile", "loadClass", DYNLOAD)
+    add_hook("dalvik.system.DexFile", "$init", DYNLOAD)
+    add_hook("dalvik.system.DexFile", "openDexFile", DYNLOAD)
 
     # process
     add_hook("android.os.Process", "killProcess", PROCESS)
     add_hook("android.os.Process", "start", PROCESS)
     add_hook("java.lang.ProcessBuilder", "start", PROCESS)
     add_hook("android.os.Debug", "isDebuggerConnected", PROCESS)
+    add_hook("android.util.Log", "d", PROCESS)
+    add_hook("android.util.Log", "e", PROCESS)
+    add_hook("java.util.concurrent.ScheduledExecutorService", "scheduleAtFixedRate", PROCESS)
+    add_hook("java.util.concurrent.ExecutorService", "invokeAll", PROCESS)
 
     # intent
     add_hook("android.app.Activity", "startActivity", INTENT)
     add_hook("android.app.Activity", "sendBroadcast", INTENT)
     add_hook("android.app.Activity", "startService", INTENT)
+    add_hook("android.app.ContextImpl", "startService", INTENT)
+    add_hook("android.app.ContextImpl", "registerReceiver", INTENT)
+    add_hook("android.app.ActivityThread", "handleReceiver", INTENT)
+    add_hook("android.content.BroadcastReceiver", "abortBroadcast", INTENT)
+    add_hook("android.content.ContextWrapper", "startService", INTENT)
+    add_hook("android.content.ContextWrapper", "startActivity", INTENT)
+    add_hook("android.content.ContextWrapper", "sendBroadcast", INTENT)
+    add_hook("android.content.ContextWrapper", "startActivities", INTENT)
 
     # cryptography
     add_hook("android.util.Base64", "decode", CRYPTO)
     add_hook("android.util.Base64", "encode", CRYPTO)
-    add_hook("javax.crypto.spec.SecretKeySpec", "$init", CRYPTO)
     add_hook("javax.crypto.Cipher", "doFinal", CRYPTO)
+    add_hook("javax.crypto.Cipher", "update", CRYPTO)
+    add_hook("javax.crypto.Cipher", "getInstance", CRYPTO)
+    add_hook("javax.crypto.Cipher", "init", CRYPTO)
     add_hook("javax.crypto.Mac", "doFinal", CRYPTO)
+    add_hook("javax.crypto.Mac", "update", CRYPTO)
+    add_hook("javax.crypto.Mac", "getInstance", CRYPTO)
+    add_hook("javax.crypto.Mac", "init", CRYPTO)
+    add_hook("java.security.MessageDigest", "digest", CRYPTO)
+    add_hook("java.security.MessageDigest", "update", CRYPTO)
+    add_hook("java.security.SecureRandom", "setSeed", CRYPTO)
 
     # reflection
     add_hook("java.lang.reflect.Field", "get", REFLECTION)
@@ -111,6 +150,24 @@ if __name__ == "__main__":
 
     # network
     add_hook("sun.net.spi.DefaultProxySelector", "select", NETWORK)
+    add_hook("android.webkit.WebView", "addJavascriptInterface", NETWORK)
+    add_hook("android.webkit.WebView", "setWebChromeClient", NETWORK)
+    add_hook("android.webkit.WebView", "setWebViewClient", NETWORK)
+    add_hook("android.webkit.WebView", "loadUrl", NETWORK)
+    add_hook("android.webkit.WebView", "loadData", NETWORK)
+    add_hook("android.webkit.WebView", "loadDataWithBaseURL", NETWORK)
+    add_hook("android.webkit.WebView", "evaluateJavascript", NETWORK)
+    add_hook("android.webkit.WebView", "postUrl", NETWORK)
+    add_hook("android.webkit.WebView", "postWebMessage", NETWORK)
+    add_hook("android.webkit.WebView", "setHttpAuthUsernamePassword", NETWORK)
+    add_hook("android.webkit.WebView", "getHttpAuthUsernamePassword", NETWORK)
+    add_hook("android.webkit.WebViewDatabase", "getHttpAuthUsernamePassword", NETWORK)
+    add_hook("android.webkit.WebViewDatabase", "setHttpAuthUsernamePassword", NETWORK)
+
+    # generic
+    add_hook("android.view.Window", "setFlags", GENERIC)
+    add_hook("android.view.Window", "addFlags", GENERIC)
+    add_hook("android.view.SurfaceView", "setSecure", GENERIC)
 
     # write the json configuration file
     with open('jvm_hooks.json', 'w') as f:

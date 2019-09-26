@@ -40,8 +40,21 @@ function monitorJavaMethod (hookConfig) {
     const onMethodExited = makeJavaMethodImplCallback(hookConfig);
 
     try {
-        const klass = Java.use(className);
-        const overloads = klass[methodName].overloads;
+        let klass;
+        try {
+            klass = Java.use(className);
+        } catch (e) {
+            LOG("error", "Cannot find class: " + className);
+            return;
+        }
+
+        let overloads;
+        try {
+            overloads = klass[methodName].overloads;
+        } catch (e) {
+            LOG("error", "Cannot find method: " + methodName + " from class: " + className);
+            return;
+        }
 
         overloads.forEach(overload => {
             if (overload.implementation === null) {
@@ -165,6 +178,7 @@ class JavaTypesParser {
             "java.util.Map",
             "java.util.List",
             "android.net.Uri",
+            "java.security.Key"
         ]
         .map(type => Java.use(type));
 
@@ -184,7 +198,7 @@ class JavaTypesParser {
 
         this.parse = function (obj) {
             const className = obj.$className;
-            if (className.indexOf("[") === 0) { /* unwrapped array object */
+            if (className.indexOf("[") === 0) { /* wrapped non-primitive array */
                 const result = [];
                 const elementType = className.substring(1);
                 const length = javaLangReflectArray.getLength(obj);
@@ -258,6 +272,64 @@ class JavaTypesParser {
             return {
                 "filepath": sqliteObj.getPath()
             };
+        };
+
+        this.unboxAndroidContentComponentName = function (cmpNameObj) {
+            return {
+                "class": cmpNameObj.getClassName(),
+                "package": cmpNameObj.getPackageName()
+            };
+        };
+
+        this.unboxJavaSecurityAlgorithmParameters = function (algObj) {
+            return algObj.getAlgorithm();
+        };
+
+        this.unboxJavaSecurityProvider = function (providerObj) {
+            return {
+                "name": providerObj.getName() 
+            };
+        };
+
+        this.unboxJavaSecurityCertCertificate = function (certObj) {
+            const publicKey = certObj.getPublicKey();
+            return {
+                "key_algorithm": publicKey.getAlgorithm(),
+                "key_value": unboxGenericObjectValue(publicKey.getEncoded())
+            };
+        };
+
+        this.unboxJavaSecurityKey = function (keyObj) {
+            return {
+                "algorithm": keyObj.getAlgorithm(),
+                "value": unboxGenericObjectValue(keyObj.getEncoded())
+            };
+        };
+
+        this.unboxJavaSecurityMessageDigest = function (digestObj) {
+            return {
+                "algorithm": digestObj.getAlgorithm()
+            };
+        };
+
+        this.unboxAndroidWebkitWebMessage = function (webmsgObj) {
+            return webmsgObj.getData();
+        };
+
+        this.unboxAndroidContentClipData = function (clipObj) {
+            for (let i = 0; i < clipObj.getItemCount(); i++) {
+                if (clipObj.getItemAt(i).getIntent()) {
+                    return unboxGenericObjectValue(clipObj.getItemAt(i).getIntent());
+                } else if (clipObj.getItemAt(i).getUri()) {
+                    return unboxGenericObjectValue(clipObj.getItemAt(i).getUri());
+                } else if (clipObj.getItemAt(i).getHtmlText()) {
+                    return clipObj.getItemAt(i).getHtmlText();
+                } else if (clipObj.getItemAt(i).getText()) {
+                    return clipObj.getItemAt(i).getText();
+                } else {
+                    return null;
+                }
+            }
         };
 
         this.unboxJavaLangProcessBuilder = function (builderObj) {
@@ -363,8 +435,9 @@ function loadOkHttpHook () {
 
     const RetryableSink = Java.use("com.android.okhttp.internal.http.RetryableSink");
     const HttpUrlConnectionImpl = Java.use(httpUrlConnectionImplClassName);
-
     const hookConfig = new JavaHookConfig(httpUrlConnectionImplClassName, "execute", "network");
+    const onMethodExited = makeJavaMethodImplCallback(hookConfig);
+
     HttpUrlConnectionImpl.execute.implementation = function (readResponse) {
         this.httpEngine.value.bufferRequestBody.value = true;
         const returnValue = this.execute(readResponse);
@@ -372,18 +445,19 @@ function loadOkHttpHook () {
         const body = Java.cast(this.httpEngine.value.getRequestBody(), RetryableSink);
 
         const self = {};
-        self["url"] = unboxGenericObjectValue(this.getURL());
-        self["request_method"] = this.getRequestMethod();
-        self["request_headers"] = originalRequest.headers().toString();
-        self["request_body"] = unboxGenericObjectValue(body.content.value.readByteArray());
-        self["response_headers"] = unboxGenericObjectValue(this.getHeaderFields());
-        self["response_code"] = this.getResponseCode();
-        self["response_message"] = this.getResponseMessage();
+        try {
+            self["url"] = unboxGenericObjectValue(this.getURL());
+            self["request_method"] = this.getRequestMethod();
+            self["request_headers"] = originalRequest.headers().toString();
+            self["request_body"] = unboxGenericObjectValue(body.content.value.readByteArray());
+            self["response_headers"] = unboxGenericObjectValue(this.getHeaderFields());
+            self["response_code"] = this.getResponseCode();
+            self["response_message"] = this.getResponseMessage();
 
-        const hookData = makeJavaMethodHookData(hookConfig, arguments, null, returnValue);
-        hookData.thisObject = self;
-        LOG("jvmHook", hookData);
-
+            onMethodExited(self, arguments, returnValue);
+        } catch (e) {
+            LOG("error", e);
+        }
         return returnValue;
     };
 }
@@ -428,8 +502,7 @@ function loadOkHttp3Hook () {
                 self["response_headers"] = response.headers().toString();
                 self["response_message"] = response.message();
 
-                const hookData = makeJavaMethodHookData(hookConfig, null, null, null);
-                hookData.thisObject = self;
+                const hookData = makeJavaMethodHookData(hookConfig, null, self, null);
                 LOG("jvmHook", hookData);
 
                 return response;
@@ -592,11 +665,18 @@ function hookDexClassLoaders () {
     loaders.forEach(loaderClassName => {
         const loaderKlass = Java.use(loaderClassName);
         const hookConfig = new JavaHookConfig(loaderClassName, "$init", "dynload");
+        const onMethodExited = makeJavaMethodImplCallback(hookConfig);
+
         loaderKlass.$init.overloads.forEach(overload => {
             overload.implementation = function () {
                 cachedClassLoaders.push(Java.retain(this));
 
                 const returnValue = overload.apply(this, arguments);
+                try {
+                    onMethodExited(this, arguments, returnValue);
+                } catch (e) {
+                    LOG("error", e);
+                }
                 LOG("jvmHook", makeJavaMethodHookData(hookConfig, arguments, this, returnValue));
                 return returnValue;
             };
