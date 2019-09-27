@@ -248,6 +248,7 @@ moloch_mapper = {
     "dst_ip": "ip == %s",
     "dst_port": "port == %s",
     "sid": 'tags == "sid:%s"',
+    "id": "tags == cuckoo:%s"
 }
 
 @require_safe
