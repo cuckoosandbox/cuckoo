@@ -42,7 +42,8 @@ urlpatterns = [
         r"/(?P<ip>[\d\.]+)?/(?P<host>[ a-zA-Z0-9-_\.]+)?"
         r"/(?P<src_ip>[a-zA-Z0-9\.]+)?/(?P<src_port>\d+|None)?"
         r"/(?P<dst_ip>[a-zA-Z0-9\.]+)?/(?P<dst_port>\d+|None)?"
-        r"/(?P<sid>\d+)?",
+        r"/(?P<sid>\d+)?"
+        r"/(?P<id>\d+)?",
         views.moloch),
     url(r"^import/$", SubmissionRoutes.import_, name="analysis/import"),
     # url(r"^api/tasks/list/$", AnalysisApi.tasks_list),
