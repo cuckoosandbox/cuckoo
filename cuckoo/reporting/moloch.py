@@ -20,9 +20,16 @@ class Moloch(Report):
             self.options.get("moloch_capture", "/data/moloch/bin/moloch-capture")
         self.config_path = self.options.get("conf", "/data/moloch/etc/config.ini")
         self.instance = self.options.get("instance", "cuckoo")
+        self.eve_log = self.options.get("eve_log", "eve.json")
+        self.suricata_path = os.path.join(self.analysis_path, "suricata")
+        self.eve_log = os.path.join(self.suricata_path, self.eve_log)
 
         if not os.path.isfile(self.pcap_path):
             log.warning("Unable to run Moloch as no pcap is available")
+            return
+        
+        if not os.path.isfile(self.eve_log):
+            log.warning("Unable to add Suricata tagging as no eve.log is available")
             return
 
         if not os.path.isfile(self.moloch_capture):
@@ -38,6 +45,7 @@ class Moloch(Report):
             "-c", self.config_path,
             "-r", self.pcap_path,
             "-n", self.instance,
+            "-o", "suricataAlertFile=" + self.eve_log,
             "-q",
         ]
 
