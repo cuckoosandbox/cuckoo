@@ -12,7 +12,7 @@
                 {% if report.analysis.network.pcap_id %}
                 <div class="header-right valign-bottom">
                     <a href="{% url "analysis.views.file" "pcap" report.analysis.network.pcap_id %}" title="Download pcap file"><i class="fa fa-download"></i> Download pcap</a>
-                    <a href="{% url "analysis.views.moloch" report.analysis.info.id %}" title="Open in Moloch">Moloch</a>
+                    <a href="{% url "analysis.views.moloch" report.analysis.info.id %}" title="Open in Moloch" target="_blank">Moloch</a>
                 </div>
                 {% endif %}
             </header>
