@@ -245,17 +245,17 @@
         "category": "content"
     },
     {
-        "class": "android.provider.Settings.Secure",
+        "class": "android.provider.Settings$Secure",
         "method": "getString",
         "category": "content"
     },
     {
-        "class": "android.provider.Settings.Global",
+        "class": "android.provider.Settings$Global",
         "method": "getString",
         "category": "content"
     },
     {
-        "class": "android.provider.Settings.Global",
+        "class": "android.provider.Settings$Global",
         "method": "getInt",
         "category": "content"
     },
@@ -272,6 +272,11 @@
     {
         "class": "android.content.ClipboardManager",
         "method": "setPrimaryClip",
+        "category": "content"
+    },
+    {
+        "class": "android.hardware.camera2.CameraManager",
+        "method": "openCamera",
         "category": "content"
     },
     {

@@ -85,12 +85,13 @@ if __name__ == "__main__":
     add_hook("android.database.sqlite.SQLiteDatabase", "update", CONTENT)
     add_hook("android.database.sqlite.SQLiteDatabase", "openDatabase", CONTENT)
     add_hook("android.content.ContentValues", "put", CONTENT)
-    add_hook("android.provider.Settings.Secure", "getString", CONTENT)
-    add_hook("android.provider.Settings.Global", "getString", CONTENT)
-    add_hook("android.provider.Settings.Global", "getInt", CONTENT)
+    add_hook("android.provider.Settings$Secure", "getString", CONTENT)
+    add_hook("android.provider.Settings$Global", "getString", CONTENT)
+    add_hook("android.provider.Settings$Global", "getInt", CONTENT)
     add_hook("android.content.res.AssetManager", "open", CONTENT)
     add_hook("android.content.ClipboardManager", "getPrimaryClip", CONTENT)
     add_hook("android.content.ClipboardManager", "setPrimaryClip", CONTENT)
+    add_hook("android.hardware.camera2.CameraManager", "openCamera", CONTENT)
 
     # dynamic loading
     add_hook("dalvik.system.BaseDexClassLoader", "findResource", DYNLOAD)
