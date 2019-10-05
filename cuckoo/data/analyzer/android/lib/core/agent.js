@@ -414,11 +414,11 @@ class JavaTypesParser {
                 keys.push(iterator.next())
             }
 
-            const result = {};
+            const result = [];
             keys.forEach(aKey => {
                 const key = unboxGenericObjectValue(aKey);
                 const value = unboxGenericObjectValue(mapObj.get(aKey));
-                result[key] = value;
+                result.push({ key, value })
             });
             return result;
         };
@@ -620,7 +620,7 @@ function applyPreAppLoadingInstrumentation (jvmHooksConfig) {
     });
 }
 
-function bypassCertificatePinning() {
+function bypassCertificatePinning () {
     const CertificateFactory = Java.use("java.security.cert.CertificateFactory");
     const FileInputStream = Java.use("java.io.FileInputStream");
     const BufferedInputStream = Java.use("java.io.BufferedInputStream");
@@ -631,7 +631,7 @@ function bypassCertificatePinning() {
     /* Load the certificate authority */
     let fis;
     try {
-        fis = FileInputStream.$new("/data/local/tmp/cert.crt");
+        fis = FileInputStream.$new(rootCertPath);
     } catch (e) {
         /* File not found exception */
         return;
@@ -911,7 +911,7 @@ function init () {
             LOG("fileCreate", filepath);
         }
 
-        if (!filepath.includes("frida")) {
+        if (!filepath.includes("frida") && !filepath.includes(rootCertPath)) {
             if ((flags & 0o3) === 0 || (flags & 0o2) !== 0) {
                 LOG("fileRead", filepath);
             }
@@ -954,6 +954,7 @@ function init () {
 
 var api = new Api();
 var cachedClassLoaders = [];
+var rootCertPath = "/data/local/tmp/cert.crt"
 
 rpc.exports = {
     api: function (api_method, args) {
