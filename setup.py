@@ -207,7 +207,7 @@ do_setup(
         "networkx==2.2", 
         "matplotlib==2.2.4",
         "androguard==3.3.5",
-        "numpy==1.16.5"
+        "numpy==1.16.5",
         "entropy==0.11",
         "pefile2==1.2.11",
         "pillow==3.2",
