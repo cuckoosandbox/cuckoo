@@ -959,6 +959,7 @@ class Signature(object):
                 "file_opened", "file_written",
                 "file_read", "file_deleted",
                 "file_exists", "file_failed",
+                "file_created"
             ]
 
         return self.get_summary_generic(pid, actions)
@@ -1154,6 +1155,22 @@ class Signature(object):
         """Return the Google Play results for this analysis."""
         googleplay = self.get_results("googleplay", {})
         return googleplay if section is None else googleplay.get(section, default)
+
+    def check_apk_static_files(self, pattern, regex=False, all=False):
+        """Check for apk static file existence.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: path to the file in the APK.
+        """
+        files = set()
+        for file_object in self.get_apkinfo("files", []):
+            files.add(file_object["name"])
+
+        return self._check_value(pattern=pattern,
+                                 subject=list(files),
+                                 regex=regex,
+                                 all=all)
 
     def check_ip(self, pattern, regex=False, all=False):
         """Check for an IP address being contacted.
