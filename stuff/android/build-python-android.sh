@@ -171,10 +171,10 @@ export PYTHON_NAME="python3.7"
 make "build/tmp_thin-android-$target_arch/frida-python3.7/.frida-stamp"
 cp -r "$frida_src_dir/build/frida_thin-android-$target_arch/lib/python3.7/site-packages/"* "$py_android_builddir/usr/lib/python3.7/site-packages"
 if [ ! $? -eq 0 ]; then
+    make clean
     echo "Failed to build Frida.. Exiting.."
     exit 1
 fi
-# make clean
 
 # Create compressed output
 cd "$py_android_builddir"
