@@ -69,7 +69,7 @@ install:
   - pip install -U pip setuptools
   - python setup.py sdist
   - pip install -e .
-  - pip install pytest==4.1.1 pytest-cov codecov coveralls distorm3 pycrypto
+  - pip install pytest==4.6.5 pytest-cov codecov coveralls distorm3 pycrypto
   - pip install flask-testing mock pytest-django pytest-pythonpath responses
 
   # Install Volatility.
