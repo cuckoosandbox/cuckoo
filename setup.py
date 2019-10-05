@@ -202,10 +202,12 @@ do_setup(
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
         "oletools==0.51",
+        "colorama==0.3.7",
         "peepdf>=0.4.2, <0.5",
         "networkx==2.2", 
         "matplotlib==2.2.4",
         "androguard==3.3.5",
+        "numpy==1.16.5"
         "entropy==0.11",
         "pefile2==1.2.11",
         "pillow==3.2",
