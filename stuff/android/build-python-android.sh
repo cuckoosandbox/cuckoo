@@ -77,9 +77,6 @@ echo "Buildig the Python interpreter for host machine"
 sleep 2
 
 if [ ! -d "$builddir/host-python" ]; then
-  wget -q https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/python-lld-compatibility.patch
-  patch -p1 < python-lld-compatibility.patch
-  autoreconf -ivf
   ./configure
   make
   make install DESTDIR="$builddir/host-python"
@@ -136,6 +133,12 @@ export LDFLAGS="-fuse-ld=lld"
 export CONFIG_SITE="config.site"
 
 py_android_builddir="$tmpdir/android-${target_arch}-python"
+
+if [ $target_arch == "arm" ]; 
+    wget -q https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/python-lld-compatibility.patch
+    patch -p1 < python-lld-compatibility.patch
+    autoreconf -ivf
+fi
 ./configure --prefix=/usr --host="$compiler_triplet" --build="${host_arch}-linux-gnu" --disable-ipv6
 make
 make install DESTDIR="$py_android_builddir"
