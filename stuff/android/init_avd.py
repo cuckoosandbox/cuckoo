@@ -428,11 +428,12 @@ class AvdFactory(object):
         """Start the Android emulator and wait untill it fully boots up."""
         self.logger.info("Starting the Android emulator..")
         args = [
-            "sudo", self.emulator_path,
+            self.emulator_path,
             "@%s" % self.dev_specs.vmname,
             "-net-tap", "tap_%s" % self.dev_specs.vmname,
             "-net-tap-script-up",
-            os.path.join(self.cwd_path, "stuff", "setup-hostnet-avd.sh")
+            os.path.join(self.cwd_path, "stuff", "setup-hostnet-avd.sh"),
+            "-no-window", "-no-audio"
         ]
         proc = subprocess.Popen(
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -444,10 +445,10 @@ class AvdFactory(object):
             if proc.poll() is not None:
                 out, err = proc.communicate()
                 exc_info = ""
-                for line in out.splitlines():
+                for line in out.decode().splitlines():
                     if "emulator: ERROR: " in line:
                         exc_info += "%s\n" % line
-                exc_info += err
+                exc_info += err.decode()
 
                 self.logger.error(
                     "Failed to start the Android emulator: %s" % exc_info
@@ -483,6 +484,11 @@ class AvdFactory(object):
                 curr_stage += 1
 
             time.sleep(1)
+
+    def stop_emulator(self):
+        """Stop the Android emulator."""
+        self.logger.info("Stopping the Android emulator..")
+        self.adb.emu(["kill"])
 
     def create_avd(self):
         """Create a new Android virtual device."""
@@ -537,6 +543,9 @@ class AvdFactory(object):
 
         # Save a snapshot of the device state
         self.save_snapshot()
+
+        # Stop the Android emulator
+        self.stop_emulator()
 
 
 def check_android_sdk_path(sdk_path):
@@ -599,7 +608,8 @@ if __name__ == "__main__":
 
     # Add a NOPASSWD policy for the emulator when being run as root.
     if not os.path.isfile("/etc/sudoers.d/emu-nopasswd"):
-        with open("/etc/sudoers.d/emu-nopasswd") as f:
+        with open("/etc/sudoers.d/emu-nopasswd", "w") as f:
             f.write(
-                "%s ALL=NOPASSWD: %s\n" % (getpass.getuser(), avd_factory.emulator_path)
+                "ALL ALL=NOPASSWD: %s\n" % avd_factory.emulator_path
             )
+    os.chmod(os.path.join(os.getenv("HOME"), ".emulator_console_auth_token"), 0o777)
