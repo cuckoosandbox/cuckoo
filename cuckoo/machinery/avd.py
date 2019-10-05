@@ -188,9 +188,20 @@ class Avd(Machinery):
             p = subprocess.Popen(
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
-            _, err = p.communicate()
+            out, err = p.communicate()
             if p.returncode != 0:
                 raise OSError(err)
+
+            # Currentyly, for the emulator to shut down appropiately, the user
+            # needs to ensure that an `.emulator_console_auth_token` boths exists
+            # in their home directory and is the same as the one that is in
+            # `/root/.emulator_console_auth_token`.
+            if "KO: unknown command" in out:
+                raise OSError(
+                    "Unable to authenticate with the emulator console. Make sure"
+                    "the authentication token in '/home/<user>/.emulator_console_"
+                    "auth_token' is correct."
+                )
 
             del self._emulators[label]
         except OSError as e:
