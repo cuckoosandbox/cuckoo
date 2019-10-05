@@ -125,7 +125,7 @@ class Avd(Machinery):
                     time.sleep(1)
                     time_cnt += 1
                 else:
-                    proc.kill()
+                    proc.terminate()
                     raise OSError("timed out")
 
             self._emulators[label] = "emulator-%s" % emu_port
@@ -189,6 +189,7 @@ class Avd(Machinery):
                 args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
             out, err = p.communicate()
+
             if p.returncode != 0:
                 raise OSError(err)
 
@@ -198,7 +199,7 @@ class Avd(Machinery):
             # `/root/.emulator_console_auth_token`.
             if "KO: unknown command" in out:
                 raise OSError(
-                    "Unable to authenticate with the emulator console. Make sure"
+                    "Unable to authenticate with the emulator console. Make sure "
                     "the authentication token in '/home/<user>/.emulator_console_"
                     "auth_token' is correct."
                 )
