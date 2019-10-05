@@ -1233,8 +1233,9 @@ class AndroidPackage(object):
         """Returns a list of all actions of the registered BroadcastReceivers."""
         actions = []
         for receiver in self.apk.get_receivers():
-            filtr = self.apk.get_intent_filters("receiver", receiver)
-            actions.extend(filtr["action"])
+            intent_filters = self.apk.get_intent_filters("receiver", receiver)
+            if "action" in intent_filters:
+                actions.extend(intent_filters["action"])
 
         return actions
 
