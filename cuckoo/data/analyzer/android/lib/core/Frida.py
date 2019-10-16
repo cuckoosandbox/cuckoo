@@ -135,18 +135,17 @@ class Client(object):
             "first_seen": str(datetime.now()),
         }
 
-    def spawn(self, pkg):
+    def spawn(self, pkg, activity):
         """Start a target Android application.
         This is essentially a wrapper for a `frida.spawn` call.
-        @param pkg: target application entry point.
+        @param pkg: target application package name.
+        @param activity: activity name.
         """
         try:
-            pid = self.device.spawn(pkg)
+            pid = self.device.spawn(pkg, activity=activity)
             log.info("Target application package (%s) spawned.", pkg)
-        except frida.NotSupportedError:
-            raise CuckooFridaError(
-                "No application with package name %s installed." % pkg
-            )
+        except frida.NotSupportedError as e:
+            raise CuckooFridaError(e)
         except frida.TimedOutError:
             raise CuckooFridaError("Timeout while spawning application.")
         except frida.TransportError:
