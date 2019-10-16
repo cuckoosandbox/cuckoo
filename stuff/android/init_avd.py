@@ -118,7 +118,7 @@ class Adb(object):
 
 
 class VM_SPECS(object):
-    def __init__(self, vmname, sdcard_size, abi, api_level, hw_skin):
+    def __init__(self, vmname, sdcard_size, abi, api_level, hw_skin, mode):
         self.vmname = vmname
         self.sdcard_size = sdcard_size
         self.abi = abi
@@ -130,6 +130,7 @@ class VM_SPECS(object):
 
         self.api_level = api_level
         self.hw_skin = hw_skin
+        self.mode = mode
 
     def determine_device_arch(self):
         """Decide the architecture of the vm based on the ABI."""
@@ -168,7 +169,7 @@ class AvdCwdConfigManager(object):
         machines = self.get_config("avd.conf")["avd"]["machines"].split(", ")
         return machines if machines[0] else []
 
-    def add_new_android_machine(self, vmname, vm_ip):
+    def add_new_android_machine(self, vmname, vm_ip, vmmode):
         """Add configuration for a new Android virtual machine."""
         self.logger.info(
             "Configuring the cuckoo working directory for the vm: %s"
@@ -185,6 +186,7 @@ class AvdCwdConfigManager(object):
         avd_config[vmname]["snapshot"] = "cuckoo_snapshot"
         avd_config[vmname]["resultserver_ip"] = ""
         avd_config[vmname]["resultserver_port"] = ""
+        avd_config[vmname]["options"] = "headless"
         avd_config[vmname]["osprofile"] = ""
 
         self.write_config("avd.conf", avd_config)
@@ -275,8 +277,15 @@ class AvdFactory(object):
             self.logger.error("invalid choice for device hardware definition.")
             sys.exit(1)
 
+        vmmode = input("Select vm rendering mode (gui, headless) [headless]: ")
+        if not vmmode:
+            vmmode = "headless"
+        elif vmmode not in ("gui", "headless"):
+            self.logger.error("invalid choice for vm rendering mode")
+            sys.exit(1)
+
         self.dev_specs = VM_SPECS(
-            vmname, sdcard_size, android_abi, android_api_level, hw_skin
+            vmname, sdcard_size, android_abi, android_api_level, hw_skin, vmmode
         )
 
         self.image_pkg_name = "system-images;android-%s;default;%s" % \
@@ -432,9 +441,13 @@ class AvdFactory(object):
             "@%s" % self.dev_specs.vmname,
             "-net-tap", "tap_%s" % self.dev_specs.vmname,
             "-net-tap-script-up",
-            os.path.join(self.cwd_path, "stuff", "setup-hostnet-avd.sh"),
-            "-no-window", "-no-audio"
+            os.path.join(self.cwd_path, "stuff", "setup-hostnet-avd.sh")
         ]
+
+        # In headless mode we remove the audio, and window support.
+        if self.dev_specs.mode == "headless":
+            args += ["-no-audio", "-no-window"]
+
         proc = subprocess.Popen(
             args, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
@@ -604,12 +617,11 @@ if __name__ == "__main__":
     # Accordingly configure the cuckoo working directory
     cfg_mgr = AvdCwdConfigManager(cwd_path)
     cfg_mgr.ensure_default_configs(avd_factory.emulator_path, avd_factory.adb_path)
-    cfg_mgr.add_new_android_machine(avd_factory.dev_specs.vmname, avd_factory.vm_ip)
+    cfg_mgr.add_new_android_machine(avd_factory.dev_specs.vmname, avd_factory.vm_ip, avd_factory.dev_specs.mode)
 
-    # Add a NOPASSWD policy for the emulator when being run as root.
-    if not os.path.isfile("/etc/sudoers.d/emu-nopasswd"):
-        with open("/etc/sudoers.d/emu-nopasswd", "w") as f:
+    # Add a NOPASSWD & SETENV policy for the emulator when being run as root.
+    if not os.path.isfile("/etc/sudoers.d/emu-sudo-rules"):
+        with open("/etc/sudoers.d/emu-sudo-rules", "w") as f:
             f.write(
-                "ALL ALL=NOPASSWD: %s\n" % avd_factory.emulator_path
+                "ALL ALL=(ALL) NOPASSWD: %s, %s\n" % (avd_factory.emulator_path, avd_factory.adb_path)
             )
-    os.chmod(os.path.join(os.getenv("HOME"), ".emulator_console_auth_token"), 0o777)

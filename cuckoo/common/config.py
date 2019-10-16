@@ -341,7 +341,6 @@ class Config(object):
         },
         "avd": {
             "avd": {
-                "mode": String("headless"),
                 "emulator_path": Path(
                     "/home/cuckoo/Android/Sdk/emulator/emulator",
                     exists=True, writable=False, readable=True
@@ -361,6 +360,7 @@ class Config(object):
                 "snapshot": String("cuckoo_snapshot"),
                 "resultserver_ip": String(),
                 "resultserver_port": Int(),
+                "options": List(String, None, ",\\s"),
                 "osprofile": String(required=False),
             },
             "__star__": ("avd", "machines"),

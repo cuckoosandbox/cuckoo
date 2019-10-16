@@ -74,14 +74,16 @@ class Avd(Machinery):
                 "-net-tap-script-up", cwd("stuff", "setup-hostnet-avd.sh")
             ]
 
-            # In headless mode we remove the audio, and window support.
-            if self.options.avd.mode == "headless":
-                args += ["-no-audio", "-no-window"]
-
-            # Retrieve the snapshot name for this machine to load it.
+            # Aggregate machine-specific options.
             for machine in self.machines():
                 if machine.label == label:
+                    # In headless mode we remove the audio, and window support.
+                    if "headless" in machine.options:
+                        args += ["-no-audio", "-no-window"]
+
+                    # Retrieve the snapshot name for this machine to load it.
                     args += ["-snapshot", machine.snapshot]
+
                     break
 
             # Create a socket server to acquire the console port of the emulator.
