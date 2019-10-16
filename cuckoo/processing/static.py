@@ -51,8 +51,6 @@ from elftools.elf.relocation import RelocationSection
 from elftools.elf.sections import SymbolTableSection
 from elftools.elf.segments import NoteSegment
 
-from androguard.core.analysis.analysis import ExternalMethod
-
 log = logging.getLogger(__name__)
 
 # Partially taken from
