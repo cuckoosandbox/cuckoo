@@ -12,6 +12,8 @@ import pytest
 import shutil
 import tempfile
 
+from collections import OrderedDict
+
 from cuckoo.common.abstracts import Processing, Extractor
 from cuckoo.common.exceptions import (
     CuckooProcessingError, CuckooOperationalError
@@ -156,10 +158,10 @@ class TestProcessing(object):
         assert len(manifest["activities"]) == 2
         assert "com.taxationtex.giristexation.qes.Jsopbuzc" in manifest["providers"]
 
-        receivers_action = [act for act in s["action"] for s in manifest["services"]]
+        receivers_action = [act for r in manifest["receivers"] for act in r["action"]]
         assert "android.intent.action.BOOT_COMPLETED" in receivers_action
 
-        services_action = [act for act in s["action"] for s in manifest["services"]]
+        services_action = [act for v in manifest["services"] for act in v["action"]]
         assert "android.accessibilityservice.AccessibilityService" in services_action
 
         assert "android.permission.REQUEST_INSTALL_PACKAGES" in \
@@ -173,7 +175,7 @@ class TestProcessing(object):
         assert apkinfo["certificates"][0]["sha256"] == \
             "05acdae313eb09a47da17fa5cfbfb48aac767ccb8a460d7cc94ae29372f469ce"
 
-        callees = [name for name in api["callees"] for api in apkinfo["api_calls"]]
+        callees = [name for api in apkinfo["api_calls"] for name in api["callees"]]
         assert "com.taxationtex.giristexation.qes.Npwsb.MDQOfHCsgjXkJ" in callees
 
     def test_archive_pdf(self):
@@ -1202,10 +1204,10 @@ class TestBehavior(object):
                             'api': 'java.lang.reflect.Field.set',
                             'class': 'java.lang.reflect.Field',
                             'method': 'set',
-                            'arguments': {
-                                'p0': None,
-                                'p1': 'moonlight.loader.aa@4095317'
-                            },
+                            'arguments': OrderedDict([
+                                ('p0', None),
+                                ('p1', 'moonlight.loader.aa@4095317')
+                            ]),
                             'thisObject': {
                                 'class_name': 'com.taxationtex.giristexation.qes.Xptftvrd',
                                 'field_name': 'ietz'
@@ -1218,10 +1220,10 @@ class TestBehavior(object):
                             'api': 'java.lang.reflect.Field.set',
                             'class': 'java.lang.reflect.Field',
                             'method': 'set',
-                            'arguments': {
-                                'p0': None,
-                                'p1': 'moonlight.loader.t@a139304'
-                            },
+                            'arguments': OrderedDict([
+                                ('p0', None),
+                                ('p1', 'moonlight.loader.t@a139304')
+                            ]),
                             'thisObject': {
                                 'class_name': 'com.taxationtex.giristexation.qes.Imdodk',
                                 'field_name': 'el'
@@ -1234,12 +1236,10 @@ class TestBehavior(object):
                             'api': 'android.app.ContextImpl.registerReceiver',
                             'class': 'android.app.ContextImpl',
                             'method': 'registerReceiver',
-                            'arguments': {
-                                'p0': 'moonlight.loader.receiver.MainReceiver@d283e9c',
-                                'p1': {
-                                    'actions': 'java.util.ArrayList$Itr@cc8a888'
-                                }
-                            },
+                            'arguments': OrderedDict([
+                                ('p0', 'moonlight.loader.receiver.MainReceiver@d283e9c'),
+                                ('p1', {'actions': 'java.util.ArrayList$Itr@cc8a888'})
+                            ]),
                             'thisObject': 'android.app.ContextImpl@49efc2b',
                             'return_value': None
                         },
@@ -1249,10 +1249,10 @@ class TestBehavior(object):
                             'api': 'java.lang.reflect.Method.invoke',
                             'class': 'java.lang.reflect.Method',
                             'method': 'invoke',
-                            'arguments': {
-                                'p0': None,
-                                'p1': []
-                            },
+                            'arguments': OrderedDict([
+                                ('p0', None),
+                                ('p1', [])
+                            ]),
                             'thisObject': {
                                 'class_name': 'android.app.ActivityThread',
                                 'method_name': 'currentActivityThread'
@@ -1265,10 +1265,10 @@ class TestBehavior(object):
                             'api': 'android.app.SharedPreferencesImpl$EditorImpl.putBoolean',
                             'class': 'android.app.SharedPreferencesImpl$EditorImpl',
                             'method': 'putBoolean',
-                            'arguments': {
-                                'p0': 'FT_START',
-                                'p1': False
-                            },
+                            'arguments': OrderedDict([
+                                ('p0', 'FT_START'),
+                                ('p1', False)
+                            ]),
                             'thisObject': {
                                 'filepath': {
                                     'path': '/data/user/0/com.taxationtex.giristexation/shared_prefs/prefs30.xml'
@@ -1284,7 +1284,7 @@ class TestBehavior(object):
                     'command_line': '',
                     'process_name': 'com.taxationtex.giristexation',
                     'pid': 3090,
-                    'is_java_process': True,
+                    'java_process': True,
                     'first_seen': datetime.datetime(2019, 9, 19, 1, 14, 17, 917572),
                     'ppid': 1546,
                     'type': 'process'
@@ -1320,38 +1320,36 @@ class TestBehavior(object):
             "id": 1,
         })
 
-        assert ba.run() == {
-            'summary': {
-                u'file_deleted': [
-                    u'/data/user/0/com.taxationtex.giristexation/cache/oat/x86',
-                    u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
-                    u'/data/user/0/com.taxationtex.giristexation/cache/oat'
-                ],
-                u'file_read': [
-                    u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/oat/x86/base.art',
-                    u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/base.apk',
-                    u'/system/framework/x86/boot.art',
-                    u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
-                    u'/proc/self/cmdline',
-                    u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/lib/x86/libhoter.so',
-                    u'/system/lib/libmedia_jni.so',
-                    u'/data/data/com.taxationtex.giristexation/cache/oat/x86/xwcnhfc.art',
-                    u'/data/dalvik-cache/x86/system@framework@boot.art',
-                    u'/data/data/com.taxationtex.giristexation/cache/xwcnhfc.dex'
-                ],
-                u'file_created': [
-                    u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
-                    u'/data/user/0/com.taxationtex.giristexation/cache/ihzms'
-                ],
-                u'file_written': [
-                    u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
-                    u'/data/user/0/com.taxationtex.giristexation/cache/ihzms'
-                ],
-                u'uid': [10060],
-                u'process_name': [u'com.taxationtex.giristexation'],
-                u'first_seen': [u'2019-09-19 01:14:17.917572'],
-                u'ppid': [1546]
-            }
+        assert ba.run()["summary"] == {
+            u'file_deleted': [
+                u'/data/user/0/com.taxationtex.giristexation/cache/oat/x86',
+                u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
+                u'/data/user/0/com.taxationtex.giristexation/cache/oat'
+            ],
+            u'file_read': [
+                u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/oat/x86/base.art',
+                u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/base.apk',
+                u'/system/framework/x86/boot.art',
+                u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
+                u'/proc/self/cmdline',
+                u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/lib/x86/libhoter.so',
+                u'/system/lib/libmedia_jni.so',
+                u'/data/data/com.taxationtex.giristexation/cache/oat/x86/xwcnhfc.art',
+                u'/data/dalvik-cache/x86/system@framework@boot.art',
+                u'/data/data/com.taxationtex.giristexation/cache/xwcnhfc.dex'
+            ],
+            u'file_created': [
+                u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
+                u'/data/user/0/com.taxationtex.giristexation/cache/ihzms'
+            ],
+            u'file_written': [
+                u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
+                u'/data/user/0/com.taxationtex.giristexation/cache/ihzms'
+            ],
+            u'uid': [10060],
+            u'process_name': [u'com.taxationtex.giristexation'],
+            u'first_seen': [u'2019-09-19 01:14:17.917572'],
+            u'ppid': [1546]
         }
 
 
