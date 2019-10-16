@@ -3,11 +3,14 @@
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
 
+import time
 import logging
 import subprocess
 
 from lib.common.abstracts import Package
-from lib.common.exceptions import CuckooPackageError, CuckooError
+from lib.common.exceptions import (
+    CuckooPackageError, CuckooError, CuckooFridaError
+)
 
 log = logging.getLogger(__name__)
 
@@ -27,17 +30,35 @@ class Apk(Package):
         """
         self._install_app(target)
 
-        success = super(Apk, self).execute(self.package)
-        if not success:
+        pid = None
+        if self.frida_client:
+            try:
+                # Spawn the app process with Frida..
+                pid = self.frida_client.spawn(self.package, self.activity)
+            except CuckooFridaError as e:
+                log.error(
+                    "Failed to spawn application process with Frida: %s", e
+                )
+
+        if pid is None:
             # Try starting it via the activity manager.
             self._execute_app()
 
-            pid = self._get_pid()
-            if pid is None:
-                raise CuckooPackageError(
-                    "Failed to execute application. Process not found."
-                )
-            self.add_pid(pid)
+            timeout = 10
+            cnt = 0
+            while True:
+                pid = self._get_pid()
+                if pid is not None:
+                    break
+
+                if cnt > timeout:
+                    raise CuckooPackageError(
+                        "Failed to execute application. Process not started."
+                    )
+                else:
+                    time.sleep(1)
+
+        self.add_pid(pid)
 
     def _install_app(self, apk_path):
         """Install sample via package manager.

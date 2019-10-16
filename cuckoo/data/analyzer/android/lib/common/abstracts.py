@@ -24,7 +24,12 @@ class Package(object):
         self.analyzer = analyzer
 
         self.pids = []
+
         self.frida_client = None
+        try:
+            self.frida_client = Frida.Client(self.analyzer)
+        except CuckooFridaError as e:
+            log.error(e)
 
     def add_pid(self, pid):
         """Update list of monitored PIDs in the package context.
@@ -81,27 +86,17 @@ class Package(object):
             )
 
     def execute(self, target):
-        """Execute the sample.
+        """Execute the process.
         @param target: List of arguments.
         @return: True on success, False otherwise.
         """
         pid = None
-        try:
-            # Spawn the process with Frida..
-            self.frida_client = Frida.Client(self.analyzer)
-            pid = self.frida_client.spawn(target)
-        except CuckooFridaError as e:
-            log.error(
-                "Failed to spawn application process with Frida: %s" % e
-            )
-            if os.path.exists(target[0]):
-                # Execute the target in a new process..
-                pid = Process.execute(target).pid
-
-        success = pid is not None
-        if success:
+        if os.path.exists(target[0]):
+            # Execute the target in a new process..
+            pid = Process.execute(target).pid
             self.add_pid(pid)
-        return success
+
+        return pid is not None
 
     def finish(self):
         """Finish run."""
