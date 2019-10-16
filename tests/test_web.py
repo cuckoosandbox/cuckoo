@@ -1090,7 +1090,7 @@ def test_mongodb_offline(p, q, r, s):
 
 @pytest.mark.skipif("sys.platform != 'linux2'")
 class TestMongoInteraction(object):
-    @pytest.fixture(autouse=True, scope="module")
+    @pytest.fixture(autouse=True, scope="session")
     def init_mongo(self):
         set_cwd(tempfile.mkdtemp())
         cuckoo_create(cfg={
