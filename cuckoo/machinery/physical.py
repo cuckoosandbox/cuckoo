@@ -116,6 +116,11 @@ class Physical(Machinery):
             while self._status(label) == self.RUNNING:
                 time.sleep(1)
                 continue
+            time.sleep(5)
+            # The guest is rebooting, ensure it's online again.
+            while self._status(label) != self.RUNNING:
+                time.sleep(1)
+                continue
 
     def _list(self):
         """List physical machines installed.
