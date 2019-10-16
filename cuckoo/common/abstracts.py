@@ -1156,12 +1156,44 @@ class Signature(object):
         googleplay = self.get_results("googleplay", {})
         return googleplay if section is None else googleplay.get(section, default)
 
-    def check_apk_static_files(self, pattern, regex=False, all=False):
-        """Check for apk static file existence.
+    def check_apk_permission(self, permission):
+        """"Check if permission is declared in the APK manifest.
+        @param permission: permission name.
+        @return: boolean with the result of the check.
+        """
+        permission_android_name = "android.permission.%s" % permission
+
+        for perm in self.get_apkinfo("manifest").get("permissions", []):
+            if perm == permission_android_name:
+                return True
+
+        return False
+
+    def check_apk_api_call(self, pattern, regex=True, all=False):
+        """Check class methods called through static analysis of APK.
         @param pattern: string or expression to check for.
         @param regex: boolean representing if the pattern is a regular
                       expression or not and therefore should be compiled.
-        @return: path to the file in the APK.
+        @return: boolean with the result of the check.
+        """
+        api_calls = self.get_apkinfo("api_calls")
+
+        callees = set()
+        for api in api_calls:
+            for callee in api["callees"]:
+                callees.add(callee)
+
+        return self._check_value(pattern=pattern,
+                                 subject=list(callees),
+                                 regex=regex,
+                                 all=all)
+
+    def check_apk_file(self, pattern, regex=False, all=False):
+        """Check if file/s exists inside of an APK.
+        @param pattern: string or expression to check for.
+        @param regex: boolean representing if the pattern is a regular
+                      expression or not and therefore should be compiled.
+        @return: path to the file/s in the APK.
         """
         files = set()
         for file_object in self.get_apkinfo("files", []):
