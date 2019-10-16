@@ -7,6 +7,8 @@ import json
 import logging
 import dateutil.parser
 
+from collections import OrderedDict
+
 from cuckoo.common.abstracts import BehaviorHandler
 from cuckoo.common.utils import byteify
 
@@ -23,12 +25,24 @@ class AndroidFileMonitor(BehaviorHandler):
             return True
 
     def parse(self, path):
+        pid = int(os.path.basename(path).split(".")[0])
+
         for line in open(path, "r"):
             event = json.loads(line)
+            if "ppid" in event:
+                yield {
+                    "type": "process",
+                    "pid": pid,
+                    "ppid": event["ppid"],
+                    "process_name": event["process_name"],
+                    "first_seen": dateutil.parser.parse(event["first_seen"]),
+                    "command_line": ""
+                }
+
             for key, value in event.items():
                 yield {
                     "type": "generic",
-                    "pid": int(os.path.basename(path).split(".")[0]),
+                    "pid": pid,
                     "category": key,
                     "value": value
                 }
@@ -53,6 +67,8 @@ class AndroidRuntime(BehaviorHandler):
             return True
 
     def parse(self, path):
+        pid = int(os.path.basename(path).split(".")[0])
+
         parser = JVMHookParser(open(path, "r"))
         calls = []
         for event in parser:
@@ -65,10 +81,10 @@ class AndroidRuntime(BehaviorHandler):
 
         process.update({
             "type": "process",
-            "pid": int(os.path.basename(path).split(".")[0]),
+            "pid": pid,
             "command_line": "",
             "calls": calls,
-            "is_java_process": True,
+            "java_process": True,
         })
         self.processes.append(process)
         return self.processes
@@ -81,12 +97,13 @@ class AndroidRuntime(BehaviorHandler):
         return self.processes
 
 class JVMHookParser(object):
+    """Parse jvmHook logs."""
 
     def __init__(self, fd):
         self.fd = fd
 
     def make_arguments(self, args):
-        p_args = {}
+        p_args = OrderedDict()
         for n in range(len(args)):
             arg_value = args[n]
             p_args["p%u" % n] = arg_value
@@ -105,16 +122,13 @@ class JVMHookParser(object):
         for line in self.fd:
             api_call = byteify(json.loads(line))
 
-            _class = api_call["class"]
-            method = api_call["method"]
-            api = _class + "." + method
-
+            api_name = "%s.%s" % (api_call["class"], api_call["method"])
             time = dateutil.parser.parse(api_call["time"]).replace(tzinfo=None)
             arguments = self.make_arguments(api_call["args"])
 
             yield {
-                "type": "apicall", "time": time, "api": api,
-                "class": _class, "method": method,
+                "type": "apicall", "time": time, "api": api_name,
+                "class": api_call["class"], "method": api_call["method"],
                 "category": api_call["category"], "arguments": arguments,
                 "thisObject": api_call["thisObject"],
                 "return_value": api_call["returnValue"]
