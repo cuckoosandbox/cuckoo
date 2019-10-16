@@ -1,23 +1,24 @@
 <table class="table table-bordered" style="table-layout: fixed;">
     <thead>
         <tr>
-            <th class="cell-sm">Time &amp; API</th>
-            {% if is_java_process %}
+            {% if java_process %}
+            <th class="cell-md">Time &amp; API</th>
             <th class="cell-md">Arguments</th>
             <th class="cell-md">This object</th>
-            <th class="cell-sm">Return</th>
+            <th class="cell-md">Return</th>
             {% else %}
+            <th class="cell-sm">Time &amp; API</th>
             <th class="cell-lg">Arguments</th>
             <th class="cell-xs">Status</th>
             <th class="cell-xs">Return</th>
-            {% endif %}
             <th class="cell-xs">Repeated</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
     {% for call in chunk.calls %}
         <tr class="{{call.category}}" id="call_{{call.id}}">
-            {% include "analysis/pages/behavior/_api_call.html" with is_java_api=is_java_process %}
+            {% include "analysis/pages/behavior/_api_call.html" with java_api=java_process %}
         </tr>
     {% endfor %}
     </tbody>

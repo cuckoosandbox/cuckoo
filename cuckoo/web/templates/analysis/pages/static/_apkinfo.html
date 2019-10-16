@@ -4,16 +4,8 @@
     {% if report.analysis.static.apkinfo %}
 
     <style>
-        .manifest_info tr>th:first-child {
-            max-width:100px;
-        }
-
-        .apk_methods_table td {
-            max-width: 120px;
-        }
-
-        #apk_permissions td {
-            max-width: 250px;
+        .action_table td {
+            width: 50%;
         }
 
         .pre_text {
@@ -24,7 +16,7 @@
 
     {% if report.analysis.static.apkinfo.manifest %}
     <div>
-        <h4>Manifest info</h4>
+        <h2>Manifest info</h2>
         <div class="row">
             <div class="col-md-3">
                 <h5> Package name</h5>
@@ -38,57 +30,68 @@
         </div>
         <br>
 
-        {% for service in report.analysis.static.apkinfo.manifest.services %}
         <div class="panel panel-default">
             <div class="panel-heading" style="height: 40px;">
                 <h4 class="panel-title">Services</h4>
             </div>
 
-            <table class="manifest_info table table-striped">
+            <table class="action_table table table-striped table-bordered">
+                {% for service in report.analysis.static.apkinfo.manifest.services %}
                 <tr>
-                    <td>{{service}}</td>
+                    <td>{{service.name}}</td>
+                    <td>
+                        {% for intent in service.action %}
+                        <div>&bull; <span>{{intent}}</span></div>
+                        {% endfor %}
+                    </td>
                 </tr>
+                {% endfor %}
             </table>
         </div>
         <br>
-        {% endfor %}
 
-        {% for receiver in report.analysis.static.apkinfo.manifest.receivers %}
         <div class="panel panel-default">
             <div class="panel-heading" style="height: 40px;">
                 <h4 class="panel-title">Receivers</h4>
             </div>
 
-            <table class="manifest_info table table-striped">
+            <table class="action_table table table-striped table-bordered">
+                {% for receiver in report.analysis.static.apkinfo.manifest.receivers %}
                 <tr>
-                    <td>{{receiver}}</td>
+                    <td>{{receiver.name}}</td>
+                    <td>
+                        {% for intent in receiver.action %}
+                        <div>&bull; <span>{{intent}}</span></div>
+                        {% endfor %}
+                    </td>
                 </tr>
+                {% endfor %}
             </table>
         </div>
         <br>
-        {% endfor %}
 
-        {% for provider in report.analysis.static.apkinfo.manifest.providers %}
+        
         <div class="panel panel-default">
             <div class="panel-heading" style="height: 40px;">
                 <h4 class="panel-title">Providers</h4>
             </div>
 
-            <table class="manifest_info table table-striped">
+            <table class="table table-striped">
+                {% for provider in report.analysis.static.apkinfo.manifest.providers %}
                 <tr>
                     <td>{{provider}}</td>
                 </tr>
+                {% endfor %}
             </table>
         </div>
         <br>
-        {% endfor %}
 
         <div class="panel panel-default">
             <div class="panel-heading" style="height: 40px;">
                 <h4 class="panel-title">Activities</h4>
             </div>
 
-            <table class="manifest_info table table-striped">
+            <table class="table table-striped">
                 {% for activity in report.analysis.static.apkinfo.manifest.activities %}
                 <tr>
                     <td>{{activity}}</td>
@@ -98,27 +101,12 @@
         </div>
         <br>
 
-        {% for intent in report.analysis.static.apkinfo.manifest.receivers_actions %}
-        <div class="panel panel-default">
-            <div class="panel-heading" style="height: 40px;">
-                <h4 class="panel-title">Receivers' intent filters</h4>
-            </div>
-
-            <table class="manifest_info table table-striped">
-                <tr>
-                    <td>{{intent}}</td>
-                </tr>
-            </table>
-        </div>
-        <br>
-        {% endfor %}
-
         <div class="panel panel-default">
             <div class="panel-heading" style="height: 40px;">
                 <h4 class="panel-title">Permissions</h4>
             </div>
 
-            <table id="apk_permissions" class="manifet_info table table-striped">
+            <table class="table table-striped table-bordered">
                 <tr>
                     <th>Name</th>
                     <th>Protection level</th>
@@ -139,7 +127,7 @@
 
     {% if report.analysis.static.apkinfo.certificates %}
     <div>
-        <h4>Certificate information</h4>
+        <h2>Certificate information</h2>
         <div class="row">
             <div class="col-md-3">
                 <h5> APK signing schemes</h5>
@@ -206,10 +194,6 @@
                     <th>Serial number</th>
                     <td>{{cert.serial_number}}</span></td>
                 </tr>
-                <tr>
-                    <th>Content</th>
-                    <td>{{cert.content}}</span></td>
-                </tr>
             </table>
         </div>
         {% endfor %}
@@ -219,7 +203,7 @@
 
     {% if report.analysis.static.apkinfo.files %}
     <div>
-        <h4>Files</h4>
+        <h2>Files summary</h2>
         <div id="apk_files">
             <table class="table table-striped table-bordered">
                 <tr>
@@ -229,58 +213,28 @@
                     <th>File type</th>
                 </tr>
                 {% for file in report.analysis.static.apkinfo.files %}
+                {% if not file.name|slice:":4" == "res/" and not file.name|slice:":7" == "kotlin/"%}
                 <tr>
                     <td>{{file.name}}</td>
                     <td>{{file.md5}}</td>
                     <td>{{file.size}}</td>
                     <td>{{file.type}}</td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </table>
         </div>
-    </div>
-    <br>
-    {% endif %}
-
-    {% if report.analysis.static.apkinfo.methods %}
-    <div>
-        <h4>Methods</h4>
-        <table class="apk_methods_table table table-striped table-bordered">
-            <tr>
-                <th>Class</th>
-                <th>Name</th>
-                <th>Parameters' types</th>
-                <th>Return type</th>
-            </tr>
-            {% for method in report.analysis.static.apkinfo.methods %}
-            <tr>
-                <td>{{method.class}}</td>
-                <td>{{method.name}}</td>
-                <td>{% for param in method.params %}{{param}} {% endfor %}</td>
-                <td>{{method.return}}</td>
-            </tr>
-            {% endfor %}
-        </table>
     </div>
     <br>
     {% endif %}
 
     {% if report.analysis.static.apkinfo.native_methods %}
     <div>
-        <h4>Native methods</h4>
-        <table class="apk_methods_table table table-striped table-bordered">
-            <tr>
-                <th>Class</th>
-                <th>Name</th>
-                <th>Parameters' types</th>
-                <th>Return type</th>
-            </tr>
+        <h2>Native methods</h2>
+        <table class="table table-striped table-bordered">
             {% for method in report.analysis.static.apkinfo.native_methods %}
             <tr>
-                <td>{{method.class}}</td>
-                <td>{{method.name}}</td>
-                <td>{% for param in method.params %}{{param}} {% endfor %}</td>
-                <td>{{method.return}}</td>
+                <td>{{method}}</td>
             </tr>
             {% endfor %}
         </table>
@@ -288,53 +242,32 @@
     <br>
     {% endif %}
 
-    {% if report.analysis.static.apkinfo.classes %}
+    {% if report.analysis.static.apkinfo.api_calls %}
     <div>
-        <h4>Classes</h4>
-        <div id="apk_classes">
-            <table class="table table-striped table-bordered">
-            {% for class_name in report.analysis.static.apkinfo.classes %}
-                <tr>
-                    <td>{{class_name}}</td>
-                </tr>
+        <h2>API calls</h2>
+
+        <div class="cuckoo-analysis__panels">
+            {% for api in report.analysis.static.apkinfo.api_calls %}
+            <section class="cuckoo-analysis__panel">
+                <a href="#{{api.name}}" class="cuckoo-analysis__panel--toggle" data-toggle="collapse">
+                    {{api.name}}
+                </a>
+
+                <div id="{{api.name}}" class="cuckoo-analysis__panel--body collapse">
+                    <table class="cuckoo-table">
+                        {% for callee in api.callees %}
+                        <tr>
+                            <td>{{callee}}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </section>
+            <br>
             {% endfor %}
-            </table>
         </div>
     </div>
-    <br>
     {% endif %}
 
-    {% if report.analysis.static.apkinfo.static_calls %}
-    <div>
-        <h4>Static calls</h4>
-
-        {% for category, calls in report.analysis.static.apkinfo.static_calls.items %}
-        {% if calls %}
-        <div class="panel panel-default">
-            <div class="panel-heading" style="height: 40px;">
-                <h4 class="panel-title">{{category|title|deunderscore}} calls</h4>
-            </div>
-
-            <table class="apk_methods_table table table-striped table-bordered">
-                <tr>
-                    <th>Caller class</th>
-                    <th>Caller method</th>
-                    <th>Callee class</th>
-                    <th>Callee method</th>
-                </tr>
-                {% for call in calls %}
-                <tr>
-                    <td>{{call.caller_class}}</td>
-                    <td>{{call.caller_method}}</td>
-                    <td>{{call.callee_class}}</td>
-                    <td>{{call.callee_method}}</td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
-        <br>
-        {% endif %}
-        {% endfor %}
-    {% endif %}
     {% endif %}
 </section>

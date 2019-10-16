@@ -33,25 +33,36 @@
 
                                 {% if mark.first %}
 
-                                    <!-- {% if not forloop.first %}
+                                    {% if not forloop.first %}
                                         </table>
                                         <table class="cuckoo-table">
-                                    {% endif %} -->
+                                    {% endif %}
 
                                     <thead>
                                         <tr>
-                                            <th>Time &amp; API</th>
-                                            <th>Arguments</th>
-                                            <th>Status</th>
-                                            <th>Return</th>
-                                            <th>Repeated</th>
+                                            {% if report.analysis.info.machine.platform == "android" %}
+                                                <th class="cell-md">Time &amp; API</th>
+                                                <th class="cell-md">Arguments</th>
+                                                <th class="cell-md">This object</th>
+                                                <th class="cell-md">Return</th>
+                                            {% else %}
+                                                <th class="cell-sm">Time &amp; API</th>
+                                                <th class="cell-lg">Arguments</th>
+                                                <th class="cell-xs">Status</th>
+                                                <th class="cell-xs">Return</th>
+                                                <th class="cell-xs">Repeated</th>
+                                            {% endif %}
                                         </tr>
                                     </thead><tbody>
 
                                 {% endif %}
 
                                 <tr>
-                                    {% include "analysis/pages/behavior/_api_call.html" with call=mark.call pid=mark.pid cid=mark.cid %}
+                                    {% if report.analysis.info.machine.platform == "android" %}
+                                        {% include "analysis/pages/behavior/_api_call.html" with call=mark.call pid=mark.pid cid=mark.cid java_api=True %}
+                                    {% else %}
+                                        {% include "analysis/pages/behavior/_api_call.html" with call=mark.call pid=mark.pid cid=mark.cid java_api=False %}
+                                    {% endif %}
                                 </tr>
 
                             {% elif mark.type == "ioc" %}

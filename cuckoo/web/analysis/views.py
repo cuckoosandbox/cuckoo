@@ -56,7 +56,7 @@ def chunk(request, task_id, pid, pagenum):
         {
             "behavior.processes.pid": 1,
             "behavior.processes.calls": 1,
-            "behavior.processes.is_java_process": 1,
+            "behavior.processes.java_process": 1,
         }
     )
 
@@ -79,10 +79,10 @@ def chunk(request, task_id, pid, pagenum):
     else:
         chunk = dict(calls=[])
 
-    is_java_process = "is_java_process" in process and process["is_java_process"]
+    java_process = "java_process" in process and process["java_process"]
 
     return render_template(request, "analysis/pages/behavior/_chunk.html", **{
-        "chunk": chunk, "is_java_process": is_java_process,
+        "chunk": chunk, "java_process": java_process,
     })
 
 @require_safe
@@ -104,7 +104,7 @@ def filtered_chunk(request, task_id, pid, category):
         {
             "behavior.processes.pid": 1,
             "behavior.processes.calls": 1,
-            "behavior.processes.is_java_process": 1,
+            "behavior.processes.java_process": 1,
         }
     )
 
@@ -133,10 +133,10 @@ def filtered_chunk(request, task_id, pid, category):
             if call["category"] == category:
                 filtered_process["calls"].append(call)
 
-    is_java_process = "is_java_process" in process and process["is_java_process"]
+    java_process = "java_process" in process and process["java_process"]
 
     return render_template(request, "analysis/pages/behavior/_chunk.html", **{
-        "chunk": filtered_process, "is_java_process": is_java_process,
+        "chunk": filtered_process, "java_process": java_process,
     })
 
 def search_behavior(request, task_id):
