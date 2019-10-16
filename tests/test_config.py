@@ -1196,6 +1196,20 @@ interface = virbr0
     assert cfg["reporting"]["misp"]["tag"] == "Cuckoo"
     assert cfg["reporting"]["misp"]["upload_sample"] is False
 
+def test_migration_207_210():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+
+    Files.create(cwd("conf"), "avd.conf", """
+[avd]
+    """)
+    Files.create(cwd("conf"), "processing.conf", """
+[apkinfo]
+    """)
+
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.7", "2.1.0")
+
     assert cfg["avd"]["avd"]["emulator_path"] == "/home/cuckoo/Android/Sdk/emulator/emulator"
     assert cfg["avd"]["avd"]["adb_path"] == "/home/cuckoo/Android/Sdk/platform-tools/adb"
     assert cfg["avd"]["avd"]["interface"] == "cuckoo_avd_br"
@@ -1204,7 +1218,7 @@ interface = virbr0
     assert cfg["avd"]["cuckoo1"]["platform"] == "android"
     assert cfg["avd"]["cuckoo1"]["ip"] == "10.3.2.2"
     assert cfg["avd"]["cuckoo1"]["snapshot"] == "cuckoo_snapshot"
-
+    assert "apkinfo" not in cfg["processing"]
 
 class FullMigration(object):
     DIRPATH = None
