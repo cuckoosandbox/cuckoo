@@ -17,7 +17,7 @@ Arguments:
   device_arch   CPU architecture of the target Android device.
 "
 python_version=e09359112e250268eca209355abeb17abf822486
-frida_version=376cba19b405064ed69f1861486eb517da34307f
+frida_version=fa888900710f3869582c5b4b66153f1578ec4dfb  # 12.7.11
 host_arch=x86_64
 
 # Get command line argument
@@ -65,11 +65,12 @@ python_src_dir="$builddir/cpython"
 if [ ! -d "$python_src_dir" ]; then
   echo "Downloading Python 3.7 from source."
   git -C "$builddir" clone --branch 3.7 "https://github.com/python/cpython.git"
-  git -C "$python_src_dir" checkout "$python_version"
 else
   echo "Found Python already fetched!"
   echo ""
 fi
+git -C "$python_src_dir" checkout "$python_version"
+
 cd "$python_src_dir"
 
 # Building Python for host machine
@@ -134,9 +135,12 @@ export CONFIG_SITE="config.site"
 
 py_android_builddir="$tmpdir/android-${target_arch}-python"
 
-if [ $target_arch == "arm" ]; 
+if [ $target_arch == "arm" ]; then
     wget -q https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/python-lld-compatibility.patch
-    patch -p1 < python-lld-compatibility.patch
+    patch -sNp1 --dry-run < python-lld-compatibility.patch
+    if [ $? -eq 0 ]; then
+        patch -p1 < python-lld-compatibility.patch
+    fi
     autoreconf -ivf
 fi
 ./configure --prefix=/usr --host="$compiler_triplet" --build="${host_arch}-linux-gnu" --disable-ipv6
@@ -156,10 +160,11 @@ frida_src_dir="$builddir/frida"
 if [ ! -d "$frida_src_dir" ]; then
   echo "Downloading Frida from source."
   git -C "$builddir" clone --recurse-submodules "https://github.com/frida/frida.git"
-  git -C "$frida_src_dir" checkout "$frida_version"
 else
   echo "Found Frida already fetched!"
 fi
+git -C "$frida_src_dir" checkout "$frida_version"
+
 cd "$frida_src_dir"
 
 # Build Frida's Python bindings
@@ -175,7 +180,7 @@ make "build/tmp_thin-android-$target_arch/frida-python3.7/.frida-stamp"
 cp -r "$frida_src_dir/build/frida_thin-android-$target_arch/lib/python3.7/site-packages/"* "$py_android_builddir/usr/lib/python3.7/site-packages"
 if [ ! $? -eq 0 ]; then
     make clean
-    echo "Failed to build Frida.. Exiting.."
+    echo "Failed to build Frida.. Exiting.." >&2
     exit 1
 fi
 
