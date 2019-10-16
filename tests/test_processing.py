@@ -155,30 +155,26 @@ class TestProcessing(object):
 
         assert len(manifest["activities"]) == 2
         assert "com.taxationtex.giristexation.qes.Jsopbuzc" in manifest["providers"]
-        assert "android.intent.action.BOOT_COMPLETED" in manifest["receivers_actions"]
-        assert "com.taxationtex.giristexation.qes.Imdodk" in manifest["services"]
+
+        receivers_action = [act for act in s["action"] for s in manifest["services"]]
+        assert "android.intent.action.BOOT_COMPLETED" in receivers_action
+
+        services_action = [act for act in s["action"] for s in manifest["services"]]
+        assert "android.accessibilityservice.AccessibilityService" in services_action
+
         assert "android.permission.REQUEST_INSTALL_PACKAGES" in \
             map(lambda x: x["name"], manifest["permissions"])
-        assert {
-            "size": 281632,
-            "type": "ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV)",
-            "name": "lib/arm64-v8a/libhoter.so",
-            "md5": "4c694d2ebce1a00215f10b5f3f1cd95c"
-        } in apkinfo["files"]
-        assert {
-            "class": "Lcom/taxationtex/giristexation/qes/Sctdsqres;",
-            "name": "fyndmmn",
-            "params": ["Ljava/lang/Object;"],
-            "return": "V"
-        } in apkinfo["native_methods"]
-        assert {
-            "callee_method": "startWakefulService",
-            "callee_class": "Landroid/support/v4/content/WakefulBroadcastReceiver;",
-            "caller_class": "Landroid/os/PowerManager$WakeLock;",
-            "caller_method": "acquire"
-        } in s.run()["apkinfo"]["static_calls"]["permissions"]
-        assert s.run()["apkinfo"]["certificates"][0]["sha256"] == \
+
+        assert "lib/arm64-v8a/libhoter.so" in map(lambda x: x["name"], apkinfo["files"])
+
+        assert "com.taxationtex.giristexation.qes.Sctdsqres.fyndmmn(Ljava/lang/Object;)V" in \
+            apkinfo["native_methods"]
+
+        assert apkinfo["certificates"][0]["sha256"] == \
             "05acdae313eb09a47da17fa5cfbfb48aac767ccb8a460d7cc94ae29372f469ce"
+
+        callees = [name for name in api["callees"] for api in apkinfo["api_calls"]]
+        assert "com.taxationtex.giristexation.qes.Npwsb.MDQOfHCsgjXkJ" in callees
 
     def test_archive_pdf(self):
         set_cwd(self.mkdtemp())
