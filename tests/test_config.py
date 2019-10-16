@@ -1196,7 +1196,6 @@ interface = virbr0
     assert cfg["reporting"]["misp"]["tag"] == "Cuckoo"
     assert cfg["reporting"]["misp"]["upload_sample"] is False
 
-    assert cfg["avd"]["avd"]["mode"] == "headless"
     assert cfg["avd"]["avd"]["emulator_path"] == "/home/cuckoo/Android/Sdk/emulator/emulator"
     assert cfg["avd"]["avd"]["adb_path"] == "/home/cuckoo/Android/Sdk/platform-tools/adb"
     assert cfg["avd"]["avd"]["interface"] == "cuckoo_avd_br"
