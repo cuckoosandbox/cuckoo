@@ -42,7 +42,7 @@ if __name__ == "__main__":
     add_hook("android.media.AudioRecord", "startRecording", SERVICE)
     add_hook("android.media.MediaRecorder", "start", SERVICE)
     add_hook("android.app.ApplicationPackageManager", "getInstalledPackages", SERVICE)
-    add_hook("android.app.ApplicationPackageManager", "deletePackage", SERVICE)
+    add_hook("android.content.pm.PackageInstaller", "uninstall", SERVICE)
     add_hook("android.app.ApplicationPackageManager", "getInstalledApplications", SERVICE)
     add_hook("android.app.ApplicationPackageManager", "setComponentEnabledSetting", SERVICE)
     add_hook("android.location.Location", "getLatitude", SERVICE)
@@ -50,10 +50,12 @@ if __name__ == "__main__":
     add_hook("android.app.NotificationManager", "notify", SERVICE)
     add_hook("android.app.AlarmManager", "setAlarmClock", SERVICE)
     add_hook("android.app.AlarmManager", "set", SERVICE)
+    add_hook("android.app.AlarmManager", "setRepeating", SERVICE)
     add_hook("android.telephony.SmsManager", "sendDataMessage", SERVICE)
     add_hook("android.telephony.SmsManager", "sendTextMessage", SERVICE)
     add_hook("android.os.PowerManager", "newWakeLock", SERVICE)
     add_hook("android.app.ContextImpl", "getSystemService", SERVICE)
+    add_hook("android.os.PowerManager$WakeLock", "acquire", SERVICE)
 
     # binder
     add_hook("android.telephony.TelephonyManager", "listen", BINDER)
@@ -92,6 +94,8 @@ if __name__ == "__main__":
     add_hook("android.content.ClipboardManager", "getPrimaryClip", CONTENT)
     add_hook("android.content.ClipboardManager", "setPrimaryClip", CONTENT)
     add_hook("android.hardware.camera2.CameraManager", "openCamera", CONTENT)
+    add_hook("android.os.Environment", "getExternalStorageDirectory", CONTENT)
+    add_hook("android.os.Environment", "getExternalStorageState", CONTENT)
 
     # dynamic loading
     add_hook("dalvik.system.BaseDexClassLoader", "findResource", DYNLOAD)
@@ -128,6 +132,8 @@ if __name__ == "__main__":
     add_hook("android.content.ContextWrapper", "startActivity", INTENT)
     add_hook("android.content.ContextWrapper", "sendBroadcast", INTENT)
     add_hook("android.content.ContextWrapper", "startActivities", INTENT)
+    add_hook("android.content.Intent", "$init", INTENT)
+    add_hook("android.content.Intent", "setAction", INTENT)
 
     # cryptography
     add_hook("android.util.Base64", "decode", CRYPTO)

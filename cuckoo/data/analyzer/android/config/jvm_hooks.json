@@ -60,8 +60,8 @@
         "category": "services"
     },
     {
-        "class": "android.app.ApplicationPackageManager",
-        "method": "deletePackage",
+        "class": "android.content.pm.PackageInstaller",
+        "method": "uninstall",
         "category": "services"
     },
     {
@@ -100,6 +100,11 @@
         "category": "services"
     },
     {
+        "class": "android.app.AlarmManager",
+        "method": "setRepeating",
+        "category": "services"
+    },
+    {
         "class": "android.telephony.SmsManager",
         "method": "sendDataMessage",
         "category": "services"
@@ -117,6 +122,11 @@
     {
         "class": "android.app.ContextImpl",
         "method": "getSystemService",
+        "category": "services"
+    },
+    {
+        "class": "android.os.PowerManager$WakeLock",
+        "method": "acquire",
         "category": "services"
     },
     {
@@ -280,6 +290,16 @@
         "category": "content"
     },
     {
+        "class": "android.os.Environment",
+        "method": "getExternalStorageDirectory",
+        "category": "content"
+    },
+    {
+        "class": "android.os.Environment",
+        "method": "getExternalStorageState",
+        "category": "content"
+    },
+    {
         "class": "dalvik.system.BaseDexClassLoader",
         "method": "findResource",
         "category": "dynload"
@@ -427,6 +447,16 @@
     {
         "class": "android.content.ContextWrapper",
         "method": "startActivities",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.Intent",
+        "method": "$init",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.Intent",
+        "method": "setAction",
         "category": "intent"
     },
     {
