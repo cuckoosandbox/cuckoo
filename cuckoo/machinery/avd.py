@@ -24,7 +24,7 @@ class Avd(Machinery):
         """Run all checks when a machine manager is initialized.
         @raise CuckooMachineError: if the android emulator is not found.
         """
-        self._emulators = {}
+        self._emulator_labels = {}
 
         if not self.options.avd.emulator_path:
             raise CuckooCriticalError(
@@ -130,7 +130,7 @@ class Avd(Machinery):
                     proc.terminate()
                     raise OSError("timed out")
 
-            self._emulators[label] = "emulator-%s" % emu_port
+            self._emulator_labels[label] = "emulator-%s" % emu_port
         except OSError as e:
             raise CuckooMachineError(
                 "Emulator failed starting machine %s: %s" % (label, e)
@@ -155,7 +155,7 @@ class Avd(Machinery):
         try:
             args = [
                 self.options.avd.adb_path,
-                "-s", self._emulators[label],
+                "-s", self._emulator_labels[label],
                 "wait-for-device"
             ]
             p = subprocess.Popen(
@@ -176,15 +176,15 @@ class Avd(Machinery):
         """
         log.debug("Stopping vm %s", label)
 
-        if not label in self._emulators.keys():
+        if not label in self._emulator_labels.keys():
             raise CuckooMachineError(
                 "Trying to stop a machine that wasn't started: %s" % label
             )
 
         try:
             args = [
-                self.options.avd.adb_path,
-                "-s", self._emulators[label],
+                "sudo", self.options.avd.adb_path,
+                "-s", self._emulator_labels[label],
                 "emu", "kill"
             ]
             p = subprocess.Popen(
@@ -195,18 +195,16 @@ class Avd(Machinery):
             if p.returncode != 0:
                 raise OSError(err)
 
-            # Currentyly, for the emulator to shut down appropiately, the user
-            # needs to ensure that an `.emulator_console_auth_token` boths exists
-            # in their home directory and is the same as the one that is in
-            # `/root/.emulator_console_auth_token`.
+            # Currently, for the emulator to shut down appropiately, the user
+            # needs to ensure that an `.emulator_console_auth_token` exists
+            # in their $HOME directory.
             if "KO: unknown command" in out:
                 raise OSError(
                     "Unable to authenticate with the emulator console. Make sure "
-                    "the authentication token in '/home/<user>/.emulator_console_"
-                    "auth_token' is correct."
+                    "the authentication token in '$HOME/.emulator_console_"
+                    "auth_token' exists."
                 )
-
-            del self._emulators[label]
+            del self._emulator_labels[label]
         except OSError as e:
             raise CuckooMachineError(
                 "Emulator failed to stop the machine: %s" % e
