@@ -245,15 +245,16 @@
     {% if report.analysis.static.apkinfo.api_calls %}
     <div>
         <h2>API calls</h2>
+        <br>
 
         <div class="cuckoo-analysis__panels">
             {% for api in report.analysis.static.apkinfo.api_calls %}
-            <section class="cuckoo-analysis__panel">
-                <a href="#{{api.name}}" class="cuckoo-analysis__panel--toggle" data-toggle="collapse">
+            <section class="cuckoo-analysis__panel info">
+                <a href="#{{api.name|strip_symbols}}" class="cuckoo-analysis__panel--toggle" data-toggle="collapse">
                     {{api.name}}
                 </a>
 
-                <div id="{{api.name}}" class="cuckoo-analysis__panel--body collapse">
+                <div id="{{api.name|strip_symbols}}" class="cuckoo-analysis__panel--body collapse">
                     <table class="cuckoo-table">
                         {% for callee in api.callees %}
                         <tr>

@@ -2,6 +2,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import re
+
 from django.template.defaultfilters import register
 
 from cuckoo.common.config import config
@@ -134,3 +136,7 @@ def deunderscore(string):
 @register.filter
 def _byteify(data):
     return byteify(data)
+
+@register.filter
+def strip_symbols(string):
+    return re.sub("[^\w]", "", string)
