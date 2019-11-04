@@ -512,7 +512,8 @@ class Config(object):
         "multi": {
             "multi": {
                 "machinery": List(String, "physical"),
-                "machines": List(String, "multi1")
+                "machines": List(String, "multi1"),
+                "interface": String("eth0"),
             }
         },
         "physical": {
