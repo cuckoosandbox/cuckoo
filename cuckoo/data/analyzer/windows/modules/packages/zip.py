@@ -6,6 +6,7 @@
 import os
 import shutil
 import logging
+import shlex
 
 from zipfile import ZipFile, BadZipfile
 
@@ -51,7 +52,7 @@ class Zip(Package):
                         self.extract_zip(os.path.join(extract_path, name), extract_path, password)
 
     def is_overwritten(self, zip_path):
-        """Check if the ZIP file contains another file with the same name, so it is going to be overwritten.
+        """Checks if the ZIP file contains another file with the same name, so it is going to be overwritten.
         @param zip_path: zip file path
         @return: comparison boolean
         """
@@ -94,4 +95,6 @@ class Zip(Package):
                 raise CuckooPackageError("Empty ZIP archive")
 
         file_path = os.path.join(self.curdir, file_name)
-        return self.execute(file_path, self.options.get("arguments"))
+        args = self.options.get("arguments", "")
+        return self.execute(file_path, args=shlex.split(args))
+        
