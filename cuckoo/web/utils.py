@@ -120,6 +120,16 @@ def dropped_filepath(task_id, sha1):
         if dropped["sha1"] == sha1:
             return dropped["path"]
 
+def binary_filepath(task_id):
+    record = mongo.db.analysis.find_one({
+        "info.id": int(task_id)
+    })
+
+    if not record or not record["target"]["file"]:
+        return
+
+    return record["target"]["file"]["path"]
+
 def normalize_task(task):
     if task["category"] == "file":
         task["target"] = os.path.basename(task["target"])

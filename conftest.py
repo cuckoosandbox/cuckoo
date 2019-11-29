@@ -1,12 +1,13 @@
-# Copyright (C) 2017 Cuckoo Foundation.
+# Copyright (C) 2017-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
 import os
 import shutil
 import sys
+import tempfile
 
-from cuckoo.misc import is_windows, is_linux, is_macosx
+from cuckoo.misc import is_windows, is_linux, is_macosx, getuser, mkdir
 
 # Note that collect_ignore is a parameter for pytest so that it knows which
 # unit tests to skip etc. In other words, perform platform-specific unit tests
@@ -35,3 +36,6 @@ if is_macosx():
     sys.path.insert(0, "cuckoo/data/analyzer/darwin")
     collect_ignore.append("tests/windows")
     collect_ignore.append("tests/linux")
+
+# Ensure the Cuckoo TMP dir exists, as some tests rely on it.
+mkdir(os.path.join(tempfile.gettempdir(), "cuckoo-tmp-%s" % getuser()))

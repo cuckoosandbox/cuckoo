@@ -51,7 +51,7 @@ class Zip(Package):
                         self.extract_zip(os.path.join(extract_path, name), extract_path, password)
 
     def is_overwritten(self, zip_path):
-        """Checks if the ZIP file contains another file with the same name, so it is going to be overwritten.
+        """Check if the ZIP file contains another file with the same name, so it is going to be overwritten.
         @param zip_path: zip file path
         @return: comparison boolean
         """

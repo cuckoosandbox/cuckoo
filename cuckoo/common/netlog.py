@@ -1,5 +1,5 @@
 # Copyright (C) 2010-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -18,9 +18,9 @@ if hasattr(bson, "BSON"):
 elif hasattr(bson, "loads"):
     bson_decode = lambda d: bson.loads(d)
 
-from cuckoo.common.abstracts import ProtocolHandler
 from cuckoo.common.files import Storage
 from cuckoo.common.exceptions import CuckooResultError
+from cuckoo.misc import cwd
 
 log = logging.getLogger(__name__)
 
@@ -54,8 +54,8 @@ def default_converter_64bit(v):
         return v.decode("latin-1")
     return v
 
-class BsonParser(ProtocolHandler):
-    """Receives and interprets .bson logs from the monitor.
+class BsonParser(object):
+    """Interprets .bson logs from the monitor.
 
     The monitor provides us with "info" messages that explain how the function
     arguments will come through later on. This class remembers these info
@@ -76,15 +76,15 @@ class BsonParser(ProtocolHandler):
         "x": pointer_converter_32bit,
     }
 
-    def init(self):
-        self.fd = self.handler
-
+    def __init__(self, fd, task_id=None):
+        self.fd = fd
         self.infomap = {}
         self.flags_value = {}
         self.flags_bitmask = {}
         self.pid = None
         self.is_64bit = False
         self.buffer_sha1 = None
+        self.task_id = task_id
 
     def resolve_flags(self, apiname, argdict, flags):
         # Resolve 1:1 values.
@@ -117,9 +117,9 @@ class BsonParser(ProtocolHandler):
             flags[argument] = "|".join(flags[argument])
 
     def determine_unserializers(self, arginfo):
-        """Determines which unserializers (or converters) have to be used in
-        order to parse the various arguments for this function call. Keeps in
-        mind whether the current bson is 32-bit or 64-bit."""
+        """Determine which unserializers (or converters) have to be used in
+        order to parse the various arguments for this function call. Maintains
+        whether the current bson is 32-bit or 64-bit."""
         argnames, converters = [], []
 
         for argument in arginfo:
@@ -205,17 +205,11 @@ class BsonParser(ProtocolHandler):
                 if sha1 != self.buffer_sha1:
                     log.warning("Incorrect sha1 passed along for a buffer.")
 
-                # If the parent is netlogs ResultHandler then we actually dump
-                # it - this should only be the case during the analysis, any
-                # after processing will then be ignored.
-                from cuckoo.core.resultserver import ResultHandler
-
-                if isinstance(self.fd, ResultHandler):
-                    filepath = os.path.join(
-                        self.fd.storagepath, "buffer", self.buffer_sha1
-                    )
-                    with open(filepath, "wb") as f:
-                        f.write(buf)
+                filepath = cwd(
+                    "buffer", self.buffer_sha1, analysis=self.task_id
+                )
+                with open(filepath, "wb") as f:
+                    f.write(buf)
 
                 continue
 

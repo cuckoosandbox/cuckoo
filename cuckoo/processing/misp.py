@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2018 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -15,6 +15,10 @@ log = logging.getLogger(__name__)
 class MISP(Processing):
     """Enrich Cuckoo results with MISP data."""
     order = 3
+
+    file_types = (
+        "PE32",
+    )
 
     def search_ioc(self, ioc):
         try:
@@ -76,7 +80,10 @@ class MISP(Processing):
         iocs.add(self.results.get("target", {}).get("file", {}).get("md5"))
 
         for dropped in self.results.get("dropped", []):
-            iocs.add(dropped.get("md5"))
+            if not dropped.get("type"):
+                continue
+            if dropped["type"].startswith(self.file_types):
+                iocs.add(dropped.get("md5"))
 
         iocs.update(self.results.get("network", {}).get("hosts", []))
 

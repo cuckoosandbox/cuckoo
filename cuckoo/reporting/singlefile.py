@@ -20,7 +20,7 @@ from cuckoo.misc import cwd
 logging.getLogger("weasyprint").setLevel(logging.ERROR)
 
 class SingleFile(Report):
-    """Stores report in a single-file HTML and/or PDF format."""
+    """Store report in a single-file HTML and/or PDF format."""
 
     fonts = [{
         "family": "Roboto",
@@ -120,14 +120,14 @@ class SingleFile(Report):
         )
 
     def combine_css(self):
-        """Scans the static/css/ directory and concatenates stylesheets"""
+        """Scan the static/css/ directory and concatenate stylesheets"""
         css_includes = []
         for filepath in glob.glob("%s/static/css/*.css" % self.path_base):
             css_includes.append(open(filepath, "rb").read().decode("utf8"))
         return "\n".join(css_includes)
 
     def combine_js(self):
-        """Scans the static/js/ directory and concatenates js files"""
+        """Scan the static/js/ directory and concatenate js files"""
         js_includes = []
         # Note: jquery-2.2.4.min.js must be the first file.
         filepaths = sorted(glob.glob("%s/static/js/*.js" % self.path_base))

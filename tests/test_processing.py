@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2018 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -52,6 +52,22 @@ except ImportError:
 db = Database()
 
 class TestProcessing(object):
+
+    def setup(self):
+        self.tmpdirs = []
+
+    def teardown(self):
+        for path in self.tmpdirs:
+            try:
+                shutil.rmtree(path)
+            except:
+                pass
+
+    def mkdtemp(self):
+        path = tempfile.mkdtemp()
+        self.tmpdirs.append(path)
+        return path
+
     def test_init(self):
         p = Processing()
         p.set_options({
@@ -61,7 +77,7 @@ class TestProcessing(object):
         assert p.options.foo == "bar"
 
     def test_debug(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
         init_console_logging()
 
@@ -124,7 +140,7 @@ class TestProcessing(object):
         assert s.run() is None
 
     def test_archive_pdf(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
 
         s = Static()
         s.set_task({
@@ -141,7 +157,7 @@ class TestProcessing(object):
         assert "%48%65" in s.run()["pdf"][0]["javascript"][0]["orig_code"]
 
     def test_pdf(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
 
         s = Static()
         s.set_task({
@@ -157,7 +173,7 @@ class TestProcessing(object):
         assert "var x = unescape" in r["javascript"][0]["orig_code"]
 
     def test_pdf_stringjs(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
 
         s = Static()
         s.set_task({
@@ -173,7 +189,7 @@ class TestProcessing(object):
         assert "app.alert({" in r["javascript"][0]["orig_code"]
 
     def test_pdf_ignorefake(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
 
         s = Static()
         s.set_task({
@@ -191,7 +207,7 @@ class TestProcessing(object):
 
     @mock.patch("cuckoo.processing.static.dispatch")
     def test_pdf_workercrash(self, md):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         md.return_value = None
 
         s = Static()
@@ -208,7 +224,7 @@ class TestProcessing(object):
         assert r["pdf"] == []
 
     def test_phishing0_pdf(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
 
         s = Static()
         s.set_task({
@@ -224,7 +240,7 @@ class TestProcessing(object):
 
     @mock.patch("cuckoo.processing.static.dispatch")
     def test_pdf_mock(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
 
         s = Static()
         s.set_task({
@@ -243,7 +259,7 @@ class TestProcessing(object):
         )
 
     def test_pdf_metadata(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
 
         s = Static()
         s.set_task({
@@ -273,7 +289,7 @@ class TestProcessing(object):
         }
 
     def test_pdf_attach(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
 
         s = Static()
         s.set_task({
@@ -316,7 +332,7 @@ class TestProcessing(object):
         assert p("\xfe\xff\x00h\x00t\x00t\x00p\x00:\x00/\x00/") == "http://"
 
     def test_office(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
         init_yara()
 
@@ -472,7 +488,7 @@ class TestProcessing(object):
     def test_screenshot_tesseract(self, p):
         s = Screenshots()
         # Use an empty directory so no actual screenshot analysis is done.
-        s.shots_path = tempfile.mkdtemp()
+        s.shots_path = self.mkdtemp()
         s.set_options({
             "tesseract": None,
         })
@@ -528,7 +544,7 @@ class TestProcessing(object):
         assert s.run() == []
 
     def test_targetinfo(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
         init_yara()
 
@@ -625,7 +641,7 @@ class TestProcessing(object):
         os.unlink(shotpath)
 
     def test_virustotal_nokey(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create(cfg={
             "processing": {
                 "virustotal": {
@@ -638,7 +654,7 @@ class TestProcessing(object):
         e.match("API key not configured")
 
     def test_virustotal_invalidcategory(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
         with pytest.raises(CuckooProcessingError) as e:
             v = VirusTotal()
@@ -650,9 +666,25 @@ class TestProcessing(object):
 
 @pytest.mark.skipif(not HAVE_VOLATILITY, reason="No Volatility installed")
 class TestVolatility(object):
+
+    def setup(self):
+        self.tmpdirs = []
+
+    def teardown(self):
+        for path in self.tmpdirs:
+            try:
+                shutil.rmtree(path)
+            except:
+                pass
+
+    def mkdtemp(self):
+        path = tempfile.mkdtemp()
+        self.tmpdirs.append(path)
+        return path
+
     @mock.patch("cuckoo.processing.memory.log")
     def test_no_mempath(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         m = Memory()
         m.memory_path = None
         assert m.run() is None
@@ -661,7 +693,7 @@ class TestVolatility(object):
 
     @mock.patch("cuckoo.processing.memory.log")
     def test_invalid_mempath(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         m = Memory()
         m.memory_path = "notafile"
         assert m.run() is None
@@ -670,7 +702,7 @@ class TestVolatility(object):
 
     @mock.patch("cuckoo.processing.memory.log")
     def test_empty_mempath(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         m = Memory()
         m.memory_path = Files.temp_put("")
         assert m.run() is None
@@ -679,7 +711,7 @@ class TestVolatility(object):
 
     @mock.patch("cuckoo.processing.memory.VolatilityManager")
     def test_global_osprofile(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create(cfg={
             "memory": {
                 "basic": {
@@ -696,7 +728,7 @@ class TestVolatility(object):
 
     @mock.patch("cuckoo.processing.memory.VolatilityManager")
     def test_vm_osprofile(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create(cfg={
             "memory": {
                 "basic": {
@@ -737,7 +769,7 @@ class TestVolatility(object):
 
     @mock.patch("volatility.utils.load_as")
     def test_plugin_enabled(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create(cfg={
             "memory": {
                 "pslist": {
@@ -775,8 +807,23 @@ class TestVolatility(object):
         assert obj_s(vol_obj.NoneObject()) is None
 
 class TestProcessingMachineInfo(object):
+    def setup(self):
+        self.tmpdirs = []
+
+    def teardown(self):
+        for path in self.tmpdirs:
+            try:
+                shutil.rmtree(path)
+            except:
+                pass
+
+    def mkdtemp(self):
+        path = tempfile.mkdtemp()
+        self.tmpdirs.append(path)
+        return path
+
     def test_machine_info_empty(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         rp = RunProcessing({
             "id": 1,
         })
@@ -784,7 +831,7 @@ class TestProcessingMachineInfo(object):
         assert rp.machine == {}
 
     def test_machine_info_cuckoo1(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
 
         rp = RunProcessing({
@@ -800,7 +847,7 @@ class TestProcessingMachineInfo(object):
         assert rp.machine["ip"] == "192.168.56.101"
 
     def test_machine_info_cuckoo2(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
 
         rp = RunProcessing({
@@ -816,6 +863,21 @@ class TestProcessingMachineInfo(object):
         }
 
 class TestBehavior(object):
+    def setup(self):
+        self.tmpdirs = []
+
+    def teardown(self):
+        for path in self.tmpdirs:
+            try:
+                shutil.rmtree(path)
+            except:
+                pass
+
+    def mkdtemp(self):
+        path = tempfile.mkdtemp()
+        self.tmpdirs.append(path)
+        return path
+
     def test_process_tree_regular(self):
         pt = ProcessTree(None)
 
@@ -888,7 +950,7 @@ class TestBehavior(object):
         assert not obj[2]["children"]
 
     def test_bson_limit(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
 
         ba = BehaviorAnalysis()
@@ -914,7 +976,7 @@ class TestBehavior(object):
         ]
 
     def test_extract_scripts(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
         init_yara()
 
@@ -968,7 +1030,7 @@ class TestBehavior(object):
         assert open(out[1]["raw"], "rb").read() == 'echo "Recursive"'
 
     def test_stap_log(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
         init_yara()
 
@@ -1066,6 +1128,7 @@ class TestBehavior(object):
         }
 
 class TestPcap(object):
+
     @classmethod
     def setup_class(cls):
         set_cwd(tempfile.mkdtemp())
@@ -1223,15 +1286,30 @@ class TestPcap(object):
         assert expected_types == types
 
 class TestPcapAdditional(object):
+    def setup(self):
+        self.tmpdirs = []
+
+    def teardown(self):
+        for path in self.tmpdirs:
+            try:
+                shutil.rmtree(path)
+            except:
+                pass
+
+    def mkdtemp(self):
+        path = tempfile.mkdtemp()
+        self.tmpdirs.append(path)
+        return path
+
     @mock.patch("cuckoo.processing.network.resolve")
     def test_resolve_dns(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
         p.return_value = "1.2.3.4"
         assert Pcap(None, {})._dns_gethostbyname("google.com") != ""
 
     def test_icmp_ignore_resultserver(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create()
         p = Pcap(None, {})
         pkt = dpkt.icmp.ICMP.Echo()
@@ -1249,7 +1327,7 @@ class TestPcapAdditional(object):
         assert len(p.icmp_requests) == 1
 
     def test_no_sorted_pcap(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create(cfg={
             "cuckoo": {
                 "processing": {
@@ -1269,7 +1347,7 @@ class TestPcapAdditional(object):
         assert not os.path.exists(cwd("dump_sorted.pcap", analysis=1))
 
     def test_yes_sorted_pcap(self):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create({
             "cuckoo": {
                 "network": {
@@ -1304,7 +1382,7 @@ class TestPcapAdditional(object):
 
     @mock.patch("cuckoo.processing.network.log")
     def test_empty_pcap(self, p):
-        set_cwd(tempfile.mkdtemp())
+        set_cwd(self.mkdtemp())
         cuckoo_create(cfg={
             "cuckoo": {
                 "processing": {
@@ -1325,9 +1403,24 @@ class TestPcapAdditional(object):
         p.warning.assert_not_called()
 
 class TestPcap2(object):
+    def setup(self):
+        self.tmpdirs = []
+
+    def teardown(self):
+        for path in self.tmpdirs:
+            try:
+                shutil.rmtree(path)
+            except:
+                pass
+
+    def mkdtemp(self):
+        path = tempfile.mkdtemp()
+        self.tmpdirs.append(path)
+        return path
+
     def test_smtp_ex(self):
         obj = Pcap2(
-            "tests/files/pcap/smtp.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/smtp.pcap", None, self.mkdtemp()
         ).run()
 
         assert len(obj["smtp_ex"]) == 1
@@ -1346,7 +1439,7 @@ class TestPcap2(object):
 
     def test_http_status(self):
         obj = Pcap2(
-            "tests/files/pcap/status-code.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/status-code.pcap", None, self.mkdtemp()
         ).run()
         assert len(obj["http_ex"]) == 1
         assert not obj["https_ex"]
@@ -1354,7 +1447,7 @@ class TestPcap2(object):
 
     def test_http_nostatus(self):
         obj = Pcap2(
-            "tests/files/pcap/not-http.pcap", None, tempfile.mkdtemp()
+            "tests/files/pcap/not-http.pcap", None, self.mkdtemp()
         ).run()
         assert len(obj["http_ex"]) == 1
 
@@ -1439,45 +1532,67 @@ class TestSuricata(object):
         s.process_pcap_binary = create
         s.run()
 
-def test_static_extracted():
-    set_cwd(tempfile.mkdtemp())
-    cuckoo_create(cfg={
-        "processing": {
-            "analysisinfo": {
-                "enabled": False,
+class TestExtracted(object):
+    def setup(self):
+        self.tmpdirs = []
+
+    def teardown(self):
+        for path in self.tmpdirs:
+            try:
+                shutil.rmtree(path)
+            except:
+                pass
+
+    def mkdtemp(self):
+        path = tempfile.mkdtemp()
+        self.tmpdirs.append(path)
+        return path
+
+    def test_static_extracted(self):
+        set_cwd(self.mkdtemp())
+        cuckoo_create(cfg={
+            "processing": {
+                "analysisinfo": {
+                    "enabled": False,
+                },
+                "debug": {
+                    "enabled": False,
+                }
             },
-            "debug": {
-                "enabled": False,
+        })
+        mkdir(cwd(analysis=1))
+        shutil.copy("tests/files/createproc1.docm", cwd("binary", analysis=1))
+
+        open(cwd("yara", "office", "ole.yar"), "wb").write("""
+            rule OleInside {
+                strings:
+                    $s1 = "Win32_Process"
+                condition:
+                    filename matches /word\/vbaProject.bin/ and $s1
             }
-        },
-    })
-    mkdir(cwd(analysis=1))
-    shutil.copy("tests/files/createproc1.docm", cwd("binary", analysis=1))
+        """)
+        init_yara()
 
-    open(cwd("yara", "office", "ole.yar"), "wb").write("""
-        rule OleInside {
-            strings:
-                $s1 = "Win32_Process"
-            condition:
-                filename matches /word\/vbaProject.bin/ and $s1
-        }
-    """)
-    init_yara()
+        class OleInsideExtractor(Extractor):
+            def handle_yara(self, filepath, match):
+                return (
+                    match.category == "office" and
+                    match.yara[0].name == "OleInside"
+                )
 
-    class OleInsideExtractor(Extractor):
-        def handle_yara(self, filepath, match):
-            return (
-                match.category == "office" and
-                match.yara[0].name == "OleInside"
-            )
+        class X(object):
+            @staticmethod
+            def p():
+                return [Extracted, Static]
 
-    ExtractManager._instances = {}
-    ExtractManager.extractors = OleInsideExtractor,
+        with mock.patch("cuckoo.processing.plugins", new_callable=X.p) as p:
+            ExtractManager._instances = {}
+            ExtractManager.extractors = OleInsideExtractor,
 
-    results = RunProcessing(Dictionary({
-        "id": 1,
-        "category": "file",
-        "target": "tests/files/createproc1.docm",
-    })).run()
+            results = RunProcessing(Dictionary({
+                "id": 1,
+                "category": "file",
+                "target": "tests/files/createproc1.docm",
+            })).run()
 
-    assert len(results["extracted"]) == 1
+            assert len(results["extracted"]) == 1

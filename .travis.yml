@@ -23,7 +23,7 @@ before_install:
         sudo apt-get install libfreerdp-dev libjpeg-turbo8-dev
 
         # Install guacd.
-        wget https://www.apache.org/dist/guacamole/0.9.14/source/guacamole-server-0.9.14.tar.gz
+        wget http://archive.apache.org/dist/guacamole/0.9.14/source/guacamole-server-0.9.14.tar.gz
         tar xvf guacamole-server-0.9.14.tar.gz && cd guacamole-server-0.9.14
         ./configure --with-init-dir=/etc/init.d && make && sudo make install && sudo ldconfig && cd ../
 
@@ -44,7 +44,7 @@ before_install:
         sudo mysql cuckootestimport < tests/files/sql/11my.sql
         psql -U postgres -c "CREATE DATABASE cuckootestimport"
         psql -U postgres cuckootestimport <tests/files/sql/11pg.sql >/dev/null
-        pip install psycopg2 mysql-python m2crypto==0.24.0 weasyprint
+        pip install psycopg2 mysql-python m2crypto==0.24.0 weasyprint==0.36
     else
         brew update || brew update
         brew install libmagic cairo pango mongodb
@@ -68,7 +68,7 @@ install:
   - pip install -U pip setuptools
   - python setup.py sdist
   - pip install -e .
-  - pip install pytest pytest-cov codecov coveralls distorm3 pycrypto
+  - pip install pytest==4.1.1 pytest-cov codecov coveralls distorm3 pycrypto
   - pip install flask-testing mock pytest-django pytest-pythonpath responses
 
   # Install Volatility.
@@ -89,7 +89,7 @@ script:
   - cuckoo community
 
   # Check the code integrity of the Signatures by running Cuckoo.
-  - cuckoo -d 2>&1|grep "Unable to bind ResultServer"
+  - cuckoo -d --ignore-vuln 2>&1|grep "Unable to bind ResultServer"
 
   # Run tests from the "tests" directory.
   - py.test --cov=cuckoo
@@ -97,3 +97,11 @@ script:
 after_success:
   - coveralls
   - codecov
+
+dist: xenial
+addons:
+  apt:
+    packages:
+    - sqlite3
+    sources:
+    - travis-ci/sqlite3

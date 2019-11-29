@@ -17,7 +17,7 @@ from lib.common.registry import set_regkey_full
 log = logging.getLogger(__name__)
 
 class RecentFiles(Auxiliary):
-    """Populates the Desktop with recent files in order to combat recent
+    """Populate the Desktop with recent files in order to combat recent
     anti-sandbox measures."""
 
     extensions = [

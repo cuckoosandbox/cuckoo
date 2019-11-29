@@ -1,0 +1,1854 @@
+{
+    "T1001": {
+        "long": "Command and control (C2) communications are hidden (but not necessarily encrypted) in an attempt to make the content more difficult to discover or decipher and to make the communication less conspicuous and hide commands from being seen. This encompasses many methods, such as adding junk data to protocol traffic, using steganography, commingling legitimate traffic with C2 communications traffic, or using a non-standard data encoding system, such as a modified Base64 encoding for the message body of an HTTP request.",
+        "short": "Data Obfuscation"
+    },
+    "T1002": {
+        "long": "An adversary may compress data (e.g., sensitive documents) that is collected prior to exfiltration in order to make it portable and minimize the amount of data sent over the network. The compression is done separately from the exfiltration channel and is performed using a custom program or algorithm, or a more common compression library or utility such as 7zip, RAR, ZIP, or zlib.",
+        "short": "Data Compressed"
+    },
+    "T1003": {
+        "long": "Credential dumping is the process of obtaining account login and password information, normally in the form of a hash or a clear text password, from the operating system and software. Credentials can then be used to perform\u00a0Lateral Movement\u00a0and access restricted information.",
+        "short": "Credential Dumping"
+    },
+    "T1004": {
+        "long": "Winlogon.exe is a Windows component responsible for actions at logon/logoff as well as the secure attention sequence (SAS) triggered by Ctrl-Alt-Delete. Registry entries in HKLM\\Software[Wow6432Node]Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\ and HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon\\ are used to manage additional helper programs and functionalities that support Winlogon.",
+        "short": "Winlogon Helper DLL"
+    },
+    "T1005": {
+        "long": "Sensitive data can be collected from local system sources, such as the file system or databases of information residing on the system prior to Exfiltration.",
+        "short": "Data from Local System"
+    },
+    "T1006": {
+        "long": "Windows allows programs to have direct access to logical volumes. Programs with direct access may read and write files directly from the drive by analyzing file system data structures. This technique bypasses Windows file access controls as well as file system monitoring tools.",
+        "short": "File System Logical Offsets"
+    },
+    "T1007": {
+        "long": "Adversaries may try to get information about registered services. Commands that may obtain information about services using operating system utilities are \"sc,\" \"tasklist /svc\" using Tasklist, and \"net start\" using Net, but adversaries may also use other tools as well.",
+        "short": "System Service Discovery"
+    },
+    "T1008": {
+        "long": "Adversaries may use fallback or alternate communication channels if the primary channel is compromised or inaccessible in order to maintain reliable command and control and to avoid data transfer thresholds.",
+        "short": "Fallback Channels"
+    },
+    "T1009": {
+        "long": "Some security tools inspect files with static signatures to determine if they are known malicious. Adversaries may add data to files to increase the size beyond what security tools are capable of handling or to change the file hash to avoid hash-based blacklists.",
+        "short": "Binary Padding"
+    },
+    "T1010": {
+        "long": "Adversaries may attempt to get a listing of open application windows. Window listings could convey information about how the system is used or give context to information collected by a keylogger.",
+        "short": "Application Window Discovery"
+    },
+    "T1011": {
+        "long": "Exfiltration could occur over a different network medium than the command and control channel. If the command and control network is a wired Internet connection, the exfiltration may occur, for example, over a WiFi connection, modem, cellular data connection, Bluetooth, or another radio frequency (RF) channel. Adversaries could choose to do this if they have sufficient access or proximity, and the connection might not be secured or defended as well as the primary Internet-connected channel because it is not routed through the same enterprise network.",
+        "short": "Exfiltration Over Other Network Medium"
+    },
+    "T1012": {
+        "long": "Adversaries may interact with the Windows Registry to gather information about the system, configuration, and installed software.",
+        "short": "Query Registry"
+    },
+    "T1013": {
+        "long": "A port monitor can be set through the   API call to set a DLL to be loaded at startup.  This DLL can be located in C:\\Windows\\System32 and will be loaded by the print spooler service, spoolsv.exe, on boot. The spoolsv.exe process also runs under SYSTEM level permissions.  Alternatively, an arbitrary DLL can be loaded if permissions allow writing a fully-qualified pathname for that DLL to HKLM\\SYSTEM\\CurrentControlSet\\Control\\Print\\Monitors. The Registry key contains entries for the following:",
+        "short": "Port Monitors"
+    },
+    "T1014": {
+        "long": "Rootkits are programs that hide the existence of malware by intercepting (i.e., Hooking) and modifying operating system API calls that supply system information.  Rootkits or rootkit enabling functionality may reside at the user or kernel level in the operating system or lower, to include a Hypervisor, Master Boot Record, or the System Firmware.",
+        "short": "Rootkit"
+    },
+    "T1015": {
+        "long": "Windows contains accessibility features that may be launched with a key combination before a user has logged in (for example, when the user is on the Windows logon screen). An adversary can modify the way these programs are launched to get a command prompt or backdoor without logging in to the system.",
+        "short": "Accessibility Features"
+    },
+    "T1016": {
+        "long": "Adversaries will likely look for details about the network configuration and settings of systems they access or through information discovery of remote systems. Several operating system administration utilities exist that can be used to gather this information. Examples include Arp, ipconfig/ifconfig, nbtstat, and route.",
+        "short": "System Network Configuration Discovery"
+    },
+    "T1017": {
+        "long": "Adversaries may deploy malicious software to systems within a network using application deployment systems employed by enterprise administrators. The permissions required for this action vary by system configuration; local credentials may be sufficient with direct access to the deployment server, or specific domain credentials may be required. However, the system may require an administrative account to log in or to perform software deployment.",
+        "short": "Application Deployment Software"
+    },
+    "T1018": {
+        "long": "Adversaries will likely attempt to get a listing of other systems by IP address, hostname, or other logical identifier on a network that may be used for Lateral Movement from the current system. Functionality could exist within remote access tools to enable this, but utilities available on the operating system could also be used.",
+        "short": "Remote System Discovery"
+    },
+    "T1019": {
+        "long": "The BIOS (Basic Input/Output System) and The Unified Extensible Firmware Interface (UEFI) or Extensible Firmware Interface (EFI) are examples of system firmware that operate as the software interface between the operating system and hardware of a computer.",
+        "short": "System Firmware"
+    },
+    "T1020": {
+        "long": "Data, such as sensitive documents, may be exfiltrated through the use of automated processing or Scripting after being gathered during Collection.",
+        "short": "Automated Exfiltration"
+    },
+    "T1021": {
+        "long": "An adversary may use Valid Accounts to log into a service specifically designed to accept remote connections, such as telnet, SSH, and VNC. The adversary may then perform actions as the logged-on user.",
+        "short": "Remote Services"
+    },
+    "T1022": {
+        "long": "Data is encrypted before being exfiltrated in order to hide the information that is being exfiltrated from detection or to make the exfiltration less conspicuous upon inspection by a defender. The encryption is performed by a utility, programming library, or custom algorithm on the data itself and is considered separate from any encryption performed by the command and control or file transfer protocol. Common file archive formats that can encrypt files are RAR and zip.",
+        "short": "Data Encrypted"
+    },
+    "T1023": {
+        "long": "Shortcuts or symbolic links are ways of referencing other files or programs that will be opened or executed when the shortcut is clicked or executed by a system startup process. Adversaries could use shortcuts to execute their tools for persistence. They may create a new shortcut as a means of indirection that may use Masquerading to look like a legitimate program. Adversaries could also edit the target path or entirely replace an existing shortcut so their tools will be executed instead of the intended legitimate program.",
+        "short": "Shortcut Modification"
+    },
+    "T1024": {
+        "long": "Adversaries may use a custom cryptographic protocol or algorithm to hide command and control traffic. A simple scheme, such as XOR-ing the plaintext with a fixed key, will produce a very weak ciphertext.",
+        "short": "Custom Cryptographic Protocol"
+    },
+    "T1025": {
+        "long": "Sensitive data can be collected from any removable media (optical disk drive, USB memory, etc.) connected to the compromised system prior to Exfiltration.",
+        "short": "Data from Removable Media"
+    },
+    "T1026": {
+        "long": "Some adversaries may split communications between different protocols. There could be one protocol for inbound command and control and another for outbound data, allowing it to bypass certain firewall restrictions. The split could also be random to simply avoid data threshold alerts on any one communication.",
+        "short": "Multiband Communication"
+    },
+    "T1027": {
+        "long": "Adversaries may attempt to make an executable or file difficult to discover or analyze by encrypting, encoding, or otherwise obfuscating its contents on the system or in transit. This is common behavior that can be used across different platforms and the network to evade defenses.",
+        "short": "Obfuscated Files or Information"
+    },
+    "T1028": {
+        "long": "Windows Remote Management (WinRM) is the name of both a Windows service and a protocol that allows a user to interact with a remote system (e.g., run an executable, modify the Registry, modify services).  It may be called with the winrm command or by any number of programs such as PowerShell.",
+        "short": "Windows Remote Management"
+    },
+    "T1029": {
+        "long": "Data exfiltration may be performed only at certain times of day or at certain intervals. This could be done to blend traffic patterns with normal activity or availability.",
+        "short": "Scheduled Transfer"
+    },
+    "T1030": {
+        "long": "An adversary may exfiltrate data in fixed size chunks instead of whole files or limit packet sizes below certain thresholds. This approach may be used to avoid triggering network data transfer threshold alerts.",
+        "short": "Data Transfer Size Limits"
+    },
+    "T1031": {
+        "long": "Windows service configuration information, including the file path to the service's executable or recovery programs/commands, is stored in the Registry. Service configurations can be modified using utilities such as sc.exe and Reg.",
+        "short": "Modify Existing Service"
+    },
+    "T1032": {
+        "long": "Adversaries may explicitly employ a known encryption algorithm to conceal command and control traffic rather than relying on any inherent protections provided by a communication protocol. Despite the use of a secure algorithm, these implementations may be vulnerable to reverse engineering if necessary secret keys are encoded and/or generated within malware samples/configuration files.",
+        "short": "Standard Cryptographic Protocol"
+    },
+    "T1033": {
+        "long": "Adversaries may attempt to identify the primary user, currently logged in user, set of users that commonly uses a system, or whether a user is actively using the system. They may do this, for example, by retrieving account usernames or by using Credential Dumping. The information may be collected in a number of different ways using other Discovery techniques, because user and username details are prevalent throughout a system and include running process ownership, file/directory ownership, session information, and system logs.",
+        "short": "System Owner/User Discovery"
+    },
+    "T1034": {
+        "long": "Path interception occurs when an executable is placed in a specific path so that it is executed by an application instead of the intended target. One example of this was the use of a copy of cmd in the current working directory of a vulnerable application that loads a CMD or BAT file with the CreateProcess function.",
+        "short": "Path Interception"
+    },
+    "T1035": {
+        "long": "Adversaries may execute a binary, command, or script via a method that interacts with Windows services, such as the Service Control Manager. This can be done by either creating a new service or modifying an existing service. This technique is the execution used in conjunction with New Service and Modify Existing Service during service persistence or privilege escalation.",
+        "short": "Service Execution"
+    },
+    "T1036": {
+        "long": "Masquerading occurs when the name or location of an executable, legitimate or malicious, is manipulated or abused for the sake of evading defenses and observation. Several different variations of this technique have been observed.",
+        "short": "Masquerading"
+    },
+    "T1037": {
+        "long": "Windows allows logon scripts to be run whenever a specific user or group of users log into a system.  The scripts can be used to perform administrative functions, which may often execute other programs or send information to an internal logging server.",
+        "short": "Logon Scripts"
+    },
+    "T1038": {
+        "long": "Windows systems use a common method to look for required DLLs to load into a program.  Adversaries may take advantage of the Windows DLL search order and programs that ambiguously specify DLLs to gain privilege escalation and persistence.",
+        "short": "DLL Search Order Hijacking"
+    },
+    "T1039": {
+        "long": "Sensitive data can be collected from remote systems via shared network drives (host shared directory, network file server, etc.) that are accessible from the current system prior to Exfiltration.",
+        "short": "Data from Network Shared Drive"
+    },
+    "T1040": {
+        "long": "Network sniffing refers to using the network interface on a system to monitor or capture information sent over a wired or wireless connection. An adversary may place a network interface into promiscuous mode to passively access data in transit over the network, or use span ports to capture a larger amount of data.",
+        "short": "Network Sniffing"
+    },
+    "T1041": {
+        "long": "Data exfiltration is performed over the Command and Control channel. Data is encoded into the normal communications channel using the same protocol as command and control communications.",
+        "short": "Exfiltration Over Command and Control Channel"
+    },
+    "T1042": {
+        "long": "When a file is opened, the default program used to open the file (also called the file association or handler) is checked. File association selections are stored in the Windows Registry and can be edited by users, administrators, or programs that have Registry access   or by administrators using the built-in assoc utility.  Applications can modify the file association for a given file extension to call an arbitrary program when a file with the given extension is opened.",
+        "short": "Change Default File Association"
+    },
+    "T1043": {
+        "long": "Adversaries may communicate over a commonly used port to bypass firewalls or network detection systems and to blend with normal network activity to avoid more detailed inspection. They may use commonly open ports such as",
+        "short": "Commonly Used Port"
+    },
+    "T1044": {
+        "long": "Processes may automatically execute specific binaries as part of their functionality or to perform other actions. If the permissions on the file system directory containing a target binary, or permissions on the binary itself, are improperly set, then the target binary may be overwritten with another binary using user-level permissions and executed by the original process. If the original process and thread are running under a higher permissions level, then the replaced binary will also execute under higher-level permissions, which could include SYSTEM.",
+        "short": "File System Permissions Weakness"
+    },
+    "T1045": {
+        "long": "Software packing is a method of compressing or encrypting an executable. Packing an executable changes the file signature in an attempt to avoid signature-based detection. Most decompression techniques decompress the executable code in memory.",
+        "short": "Software Packing"
+    },
+    "T1046": {
+        "long": "Adversaries may attempt to get a listing of services running on remote hosts, including those that may be vulnerable to remote software exploitation. Methods to acquire this information include port scans and vulnerability scans using tools that are brought onto a system.",
+        "short": "Network Service Scanning"
+    },
+    "T1047": {
+        "long": "Windows Management Instrumentation (WMI) is a Windows administration feature that provides a uniform environment for local and remote access to Windows system components. It relies on the WMI service for local and remote access and the server message block (SMB)  and Remote Procedure Call Service (RPCS)  for remote access. RPCS operates over port 135.",
+        "short": "Windows Management Instrumentation"
+    },
+    "T1048": {
+        "long": "Data exfiltration is performed with a different protocol from the main command and control protocol or channel. The data is likely to be sent to an alternate network location from the main command and control server. Alternate protocols include FTP, SMTP, HTTP/S, DNS, or some other network protocol. Different channels could include Internet Web services such as cloud storage.",
+        "short": "Exfiltration Over Alternative Protocol"
+    },
+    "T1049": {
+        "long": "Adversaries may attempt to get a listing of network connections to or from the compromised system they are currently accessing or from remote systems by querying for information over the network.",
+        "short": "System Network Connections Discovery"
+    },
+    "T1050": {
+        "long": "When operating systems boot up, they can start programs or applications called services that perform background system functions.  A service's configuration information, including the file path to the service's executable, is stored in the Windows Registry.",
+        "short": "New Service"
+    },
+    "T1051": {
+        "long": "Adversaries may add malicious content to an internally accessible website through an open network file share that contains the website's webroot or Web content directory   and then browse to that content with a Web browser to cause the server to execute the malicious content. The malicious content will typically run under the context and permissions of the Web server process, often resulting in local system or administrative privileges, depending on how the Web server is configured.",
+        "short": "Shared Webroot"
+    },
+    "T1052": {
+        "long": "In certain circumstances, such as an air-gapped network compromise, exfiltration could occur via a physical medium or device introduced by a user. Such media could be an external hard drive, USB drive, cellular phone, MP3 player, or other removable storage and processing device. The physical medium or device could be used as the final exfiltration point or to hop between otherwise disconnected systems.",
+        "short": "Exfiltration Over Physical Medium"
+    },
+    "T1053": {
+        "long": "Utilities such as at and schtasks, along with the Windows Task Scheduler, can be used to schedule programs or scripts to be executed at a date and time. A task can also be scheduled on a remote system, provided the proper authentication is met to use RPC and file and printer sharing is turned on. Scheduling a task on a remote system typically required being a member of the Administrators group on the the remote system.",
+        "short": "Scheduled Task"
+    },
+    "T1054": {
+        "long": "An adversary may attempt to block indicators or events typically captured by sensors from being gathered and analyzed. This could include modifying sensor settings stored in configuration files and/or Registry keys to disable or maliciously redirect event telemetry.",
+        "short": "Indicator Blocking"
+    },
+    "T1055": {
+        "long": "Process injection is a method of executing arbitrary code in the address space of a separate live process. Running code in the context of another process may allow access to the process's memory, system/network resources, and possibly elevated privileges. Execution via process injection may also evade detection from security products since the execution is masked under a legitimate process.",
+        "short": "Process Injection"
+    },
+    "T1056": {
+        "long": "Adversaries can use methods of capturing user input for obtaining credentials for Valid Accounts and information Collection that include keylogging and user input field interception.",
+        "short": "Input Capture"
+    },
+    "T1057": {
+        "long": "Adversaries may attempt to get information about running processes on a system. Information obtained could be used to gain an understanding of common software running on systems within the network.",
+        "short": "Process Discovery"
+    },
+    "T1058": {
+        "long": "Windows stores local service configuration information in the Registry under HKLM\\SYSTEM\\CurrentControlSet\\Services. The information stored under a service's Registry keys can be manipulated to modify a service's execution parameters through tools such as the service controller, sc.exe, PowerShell, or Reg. Access to Registry keys is controlled through Access Control Lists and permissions.",
+        "short": "Service Registry Permissions Weakness"
+    },
+    "T1059": {
+        "long": "Command-line interfaces provide a way of interacting with computer systems and is a common feature across many types of operating system platforms.  One example command-line interface on Windows systems is cmd, which can be used to perform a number of tasks including execution of other software. Command-line interfaces can be interacted with locally or remotely via a remote desktop application, reverse shell session, etc. Commands that are executed run with the current permission level of the command-line interface process unless the command includes process invocation that changes permissions context for that execution (e.g. Scheduled Task).",
+        "short": "Command-Line Interface"
+    },
+    "T1060": {
+        "long": "Adding an entry to the \"run keys\" in the Registry or startup folder will cause the program referenced to be executed when a user logs in.  These programs will be executed under the context of the user and will have the account's associated permissions level.",
+        "short": "Registry Run Keys / Startup Folder"
+    },
+    "T1061": {
+        "long": "The Graphical User Interfaces (GUI) is a common way to interact with an operating system. Adversaries may use a system's GUI during an operation, commonly through a remote interactive session such as Remote Desktop Protocol, instead of through a Command-Line Interface, to search for information and execute files via mouse double-click events, the Windows Run command , or other potentially difficult to monitor interactions.",
+        "short": "Graphical User Interface"
+    },
+    "T1062": {
+        "long": "A type-1 hypervisor is a software layer that sits between the guest operating systems and system's hardware.  It presents a virtual running environment to an operating system. An example of a common hypervisor is Xen.  A type-1 hypervisor operates at a level below the operating system and could be designed with Rootkit functionality to hide its existence from the guest operating system.  A malicious hypervisor of this nature could be used to persist on systems through interruption.",
+        "short": "Hypervisor"
+    },
+    "T1063": {
+        "long": "Adversaries may attempt to get a listing of security software, configurations, defensive tools, and sensors that are installed on the system. This may include things such as local firewall rules, anti-virus, and virtualization. These checks may be built into early-stage remote access tools.",
+        "short": "Security Software Discovery"
+    },
+    "T1064": {
+        "long": "Adversaries may use scripts to aid in operations and perform multiple actions that would otherwise be manual. Scripting is useful for speeding up operational tasks and reducing the time required to gain access to critical resources. Some scripting languages may be used to bypass process monitoring mechanisms by directly interacting with the operating system at an API level instead of calling other programs. Common scripting languages for Windows include VBScript and PowerShell but could also be in the form of command-line batch scripts.",
+        "short": "Scripting"
+    },
+    "T1065": {
+        "long": "Adversaries may conduct C2 communications over a non-standard port to bypass proxies and firewalls that have been improperly configured.",
+        "short": "Uncommonly Used Port"
+    },
+    "T1066": {
+        "long": "If a malicious tool is detected and quarantined or otherwise curtailed, an adversary may be able to determine why the malicious tool was detected (the indicator), modify the tool by removing the indicator, and use the updated version that is no longer detected by the target's defensive systems or subsequent targets that may use similar systems.",
+        "short": "Indicator Removal from Tools"
+    },
+    "T1067": {
+        "long": "A bootkit is a malware variant that modifies the boot sectors of a hard drive, including the Master Boot Record (MBR) and Volume Boot Record (VBR).",
+        "short": "Bootkit"
+    },
+    "T1068": {
+        "long": "Exploitation of a software vulnerability occurs when an adversary takes advantage of a programming error in a program, service, or within the operating system software or kernel itself to execute adversary-controlled code. Security constructs such as permission levels will often hinder access to information and use of certain techniques, so adversaries will likely need to perform Privilege Escalation to include use of software exploitation to circumvent those restrictions.",
+        "short": "Exploitation for Privilege Escalation"
+    },
+    "T1069": {
+        "long": "Adversaries may attempt to find local system or domain-level groups and permissions settings.",
+        "short": "Permission Groups Discovery"
+    },
+    "T1070": {
+        "long": "Adversaries may delete or alter generated artifacts on a host system, including logs and potentially captured files such as quarantined malware. Locations and format of logs will vary, but typical organic system logs are captured as Windows events or Linux/macOS files such as Bash History and /var/log/* .",
+        "short": "Indicator Removal on Host"
+    },
+    "T1071": {
+        "long": "Adversaries may communicate using a common, standardized application layer protocol such as HTTP, HTTPS, SMTP, or DNS to avoid detection by blending in with existing traffic. Commands to the remote system, and often the results of those commands, will be embedded within the protocol traffic between the client and server.",
+        "short": "Standard Application Layer Protocol"
+    },
+    "T1072": {
+        "long": "Third-party applications and software deployment systems may be in use in the network environment for administration purposes (e.g., SCCM, VNC, HBSS, Altiris, etc.). If an adversary gains access to these systems, then they may be able to execute code.",
+        "short": "Third-party Software"
+    },
+    "T1073": {
+        "long": "Programs may specify DLLs that are loaded at runtime. Programs that improperly or vaguely specify a required DLL may be open to a vulnerability in which an unintended DLL is loaded. Side-loading vulnerabilities specifically occur when Windows Side-by-Side (WinSxS) manifests  are not explicit enough about characteristics of the DLL to be loaded. Adversaries may take advantage of a legitimate program that is vulnerable to side-loading to load a malicious DLL.",
+        "short": "DLL Side-Loading"
+    },
+    "T1074": {
+        "long": "Collected data is staged in a central location or directory prior to Exfiltration. Data may be kept in separate files or combined into one file through techniques such as Data Compressed or Data Encrypted.",
+        "short": "Data Staged"
+    },
+    "T1075": {
+        "long": "Pass the hash (PtH) is a method of authenticating as a user without having access to the user's cleartext password. This method bypasses standard authentication steps that require a cleartext password, moving directly into the portion of the authentication that uses the password hash. In this technique, valid password hashes for the account being used are captured using a Credential Access technique. Captured hashes are used with PtH to authenticate as that user. Once authenticated, PtH may be used to perform actions on local or remote systems.",
+        "short": "Pass the Hash"
+    },
+    "T1076": {
+        "long": "Remote desktop is a common feature in operating systems. It allows a user to log into an interactive session with a system desktop graphical user interface on a remote system. Microsoft refers to its implementation of the Remote Desktop Protocol (RDP) as Remote Desktop Services (RDS).  There are other implementations and third-party tools that provide graphical access Remote Services similar to RDS.",
+        "short": "Remote Desktop Protocol"
+    },
+    "T1077": {
+        "long": "Windows systems have hidden network shares that are accessible only to administrators and provide the ability for remote file copy and other administrative functions. Example network shares include C$, ADMIN$, and IPC$.",
+        "short": "Windows Admin Shares"
+    },
+    "T1078": {
+        "long": "Adversaries may steal the credentials of a specific user or service account using Credential Access techniques or capture credentials earlier in their reconnaissance process through social engineering for means of gaining Initial Access.",
+        "short": "Valid Accounts"
+    },
+    "T1079": {
+        "long": "An adversary performs C2 communications using multiple layers of encryption, typically (but not exclusively) tunneling a custom encryption scheme within a protocol encryption scheme such as HTTPS or SMTPS.",
+        "short": "Multilayer Encryption"
+    },
+    "T1080": {
+        "long": "Content stored on network drives or in other shared locations may be tainted by adding malicious programs, scripts, or exploit code to otherwise valid files. Once a user opens the shared tainted content, the malicious portion can be executed to run the adversary's code on a remote system. Adversaries may use tainted shared content to move laterally.",
+        "short": "Taint Shared Content"
+    },
+    "T1081": {
+        "long": "Adversaries may search local file systems and remote file shares for files containing passwords. These can be files created by users to store their own credentials, shared credential stores for a group of individuals, configuration files containing passwords for a system or service, or source code/binary files containing embedded passwords.",
+        "short": "Credentials in Files"
+    },
+    "T1082": {
+        "long": "An adversary may attempt to get detailed information about the operating system and hardware, including version, patches, hotfixes, service packs, and architecture.",
+        "short": "System Information Discovery"
+    },
+    "T1083": {
+        "long": "Adversaries may enumerate files and directories or may search in specific locations of a host or network share for certain information within a file system.",
+        "short": "File and Directory Discovery"
+    },
+    "T1084": {
+        "long": "Windows Management Instrumentation (WMI) can be used to install event filters, providers, consumers, and bindings that execute code when a defined event occurs. Adversaries may use the capabilities of WMI to subscribe to an event and execute arbitrary code when that event occurs, providing persistence on a system. Adversaries may attempt to evade detection of this technique by compiling WMI scripts.  Examples of events that may be subscribed to are the wall clock time or the computer's uptime.  Several threat groups have reportedly used this technique to maintain persistence.",
+        "short": "Windows Management Instrumentation Event Subscription"
+    },
+    "T1085": {
+        "long": "The rundll32.exe program can be called to execute an arbitrary binary. Adversaries may take advantage of this functionality to proxy execution of code to avoid triggering security tools that may not monitor execution of the rundll32.exe process because of whitelists or false positives from Windows using rundll32.exe for normal operations.",
+        "short": "Rundll32"
+    },
+    "T1086": {
+        "long": "PowerShell is a powerful interactive command-line interface and scripting environment included in the Windows operating system.  Adversaries can use PowerShell to perform a number of actions, including discovery of information and execution of code. Examples include the Start-Process cmdlet which can be used to run an executable and the Invoke-Command cmdlet which runs a command locally or on a remote computer.",
+        "short": "PowerShell"
+    },
+    "T1087": {
+        "long": "Adversaries may attempt to get a listing of local system or domain accounts.",
+        "short": "Account Discovery"
+    },
+    "T1088": {
+        "long": "Windows User Account Control (UAC) allows a program to elevate its privileges to perform a task under administrator-level permissions by prompting the user for confirmation. The impact to the user ranges from denying the operation under high enforcement to allowing the user to perform the action if they are in the local administrators group and click through the prompt or allowing them to enter an administrator password to complete the action.",
+        "short": "Bypass User Account Control"
+    },
+    "T1089": {
+        "long": "Adversaries may disable security tools to avoid possible detection of their tools and activities. This can take the form of killing security software or event logging processes, deleting Registry keys so that tools do not start at run time, or other methods to interfere with security scanning or event reporting.",
+        "short": "Disabling Security Tools"
+    },
+    "T1090": {
+        "long": "A connection proxy is used to direct network traffic between systems or act as an intermediary for network communications. Many tools exist that enable traffic redirection through proxies or port redirection, including HTRAN, ZXProxy, and ZXPortMap.",
+        "short": "Connection Proxy"
+    },
+    "T1091": {
+        "long": "Adversaries may move onto systems, possibly those on disconnected or air-gapped networks, by copying malware to removable media and taking advantage of Autorun features when the media is inserted into a system and executes. In the case of Lateral Movement, this may occur through modification of executable files stored on removable media or by copying malware and renaming it to look like a legitimate file to trick users into executing it on a separate system. In the case of Initial Access, this may occur through manual manipulation of the media, modification of systems used to initially format the media, or modification to the media's firmware itself.",
+        "short": "Replication Through Removable Media"
+    },
+    "T1092": {
+        "long": "Adversaries can perform command and control between compromised hosts on potentially disconnected networks using removable media to transfer commands from system to system. Both systems would need to be compromised, with the likelihood that an Internet-connected system was compromised first and the second through lateral movement by Replication Through Removable Media. Commands and files would be relayed from the disconnected system to the Internet-connected system to which the adversary has direct access.",
+        "short": "Communication Through Removable Media"
+    },
+    "T1093": {
+        "long": "Process hollowing occurs when a process is created in a suspended state then its memory is unmapped and replaced with malicious code. Similar to Process Injection, execution of the malicious code is masked under a legitimate process and may evade defenses and detection analysis.",
+        "short": "Process Hollowing"
+    },
+    "T1094": {
+        "long": "Adversaries may communicate using a custom command and control protocol instead of encapsulating commands/data in an existing Standard Application Layer Protocol. Implementations include mimicking well-known protocols or developing custom protocols (including raw sockets) on top of fundamental protocols provided by TCP/IP/another standard network stack.",
+        "short": "Custom Command and Control Protocol"
+    },
+    "T1095": {
+        "long": "Use of a standard non-application layer protocol for communication between host and C2 server or among infected hosts within a network. The list of possible protocols is extensive.  Specific examples include use of network layer protocols, such as the Internet Control Message Protocol (ICMP), transport layer protocols, such as the User Datagram Protocol (UDP), session layer protocols, such as Socket Secure (SOCKS), as well as redirected/tunneled protocols, such as Serial over LAN (SOL).",
+        "short": "Standard Non-Application Layer Protocol"
+    },
+    "T1096": {
+        "long": "Every New Technology File System (NTFS) formatted partition contains a Master File Table (MFT) that maintains a record for every file/directory on the partition.  Within MFT entries are file attributes,  such as Extended Attributes (EA) and Data [known as Alternate Data Streams (ADSs) when more than one Data attribute is present], that can be used to store arbitrary data (and even complete files).",
+        "short": "NTFS File Attributes"
+    },
+    "T1097": {
+        "long": "Pass the ticket (PtT) is a method of authenticating to a system using Kerberos tickets without having access to an account's password. Kerberos authentication can be used as the first step to lateral movement to a remote system.",
+        "short": "Pass the Ticket"
+    },
+    "T1098": {
+        "long": "Account manipulation may aid adversaries in maintaining access to credentials and certain permission levels within an environment. Manipulation could consist of modifying permissions, modifying credentials, adding or changing permission groups, modifying account settings, or modifying how authentication is performed. These actions could also include account activity designed to subvert security policies, such as performing iterative password updates to subvert password duration policies and preserve the life of compromised credentials. In order to create or manipulate accounts, the adversary must already have sufficient permissions on systems or the domain.",
+        "short": "Account Manipulation"
+    },
+    "T1099": {
+        "long": "Timestomping is a technique that modifies the timestamps of a file (the modify, access, create, and change times), often to mimic files that are in the same folder. This is done, for example, on files that have been modified or created by the adversary so that they do not appear conspicuous to forensic investigators or file analysis tools. Timestomping may be used along with file name Masquerading to hide malware and tools.",
+        "short": "Timestomp"
+    },
+    "T1100": {
+        "long": "A Web shell is a Web script that is placed on an openly accessible Web server to allow an adversary to use the Web server as a gateway into a network. A Web shell may provide a set of functions to execute or a command-line interface on the system that hosts the Web server. In addition to a server-side script, a Web shell may have a client interface program that is used to talk to the Web server (see, for example, China Chopper Web shell client).",
+        "short": "Web Shell"
+    },
+    "T1101": {
+        "long": "Windows Security Support Provider (SSP) DLLs are loaded into the Local Security Authority (LSA) process at system start. Once loaded into the LSA, SSP DLLs have access to encrypted and plaintext passwords that are stored in Windows, such as any logged-on user's Domain password or smart card PINs. The SSP configuration is stored in two Registry keys: HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\Security Packages and HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\OSConfig\\Security Packages. An adversary may modify these Registry keys to add new SSPs, which will be loaded the next time the system boots, or when the AddSecurityPackage Windows API function is called.",
+        "short": "Security Support Provider"
+    },
+    "T1102": {
+        "long": "Adversaries may use an existing, legitimate external Web service as a means for relaying commands to a compromised system.",
+        "short": "Web Service"
+    },
+    "T1103": {
+        "long": "Dynamic-link libraries (DLLs) that are specified in the AppInit_DLLs value in the Registry keys HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows or HKEY_LOCAL_MACHINE\\Software\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\Windows are loaded by user32.dll into every process that loads user32.dll. In practice this is nearly every program, since user32.dll is a very common library.  Similar to Process Injection, these values can be abused to obtain persistence and privilege escalation by causing a malicious DLL to be loaded and run in the context of separate processes on the computer.",
+        "short": "AppInit DLLs"
+    },
+    "T1104": {
+        "long": "Adversaries may create multiple stages for command and control that are employed under different conditions or for certain functions. Use of multiple stages may obfuscate the command and control channel to make detection more difficult.",
+        "short": "Multi-Stage Channels"
+    },
+    "T1105": {
+        "long": "Files may be copied from one system to another to stage adversary tools or other files over the course of an operation. Files may be copied from an external adversary-controlled system through the Command and Control channel to bring tools into the victim network or through alternate protocols with another tool such as FTP. Files can also be copied over on Mac and Linux with native tools like scp, rsync, and sftp.",
+        "short": "Remote File Copy"
+    },
+    "T1106": {
+        "long": "Adversary tools may directly use the Windows application programming interface (API) to execute binaries. Functions such as the Windows API CreateProcess will allow programs and scripts to start other processes with proper path and argument parameters.",
+        "short": "Execution through API"
+    },
+    "T1107": {
+        "long": "Malware, tools, or other non-native files dropped or created on a system by an adversary may leave traces behind as to what was done within a network and how. Adversaries may remove these files over the course of an intrusion to keep their footprint low or remove them at the end as part of the post-intrusion cleanup process.",
+        "short": "File Deletion"
+    },
+    "T1108": {
+        "long": "Adversaries may use more than one remote access tool with varying command and control protocols as a hedge against detection. If one type of tool is detected and blocked or removed as a response but the organization did not gain a full understanding of the adversary's tools and access, then the adversary will be able to retain access to the network. Adversaries may also attempt to gain access to Valid Accounts to use External Remote Services such as external VPNs as a way to maintain access despite interruptions to remote access tools deployed within a target network.",
+        "short": "Redundant Access"
+    },
+    "T1109": {
+        "long": "Some adversaries may employ sophisticated means to compromise computer components and install malicious firmware that will execute adversary code outside of the operating system and main system firmware or BIOS. This technique may be similar to System Firmware but conducted upon other system components that may not have the same capability or level of integrity checking. Malicious device firmware could provide both a persistent level of access to systems despite potential typical failures to maintain access and hard disk re-images, as well as a way to evade host software-based defenses and integrity checks.",
+        "short": "Component Firmware"
+    },
+    "T1110": {
+        "long": "Adversaries may use brute force techniques to attempt access to accounts when passwords are unknown or when password hashes are obtained.",
+        "short": "Brute Force"
+    },
+    "T1111": {
+        "long": "Use of two- or multifactor authentication is recommended and provides a higher level of security than user names and passwords alone, but organizations should be aware of techniques that could be used to intercept and bypass these security mechanisms. Adversaries may target authentication mechanisms, such as smart cards, to gain access to systems, services, and network resources.",
+        "short": "Two-Factor Authentication Interception"
+    },
+    "T1112": {
+        "long": "Adversaries may interact with the Windows Registry to hide configuration information within Registry keys, remove information as part of cleaning up, or as part of other techniques to aid in Persistence and Execution.",
+        "short": "Modify Registry"
+    },
+    "T1113": {
+        "long": "Adversaries may attempt to take screen captures of the desktop to gather information over the course of an operation. Screen capturing functionality may be included as a feature of a remote access tool used in post-compromise operations.",
+        "short": "Screen Capture"
+    },
+    "T1114": {
+        "long": "Adversaries may target user email to collect sensitive information from a target.",
+        "short": "Email Collection"
+    },
+    "T1115": {
+        "long": "Adversaries may collect data stored in the Windows clipboard from users copying information within or between applications.",
+        "short": "Clipboard Data"
+    },
+    "T1116": {
+        "long": "Code signing provides a level of authenticity on a binary from the developer and a guarantee that the binary has not been tampered with.  However, adversaries are known to use code signing certificates to masquerade malware and tools as legitimate binaries . The certificates used during an operation may be created, forged, or stolen by the adversary.",
+        "short": "Code Signing"
+    },
+    "T1117": {
+        "long": "Regsvr32.exe is a command-line program used to register and unregister object linking and embedding controls, including dynamic link libraries (DLLs), on Windows systems. Regsvr32.exe can be used to execute arbitrary binaries.",
+        "short": "Regsvr32"
+    },
+    "T1118": {
+        "long": "InstallUtil is a command-line utility that allows for installation and uninstallation of resources by executing specific installer components specified in .NET binaries.  InstallUtil is located in the .NET directories on a Windows system: C:\\Windows\\Microsoft.NET\\Framework\\v\\InstallUtil.exe and C:\\Windows\\Microsoft.NET\\Framework64\\v\\InstallUtil.exe. InstallUtil.exe is digitally signed by Microsoft.",
+        "short": "InstallUtil"
+    },
+    "T1119": {
+        "long": "Once established within a system or network, an adversary may use automated techniques for collecting internal data. Methods for performing this technique could include use of Scripting to search for and copy information fitting set criteria such as file type, location, or name at specific time intervals. This functionality could also be built into remote access tools.",
+        "short": "Automated Collection"
+    },
+    "T1120": {
+        "long": "Adversaries may attempt to gather information about attached peripheral devices and components connected to a computer system. The information may be used to enhance their awareness of the system and network environment or may be used for further actions.",
+        "short": "Peripheral Device Discovery"
+    },
+    "T1121": {
+        "long": "Regsvcs and Regasm are Windows command-line utilities that are used to register .NET Component Object Model (COM) assemblies. Both are digitally signed by Microsoft.",
+        "short": "Regsvcs/Regasm"
+    },
+    "T1122": {
+        "long": "The   (COM) is a system within Windows to enable interaction between software components through the operating system.  Adversaries can use this system to insert malicious code that can be executed in place of legitimate software through hijacking the COM references and relationships as a means for persistence. Hijacking a COM object requires a change in the Windows Registry to replace a reference to a legitimate system component which may cause that component to not work when executed. When that system component is executed through normal system operation the adversary's code will be executed instead.  An adversary is likely to hijack objects that are used frequently enough to maintain a consistent level of persistence, but are unlikely to break noticeable functionality within the system as to avoid system instability that could lead to detection.",
+        "short": "Component Object Model Hijacking"
+    },
+    "T1123": {
+        "long": "An adversary can leverage a computer's peripheral devices (e.g., microphones and webcams) or applications (e.g., voice and video call services) to capture audio recordings for the purpose of listening into sensitive conversations to gather information.",
+        "short": "Audio Capture"
+    },
+    "T1124": {
+        "long": "The system time is set and stored by the Windows Time Service within a domain to maintain time synchronization between systems and services in an enterprise network.",
+        "short": "System Time Discovery"
+    },
+    "T1125": {
+        "long": "An adversary can leverage a computer's peripheral devices (e.g., integrated cameras or webcams) or applications (e.g., video call services) to capture video recordings for the purpose of gathering information. Images may also be captured from devices or applications, potentially in specified intervals, in lieu of video files.",
+        "short": "Video Capture"
+    },
+    "T1126": {
+        "long": "Windows shared drive and Windows Admin Shares connections can be removed when no longer needed. Net is an example utility that can be used to remove network share connections with the net use \\system\\share /delete command.",
+        "short": "Network Share Connection Removal"
+    },
+    "T1127": {
+        "long": "There are many utilities used for software development related tasks that can be used to execute code in various forms to assist in development, debugging, and reverse engineering. These utilities may often be signed with legitimate certificates that allow them to execute on a system and proxy execution of malicious code through a trusted process that effectively bypasses application whitelisting defensive solutions.",
+        "short": "Trusted Developer Utilities"
+    },
+    "T1128": {
+        "long": "Netsh.exe (also referred to as Netshell) is a command-line scripting utility used to interact with the network configuration of a system. It contains functionality to add helper DLLs for extending functionality of the utility.  The paths to registered netsh.exe helper DLLs are entered into the Windows Registry at HKLM\\SOFTWARE\\Microsoft\\Netsh.",
+        "short": "Netsh Helper DLL"
+    },
+    "T1129": {
+        "long": "The Windows module loader can be instructed to load DLLs from arbitrary local paths and arbitrary Universal Naming Convention (UNC) network paths. This functionality resides in NTDLL.dll and is part of the Windows Native API which is called from functions like CreateProcess(), LoadLibrary(), etc. of the Win32 API.",
+        "short": "Execution through Module Load"
+    },
+    "T1130": {
+        "long": "Root certificates are used in public key cryptography to identify a root certificate authority (CA). When a root certificate is installed, the system or application will trust certificates in the root's chain of trust that have been signed by the root certificate.  Certificates are commonly used for establishing secure TLS/SSL communications within a web browser. When a user attempts to browse a website that presents a certificate that is not trusted an error message will be displayed to warn the user of the security risk. Depending on the security settings, the browser may not allow the user to establish a connection to the website.",
+        "short": "Install Root Certificate"
+    },
+    "T1131": {
+        "long": "Windows Authentication Package DLLs are loaded by the Local Security Authority (LSA) process at system start. They provide support for multiple logon processes and multiple security protocols to the operating system.",
+        "short": "Authentication Package"
+    },
+    "T1132": {
+        "long": "Command and control (C2) information is encoded using a standard data encoding system. Use of data encoding may be to adhere to existing protocol specifications and includes use of ASCII, Unicode, Base64,  MIME, UTF-8, or other binary-to-text and character encoding systems.   Some data encoding systems may also result in data compression, such as gzip.",
+        "short": "Data Encoding"
+    },
+    "T1133": {
+        "long": "Remote services such as VPNs, Citrix, and other access mechanisms allow users to connect to internal enterprise network resources from external locations. There are often remote service gateways that manage connections and credential authentication for these services. Services such as Windows Remote Management can also be used externally.",
+        "short": "External Remote Services"
+    },
+    "T1134": {
+        "long": "Windows uses access tokens to determine the ownership of a running process. A user can manipulate access tokens to make a running process appear as though it belongs to someone other than the user that started the process. When this occurs, the process also takes on the security context associated with the new token. For example, Microsoft promotes the use of access tokens as a security best practice. Administrators should log in as a standard user but run their tools with administrator privileges using the built-in access token manipulation command runas.",
+        "short": "Access Token Manipulation"
+    },
+    "T1135": {
+        "long": "Networks often contain shared network drives and folders that enable users to access file directories on various systems across a network.",
+        "short": "Network Share Discovery"
+    },
+    "T1136": {
+        "long": "Adversaries with a sufficient level of access may create a local system or domain account. Such accounts may be used for persistence that do not require persistent remote access tools to be deployed on the system.",
+        "short": "Create Account"
+    },
+    "T1137": {
+        "long": "Microsoft Office is a fairly common application suite on Windows-based operating systems within an enterprise network. There are multiple mechanisms that can be used with Office for persistence when an Office-based application is started.",
+        "short": "Office Application Startup"
+    },
+    "T1138": {
+        "long": "The Microsoft Windows Application Compatibility Infrastructure/Framework (Application Shim) was created to allow for backward compatibility of software as the operating system codebase changes over time. For example, the application shimming feature allows developers to apply fixes to applications (without rewriting code) that were created for Windows XP so that it will work with Windows 10.  Within the framework, shims are created to act as a buffer between the program (or more specifically, the Import Address Table) and the Windows OS. When a program is executed, the shim cache is referenced to determine if the program requires the use of the shim database (.sdb). If so, the shim database uses Hooking to redirect the code as necessary in order to communicate with the OS. A list of all shims currently installed by the default Windows installer (sdbinst.exe) is kept in:",
+        "short": "Application Shimming"
+    },
+    "T1139": {
+        "long": "Bash keeps track of the commands users type on the command-line with the \"history\" utility. Once a user logs out, the history is flushed to the user\u2019s .bash_history file. For each user, this file resides at the same location: ~/.bash_history. Typically, this file keeps track of the user\u2019s last 500 commands. Users often type usernames and passwords on the command-line as parameters to programs, which then get saved to this file when they log out. Attackers can abuse this by looking through the file for potential credentials.",
+        "short": "Bash History"
+    },
+    "T1140": {
+        "long": "Adversaries may use Obfuscated Files or Information to hide artifacts of an intrusion from analysis. They may require separate mechanisms to decode or deobfuscate that information depending on how they intend to use it. Methods for doing that include built-in functionality of malware, Scripting, PowerShell, or by using utilities present on the system.",
+        "short": "Deobfuscate/Decode Files or Information"
+    },
+    "T1141": {
+        "long": "When programs are executed that need additional privileges than are present in the current user context, it is common for the operating system to prompt the user for proper credentials to authorize the elevated privileges for the task. Adversaries can mimic this functionality to prompt users for credentials with a normal-looking prompt. This type of prompt can be accomplished with AppleScript:",
+        "short": "Input Prompt"
+    },
+    "T1142": {
+        "long": "Keychains are the built-in way for macOS to keep track of users' passwords and credentials for many services and features such as WiFi passwords, websites, secure notes, certificates, and Kerberos. Keychain files are located in ~/Library/Keychains/,/Library/Keychains/, and /Network/Library/Keychains/.  The security command-line utility, which is built into macOS by default, provides a useful way to manage these credentials.",
+        "short": "Keychain"
+    },
+    "T1143": {
+        "long": "The configurations for how applications run on macOS and OS X are listed in property list (plist) files. One of the tags in these files can be apple.awt.UIElement, which allows for Java applications to prevent the application's icon from appearing in the Dock. A common use for this is when applications run in the system tray, but don't also want to show up in the Dock. However, adversaries can abuse this feature and hide their running window  .",
+        "short": "Hidden Window"
+    },
+    "T1144": {
+        "long": "In macOS and OS X, when applications or programs are downloaded from the internet, there is a special attribute set on the file called com.apple.quarantine. This attribute is read by Apple's Gatekeeper defense program at execution time and provides a prompt to the user to allow or deny execution.",
+        "short": "Gatekeeper Bypass"
+    },
+    "T1145": {
+        "long": "Private cryptographic keys and certificates are used for authentication, encryption/decryption, and digital signatures.",
+        "short": "Private Keys"
+    },
+    "T1146": {
+        "long": "macOS and Linux both keep track of the commands users type in their terminal so that users can easily remember what they've done. These logs can be accessed in a few different ways. While logged in, this command history is tracked in a file pointed to by the environment variable HISTFILE. When a user logs off a system, this information is flushed to a file in the user's home directory called ~/.bash_history. The benefit of this is that it allows users to go back to commands they've used before in different sessions. Since everything typed on the command-line is saved, passwords passed in on the command line are also saved. Adversaries can abuse this by searching these files for cleartext passwords. Additionally, adversaries can use a variety of methods to prevent their own commands from appear in these logs such as unset HISTFILE, export HISTFILESIZE=0, history -c, rm ~/.bash_history.",
+        "short": "Clear Command History"
+    },
+    "T1147": {
+        "long": "Every user account in macOS has a userID associated with it. When creating a user, you can specify the userID for that account. There is a property value in /Library/Preferences/com.apple.loginwindow called Hide500Users that prevents users with userIDs 500 and lower from appearing at the login screen. By using the Create Account technique with a userID under 500 and enabling this property (setting it to Yes), an adversary can hide their user accounts much more easily: sudo dscl . -create /Users/username UniqueID 401 .",
+        "short": "Hidden Users"
+    },
+    "T1148": {
+        "long": "The HISTCONTROL environment variable keeps track of what should be saved by the history command and eventually into the ~/.bash_history file when a user logs out. This setting can be configured to ignore commands that start with a space by simply setting it to \"ignorespace\". HISTCONTROL can also be set to ignore duplicate commands by setting it to \"ignoredups\". In some Linux systems, this is set by default to \"ignoreboth\" which covers both of the previous examples. This means that \u201c ls\u201d will not be saved, but \u201cls\u201d would be saved by history. HISTCONTROL does not exist by default on macOS, but can be set by the user and will be respected. Adversaries can use this to operate without leaving traces by simply prepending a space to all of their terminal commands.",
+        "short": "HISTCONTROL"
+    },
+    "T1149": {
+        "long": "As of OS X 10.8, mach-O binaries introduced a new header called LC_MAIN that points to the binary\u2019s entry point for execution. Previously, there were two headers to achieve this same effect: LC_THREAD and LC_UNIXTHREAD  . The entry point for a binary can be hijacked so that initial execution flows to a malicious addition (either another section or a code cave) and then goes back to the initial entry point so that the victim doesn\u2019t know anything was different  . By modifying a binary in this way, application whitelisting can be bypassed because the file name or application path is still the same.",
+        "short": "LC_MAIN Hijacking"
+    },
+    "T1150": {
+        "long": "Property list (plist) files contain all of the information that macOS and OS X uses to configure applications and services. These files are UTF-8 encoded and formatted like XML documents via a series of keys surrounded by < >. They detail when programs should execute, file paths to the executables, program arguments, required OS permissions, and many others. plists are located in certain locations depending on their purpose such as /Library/Preferences (which execute with elevated privileges) and ~/Library/Preferences (which execute with a user's privileges).",
+        "short": "Plist Modification"
+    },
+    "T1151": {
+        "long": "Adversaries can hide a program's true filetype by changing the extension of a file. With certain file types (specifically this does not work with .app extensions), appending a space to the end of a filename will change how the file is processed by the operating system. For example, if there is a Mach-O executable file called evil.bin, when it is double clicked by a user, it will launch Terminal.app and execute. If this file is renamed to evil.txt, then when double clicked by a user, it will launch with the default text editing application (not executing the binary). However, if the file is renamed to \"evil.txt \" (note the space at the end), then when double clicked by a user, the true file type is determined by the OS and handled appropriately and the binary will be executed .",
+        "short": "Space after Filename"
+    },
+    "T1152": {
+        "long": "Launchctl controls the macOS launchd process which handles things like launch agents and launch daemons, but can execute other commands or programs itself. Launchctl supports taking subcommands on the command-line, interactively, or even redirected from standard input. By loading or reloading launch agents or launch daemons, adversaries can install persistence or execute changes they made  . Running a command from launchctl is as simple as launchctl submit -l  -- /Path/to/thing/to/execute \"arg\" \"arg\" \"arg\". Loading, unloading, or reloading launch agents or launch daemons can require elevated privileges.",
+        "short": "Launchctl"
+    },
+    "T1153": {
+        "long": "The source command loads functions into the current shell or executes files in the current context. This built-in command can be run in two different ways source /path/to/filename [arguments] or . /path/to/filename [arguments]. Take note of the space after the \".\". Without a space, a new shell is created that runs the program instead of running the program within the current context. This is often used to make certain features or functions available to a shell or to update a specific shell's environment.",
+        "short": "Source"
+    },
+    "T1154": {
+        "long": "The trap command allows programs and shells to specify commands that will be executed upon receiving interrupt signals. A common situation is a script allowing for graceful termination and handling of common  keyboard interrupts like ctrl+c and ctrl+d. Adversaries can use this to register code to be executed when the shell encounters specific interrupts either to gain execution or as a persistence mechanism. Trap commands are of the following format trap 'command list' signals where \"command list\" will be executed when \"signals\" are received.",
+        "short": "Trap"
+    },
+    "T1155": {
+        "long": "macOS and OS X applications send AppleEvent messages to each other for interprocess communications (IPC). These messages can be easily scripted with AppleScript for local or remote IPC. Osascript executes AppleScript and any other Open Scripting Architecture (OSA) language scripts. A list of OSA languages installed on a system can be found by using the osalang program.",
+        "short": "AppleScript"
+    },
+    "T1156": {
+        "long": "~/.bash_profile and ~/.bashrc are executed in a user's context when a new shell opens or when a user logs in so that their environment is set correctly. ~/.bash_profile is executed for login shells and ~/.bashrc is executed for interactive non-login shells. This means that when a user logs in (via username and password) to the console (either locally or remotely via something like SSH), ~/.bash_profile is executed before the initial command prompt is returned to the user. After that, every time a new shell is opened, ~/.bashrc is executed. This allows users more fine grained control over when they want certain commands executed.",
+        "short": ".bash_profile and .bashrc"
+    },
+    "T1157": {
+        "long": "macOS and OS X use a common method to look for required dynamic libraries (dylib) to load into a program based on search paths. Adversaries can take advantage of ambiguous paths to plant dylibs to gain privilege escalation or persistence.",
+        "short": "Dylib Hijacking"
+    },
+    "T1158": {
+        "long": "To prevent normal users from accidentally changing special files on a system, most operating systems have the concept of a \u2018hidden\u2019 file. These files don\u2019t show up when a user browses the file system with a GUI or when using normal commands on the command line. Users must explicitly ask to show the hidden files either via a series of Graphical User Interface (GUI) prompts or with command line switches (dir /a for Windows and ls \u2013a for Linux and macOS).",
+        "short": "Hidden Files and Directories"
+    },
+    "T1159": {
+        "long": "Per Apple\u2019s developer documentation, when a user logs in, a per-user launchd process is started which loads the parameters for each launch-on-demand user agent from the property list (plist) files found in /System/Library/LaunchAgents, /Library/LaunchAgents, and $HOME/Library/LaunchAgents   . These launch agents have property list files which point to the executables that will be launched .",
+        "short": "Launch Agent"
+    },
+    "T1160": {
+        "long": "Per Apple\u2019s developer documentation, when macOS and OS X boot up, launchd is run to finish system initialization. This process loads the parameters for each launch-on-demand system-level daemon from the property list (plist) files found in /System/Library/LaunchDaemons and /Library/LaunchDaemons . These LaunchDaemons have property list files which point to the executables that will be launched .",
+        "short": "Launch Daemon"
+    },
+    "T1161": {
+        "long": "Mach-O binaries have a series of headers that are used to perform certain operations when a binary is loaded. The LC_LOAD_DYLIB header in a Mach-O binary tells macOS and OS X which dynamic libraries (dylibs) to load during execution time. These can be added ad-hoc to the compiled binary as long adjustments are made to the rest of the fields and dependencies . There are tools available to perform these changes. Any changes will invalidate digital signatures on binaries because the binary is being modified. Adversaries can remediate this issue by simply removing the LC_CODE_SIGNATURE command from the binary so that the signature isn\u2019t checked at load time .",
+        "short": "LC_LOAD_DYLIB Addition"
+    },
+    "T1162": {
+        "long": "MacOS provides the option to list specific applications to run when a user logs in. These applications run under the logged in user's context, and will be started every time the user logs in. Login items installed using the Service Management Framework are not visible in the System Preferences and can only be removed by the application that created them . Users have direct control over login items installed using a shared file list which are also visible in System Preferences . These login items are stored in the user's ~/Library/Preferences/ directory in a plist file called com.apple.loginitems.plist . Some of these applications can open visible dialogs to the user, but they don\u2019t all have to since there is an option to \u2018Hide\u2019 the window. If an adversary can register their own login item or modified an existing one, then they can use it to execute their code for a persistence mechanism each time the user logs in  . The API method  SMLoginItemSetEnabled  can be used to set Login Items, but scripting languages like AppleScript can do this as well  .",
+        "short": "Login Item"
+    },
+    "T1163": {
+        "long": "During the boot process, macOS executes source /etc/rc.common, which is a shell script containing various utility functions. This file also defines routines for processing command-line arguments and for gathering system settings, and is thus recommended to include in the start of Startup Item Scripts . In macOS and OS X, this is now a deprecated technique in favor of launch agents and launch daemons, but is currently still used.",
+        "short": "Rc.common"
+    },
+    "T1164": {
+        "long": "Starting in Mac OS X 10.7 (Lion), users can specify certain applications to be re-opened when a user reboots their machine. While this is usually done via a Graphical User Interface (GUI) on an app-by-app basis, there are property list files (plist) that contain this information as well located at ~/Library/Preferences/com.apple.loginwindow.plist and ~/Library/Preferences/ByHost/com.apple.loginwindow.* .plist.",
+        "short": "Re-opened Applications"
+    },
+    "T1165": {
+        "long": "Per Apple\u2019s documentation, startup items execute during the final phase of the boot process and contain shell scripts or other executable files along with configuration information used by the system to determine the execution order for all startup items . This is technically a deprecated version (superseded by Launch Daemons), and thus the appropriate folder, /Library/StartupItems isn\u2019t guaranteed to exist on the system by default, but does appear to exist by default on macOS Sierra. A startup item is a directory whose executable and configuration property list (plist), StartupParameters.plist, reside in the top-level directory.",
+        "short": "Startup Items"
+    },
+    "T1166": {
+        "long": "When the setuid or setgid bits are set on Linux or macOS for an application, this means that the application will run with the privileges of the owning user or group respectively  . Normally an application is run in the current user\u2019s context, regardless of which user or group owns the application. There are instances where programs need to be executed in an elevated context to function properly, but the user running them doesn\u2019t need the elevated privileges. Instead of creating an entry in the sudoers file, which must be done by root, any user can specify the setuid or setgid flag to be set for their own applications. These bits are indicated with an \"s\" instead of an \"x\" when viewing a file's attributes via ls -l. The chmod program can set these bits with via bitmasking, chmod 4777 [file] or via shorthand naming, chmod u+s [file].",
+        "short": "Setuid and Setgid"
+    },
+    "T1167": {
+        "long": "In OS X prior to El Capitan, users with root access can read plaintext keychain passwords of logged-in users because Apple\u2019s keychain implementation allows these credentials to be cached so that users are not repeatedly prompted for passwords.   Apple\u2019s securityd utility takes the user\u2019s logon password, encrypts it with PBKDF2, and stores this master key in memory. Apple also uses a set of keys and algorithms to encrypt the user\u2019s password, but once the master key is found, an attacker need only iterate over the other values to unlock the final password.",
+        "short": "Securityd Memory"
+    },
+    "T1168": {
+        "long": "On Linux and macOS systems, multiple methods are supported for creating pre-scheduled and periodic background jobs: cron,  at,  and launchd.  Unlike Scheduled Task on Windows systems, job scheduling on Linux-based systems cannot be done remotely unless used in conjunction within an established remote session, like secure shell (SSH).",
+        "short": "Local Job Scheduling"
+    },
+    "T1169": {
+        "long": "The sudoers file, /etc/sudoers, describes which users can run which commands and from which terminals. This also describes which commands users can run as other users or groups. This provides the idea of least privilege such that users are running in their lowest possible permissions for most of the time and only elevate to other users or permissions as needed, typically by prompting for a password. However, the sudoers file can also specify when to not prompt users for passwords with a line like user1 ALL=(ALL) NOPASSWD: ALL .",
+        "short": "Sudo"
+    },
+    "T1170": {
+        "long": "Mshta.exe is a utility that executes Microsoft HTML Applications (HTA). HTA files have the file extension .hta.  HTAs are standalone applications that execute using the same models and technologies of Internet Explorer, but outside of the browser.",
+        "short": "Mshta"
+    },
+    "T1171": {
+        "long": "Link-Local Multicast Name Resolution (LLMNR) and NetBIOS Name Service (NBT-NS) are Microsoft Windows components that serve as alternate methods of host identification. LLMNR is based upon the Domain Name System (DNS) format and allows hosts on the same local link to perform name resolution for other hosts. NBT-NS identifies systems on a local network by their NetBIOS name.",
+        "short": "LLMNR/NBT-NS Poisoning"
+    },
+    "T1172": {
+        "long": "Domain fronting takes advantage of routing schemes in Content Delivery Networks (CDNs) and other services which host multiple domains to obfuscate the intended destination of HTTPS traffic or traffic tunneled through HTTPS.  The technique involves using different domain names in the SNI field of the TLS header and the Host field of the HTTP header. If both domains are served from the same CDN, then the CDN may route to the address specified in the HTTP header after unwrapping the TLS header. A variation of the the technique, \"domainless\" fronting, utilizes a SNI field that is left blank; this may allow the fronting to work even when the CDN attempts to validate that the SNI and HTTP Host fields match (if the blank SNI fields are ignored).",
+        "short": "Domain Fronting"
+    },
+    "T1173": {
+        "long": "Windows Dynamic Data Exchange (DDE) is a client-server protocol for one-time and/or continuous inter-process communication (IPC) between applications. Once a link is established, applications can autonomously exchange transactions consisting of strings, warm data links (notifications when a data item changes), hot data links (duplications of changes to a data item), and requests for command execution.",
+        "short": "Dynamic Data Exchange"
+    },
+    "T1174": {
+        "long": "Windows password filters are password policy enforcement mechanisms for both domain and local accounts. Filters are implemented as dynamic link libraries (DLLs) containing a method to validate potential passwords against password policies. Filter DLLs can be positioned on local computers for local accounts and/or domain controllers for domain accounts.",
+        "short": "Password Filter DLL"
+    },
+    "T1175": {
+        "long": "Windows Distributed Component Object Model (DCOM) is transparent middleware that extends the functionality of Component Object Model (COM)  beyond a local computer using remote procedure call (RPC) technology. COM is a component of the Windows application programming interface (API) that enables interaction between software objects. Through COM, a client object can call methods of server objects, which are typically Dynamic Link Libraries (DLL) or executables (EXE).",
+        "short": "Distributed Component Object Model"
+    },
+    "T1176": {
+        "long": "Browser extensions or plugins are small programs that can add functionality and customize aspects of internet browsers. They can be installed directly or through a browser's app store. Extensions generally have access and permissions to everything that the browser can access.",
+        "short": "Browser Extensions"
+    },
+    "T1177": {
+        "long": "The Windows security subsystem is a set of components that manage and enforce the security policy for a computer or domain. The Local Security Authority (LSA) is the main component responsible for local security policy and user authentication. The LSA includes multiple dynamic link libraries (DLLs) associated with various other security functions, all of which run in the context of the LSA Subsystem Service (LSASS) lsass.exe process.",
+        "short": "LSASS Driver"
+    },
+    "T1178": {
+        "long": "The Windows security identifier (SID) is a unique value that identifies a user or group account. SIDs are used by Windows security in both security descriptors and access tokens.  An account can hold additional SIDs in the SID-History Active Directory attribute , allowing inter-operable account migration between domains (e.g., all values in SID-History are included in access tokens).",
+        "short": "SID-History Injection"
+    },
+    "T1179": {
+        "long": "Windows processes often leverage application programming interface (API) functions to perform tasks that require reusable system resources. Windows API functions are typically stored in dynamic-link libraries (DLLs) as exported functions. Hooking involves redirecting calls to these functions and can be implemented via:",
+        "short": "Hooking"
+    },
+    "T1180": {
+        "long": "Screensavers are programs that execute after a configurable time of user inactivity and consist of Portable Executable (PE) files with a .scr file extension.  The Windows screensaver application scrnsave.exe is located in C:\\Windows\\System32\\ along with screensavers included with base Windows installations. The following screensaver settings are stored in the Registry (HKCU\\Control Panel\\Desktop\\) and could be manipulated to achieve persistence:",
+        "short": "Screensaver"
+    },
+    "T1181": {
+        "long": "Before creating a window, graphical Windows-based processes must prescribe to or register a windows class, which stipulate appearance and behavior (via windows procedures, which are functions that handle input/output of data).  Registration of new windows classes can include a request for up to 40 bytes of extra window memory (EWM) to be appended to the allocated memory of each instance of that class. This EWM is intended to store data specific to that window and has specific application programming interface (API) functions to set and get its value.",
+        "short": "Extra Window Memory Injection"
+    },
+    "T1182": {
+        "long": "Dynamic-link libraries (DLLs) that are specified in the AppCertDLLs value in the Registry key HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager are loaded into every process that calls the ubiquitously used application programming interface (API) functions:",
+        "short": "AppCert DLLs"
+    },
+    "T1183": {
+        "long": "Image File Execution Options (IFEO) enable a developer to attach a debugger to an application. When a process is created, a debugger present in an application\u2019s IFEO will be prepended to the application\u2019s name, effectively launching the new process under the debugger (e.g., \u201cC:\\dbg\\ntsd.exe -g  notepad.exe\u201d).",
+        "short": "Image File Execution Options Injection"
+    },
+    "T1184": {
+        "long": "Secure Shell (SSH) is a standard means of remote access on Linux and macOS systems. It allows a user to connect to another system via an encrypted tunnel, commonly authenticating through a password, certificate or the use of an asymmetric encryption key pair.",
+        "short": "SSH Hijacking"
+    },
+    "T1185": {
+        "long": "Adversaries can take advantage of security vulnerabilities and inherent functionality in browser software to change content, modify behavior, and intercept information as part of various man in the browser techniques.",
+        "short": "Man in the Browser"
+    },
+    "T1186": {
+        "long": "Windows Transactional NTFS (TxF) was introduced in Vista as a method to perform safe file operations.  To ensure data integrity, TxF enables only one transacted handle to write to a file at a given time. Until the write handle transaction is terminated, all other handles are isolated from the writer and may only read the committed version of the file that existed at the time the handle was opened.  To avoid corruption, TxF performs an automatic rollback if the system or application fails during a write transaction.",
+        "short": "Process Doppelg\u00e4nging"
+    },
+    "T1187": {
+        "long": "The Server Message Block (SMB) protocol is commonly used in Windows networks for authentication and communication between systems for access to resources and file sharing. When a Windows system attempts to connect to an SMB resource it will automatically attempt to authenticate and send credential information for the current user to the remote system.  This behavior is typical in enterprise environments so that users do not need to enter credentials to access network resources. Web Distributed Authoring and Versioning (WebDAV) is typically used by Windows systems as a backup protocol when SMB is blocked or fails. WebDAV is an extension of HTTP and will typically operate over TCP ports 80 and 443.",
+        "short": "Forced Authentication"
+    },
+    "T1188": {
+        "long": "To disguise the source of malicious traffic, adversaries may chain together multiple proxies. Typically, a defender will be able to identify the last proxy traffic traversed before it enters their network; the defender may or may not be able to identify any previous proxies before the last-hop proxy. This technique makes identifying the original source of the malicious traffic even more difficult by requiring the defender to trace malicious traffic through several proxies to identify its source.",
+        "short": "Multi-hop Proxy"
+    },
+    "T1189": {
+        "long": "A drive-by compromise is when an adversary gains access to a system through a user visiting a website over the normal course of browsing. With this technique, the user's web browser is targeted for exploitation. This can happen in several ways, but there are a few main components:",
+        "short": "Drive-by Compromise"
+    },
+    "T1190": {
+        "long": "The use of software, data, or commands to take advantage of a weakness in an Internet-facing computer system or program in order to cause unintended or unanticipated behavior. The weakness in the system can be a bug, a glitch, or a design vulnerability. These applications are often websites, but can include databases (like SQL) , standard services (like SMB  or SSH), and any other applications with Internet accessible open sockets, such as web servers and related services.  Depending on the flaw being exploited this may include Exploitation for Defense Evasion.",
+        "short": "Exploit Public-Facing Application"
+    },
+    "T1191": {
+        "long": "The Microsoft Connection Manager Profile Installer (CMSTP.exe) is a command-line program used to install Connection Manager service profiles.  CMSTP.exe accepts an installation information file (INF) as a parameter and installs a service profile leveraged for remote access connections.",
+        "short": "CMSTP"
+    },
+    "T1192": {
+        "long": "Spearphishing with a link is a specific variant of spearphishing. It is different from other forms of spearphishing in that it employs the use of links to download malware contained in email, instead of attaching malicious files to the email itself, to avoid defenses that may inspect email attachments.",
+        "short": "Spearphishing Link"
+    },
+    "T1193": {
+        "long": "Spearphishing attachment is a specific variant of spearphishing. Spearphishing attachment is different from other forms of spearphishing in that it employs the use of malware attached to an email. All forms of spearphishing are electronically delivered social engineering targeted at a specific individual, company, or industry. In this scenario, adversaries attach a file to the spearphishing email and usually rely upon User Execution to gain execution.",
+        "short": "Spearphishing Attachment"
+    },
+    "T1194": {
+        "long": "Spearphishing via service is a specific variant of spearphishing. It is different from other forms of spearphishing in that it employs the use of third party services rather than directly via enterprise email channels.",
+        "short": "Spearphishing via Service"
+    },
+    "T1195": {
+        "long": "Supply chain compromise is the manipulation of products or product delivery mechanisms prior to receipt by a final consumer for the purpose of data or system compromise. Supply chain compromise can take place at any stage of the supply chain including:",
+        "short": "Supply Chain Compromise"
+    },
+    "T1196": {
+        "long": "Windows Control Panel items are utilities that allow users to view and adjust computer settings. Control Panel items are registered executable (.exe) or Control Panel (.cpl) files, the latter are actually renamed dynamic-link library (.dll) files that export a CPlApplet function.   Control Panel items can be executed directly from the command line, programmatically via an application programming interface (API) call, or by simply double-clicking the file.",
+        "short": "Control Panel Items"
+    },
+    "T1197": {
+        "long": "Windows Background Intelligent Transfer Service (BITS) is a low-bandwidth, asynchronous file transfer mechanism exposed through Component Object Model (COM).   BITS is commonly used by updaters, messengers, and other applications preferred to operate in the background (using available idle bandwidth) without interrupting other networked applications. File transfer tasks are implemented as BITS jobs, which contain a queue of one or more file operations.",
+        "short": "BITS Jobs"
+    },
+    "T1198": {
+        "long": "In user mode, Windows Authenticode  digital signatures are used to verify a file's origin and integrity, variables that may be used to establish trust in signed code (ex: a driver with a valid Microsoft signature may be handled as safe). The signature validation process is handled via the WinVerifyTrust application programming interface (API) function,   which accepts an inquiry and coordinates with the appropriate trust provider, which is responsible for validating parameters of a signature.",
+        "short": "SIP and Trust Provider Hijacking"
+    },
+    "T1199": {
+        "long": "Adversaries may breach or otherwise leverage organizations who have access to intended victims. Access through trusted third party relationship exploits an existing connection that may not be protected or receives less scrutiny than standard mechanisms of gaining access to a network.",
+        "short": "Trusted Relationship"
+    },
+    "T1200": {
+        "long": "Computer accessories, computers, or networking hardware may be introduced into a system as a vector to gain execution. While public references of usage by APT groups are scarce, many penetration testers leverage hardware additions for initial access. Commercial and open source products are leveraged with capabilities such as passive network tapping , man-in-the middle encryption breaking , keystroke injection , kernel memory reading via DMA , adding new wireless access to an existing network , and others.",
+        "short": "Hardware Additions"
+    },
+    "T1201": {
+        "long": "Password policies for networks are a way to enforce complex passwords that are difficult to guess or crack through Brute Force. An adversary may attempt to access detailed information about the password policy used within an enterprise network. This would help the adversary to create a list of common passwords and launch dictionary and/or brute force attacks which adheres to the policy (e.g. if the minimum password length should be 8, then not trying passwords such as 'pass123'; not checking for more than 3-4 passwords per account if the lockout is set to 6 as to not lock out accounts).",
+        "short": "Password Policy Discovery"
+    },
+    "T1202": {
+        "long": "Various Windows utilities may be used to execute commands, possibly without invoking cmd. For example, Forfiles, the Program Compatibility Assistant (pcalua.exe), components of the Windows Subsystem for Linux (WSL), as well as other utilities may invoke the execution of programs and commands from a Command-Line Interface, Run window, or via scripts.",
+        "short": "Indirect Command Execution"
+    },
+    "T1203": {
+        "long": "Vulnerabilities can exist in software due to unsecure coding practices that can lead to unanticipated behavior. Adversaries can take advantage of certain vulnerabilities through targeted exploitation for the purpose of arbitrary code execution. Oftentimes the most valuable exploits to an offensive toolkit are those that can be used to obtain code execution on a remote system because they can be used to gain access to that system. Users will expect to see files related to the applications they commonly used to do work, so they are a useful target for exploit research and development because of their high utility.",
+        "short": "Exploitation for Client Execution"
+    },
+    "T1204": {
+        "long": "An adversary may rely upon specific actions by a user in order to gain execution. This may be direct code execution, such as when a user opens a malicious executable delivered via Spearphishing Attachment with the icon and apparent extension of a document file. It also may lead to other execution techniques, such as when a user clicks on a link delivered via Spearphishing Link that leads to exploitation of a browser or application vulnerability via Exploitation for Client Execution. While User Execution frequently occurs shortly after Initial Access it may occur at other phases of an intrusion, such as when an adversary places a file in a shared directory or on a user's desktop hoping that a user will click on it.",
+        "short": "User Execution"
+    },
+    "T1205": {
+        "long": "Port Knocking is a well-established method used by both defenders and adversaries to hide open ports from access. To enable a port, an adversary sends a series of packets with certain characteristics before the port will be opened. Usually this series of packets consists of attempted connections to a predefined sequence of closed ports, but can involve unusual flags, specific strings or other unique characteristics. After the sequence is completed, opening a port is often accomplished by the host based firewall, but could also be implemented by custom software.",
+        "short": "Port Knocking"
+    },
+    "T1206": {
+        "long": "The sudo command \"allows a system administrator to delegate authority to give certain users (or groups of users) the ability to run some (or all) commands as root or another user while providing an audit trail of the commands and their arguments.\"  Since sudo was made for the system administrator, it has some useful configuration features such as a timestamp_timeout that is the amount of time in minutes between instances of sudo before it will re-prompt for a password. This is because sudo has the ability to cache credentials for a period of time. Sudo creates (or touches) a file at /var/db/sudo with a timestamp of when sudo was last run to determine this timeout. Additionally, there is a tty_tickets variable that treats each new tty (terminal session) in isolation. This means that, for example, the sudo timeout of one tty will not affect another tty (you will have to type the password again).",
+        "short": "Sudo Caching"
+    },
+    "T1207": {
+        "long": "DCShadow is a method of manipulating Active Directory (AD) data, including objects and schemas, by registering (or reusing an inactive registration) and simulating the behavior of a Domain Controller (DC).   Once registered, a rogue DC may be able to inject and replicate changes into AD infrastructure for any domain object, including credentials and keys.",
+        "short": "DCShadow"
+    },
+    "T1208": {
+        "long": "Service principal names (SPNs) are used to uniquely identify each instance of a Windows service. To enable authentication, Kerberos requires that SPNs be associated with at least one service logon account (an account specifically tasked with running a service ).",
+        "short": "Kerberoasting"
+    },
+    "T1209": {
+        "long": "The Windows Time service (W32Time) enables time synchronization across and within domains.  W32Time time providers are responsible for retrieving time stamps from hardware/network resources and outputting these values to other network clients.",
+        "short": "Time Providers"
+    },
+    "T1210": {
+        "long": "Exploitation of a software vulnerability occurs when an adversary takes advantage of a programming error in a program, service, or within the operating system software or kernel itself to execute adversary-controlled code.\u00a0A common goal for post-compromise exploitation of remote services is for lateral movement to enable access to a remote system.",
+        "short": "Exploitation of Remote Services"
+    },
+    "T1211": {
+        "long": "Exploitation of a software vulnerability occurs when an adversary takes advantage of a programming error in a program, service, or within the operating system software or kernel itself to execute adversary-controlled code.\u00a0Vulnerabilities may exist in defensive security software that can be used to disable or circumvent them.",
+        "short": "Exploitation for Defense Evasion"
+    },
+    "T1212": {
+        "long": "Exploitation of a software vulnerability occurs when an adversary takes advantage of a programming error in a program, service, or within the operating system software or kernel itself to execute adversary-controlled code.\u00a0Credentialing and authentication mechanisms may be targeted for exploitation by adversaries as a means to gain access to useful credentials or circumvent the process to gain access to systems. One example of this is MS14-068, which targets Kerberos and can be used to forge Kerberos tickets using domain user permissions.   Exploitation for credential access may also result in Privilege Escalation depending on the process targeted or credentials obtained.",
+        "short": "Exploitation for Credential Access"
+    },
+    "T1213": {
+        "long": "Adversaries may leverage information repositories to mine valuable information. Information repositories are tools that allow for storage of information, typically to facilitate collaboration or information sharing between users, and can store a wide variety of data that may aid adversaries in further objectives, or direct access to the target information.",
+        "short": "Data from Information Repositories"
+    },
+    "T1214": {
+        "long": "The Windows Registry stores configuration information that can be used by the system or other programs. Adversaries may query the Registry looking for credentials and passwords that have been stored for use by other programs or services. Sometimes these credentials are used for automatic logons.",
+        "short": "Credentials in Registry"
+    },
+    "T1215": {
+        "long": "Loadable Kernel Modules (or LKMs) are pieces of code that can be loaded and unloaded into the kernel upon demand. They extend the functionality of the kernel without the need to reboot the system. For example, one type of module is the device driver, which allows the kernel to access hardware connected to the system. \u00a0When used maliciously, Loadable Kernel Modules (LKMs) can be a type of kernel-mode Rootkit that run with the highest operating system privilege (Ring 0). \u00a0Adversaries can use loadable kernel modules to covertly persist on a system and evade defenses. Examples have been found in the wild and there are some open source projects.",
+        "short": "Kernel Modules and Extensions"
+    },
+    "T1216": {
+        "long": "Scripts signed with trusted certificates can be used to proxy execution of malicious files. This behavior may bypass signature validation restrictions and application whitelisting solutions that do not account for use of these scripts.",
+        "short": "Signed Script Proxy Execution"
+    },
+    "T1217": {
+        "long": "Adversaries may enumerate browser bookmarks to learn more about compromised hosts. Browser bookmarks may reveal personal information about users (ex: banking sites, interests, social media, etc.) as well as details about internal network resources such as servers, tools/dashboards, or other related infrastructure.",
+        "short": "Browser Bookmark Discovery"
+    },
+    "T1218": {
+        "long": "Binaries signed with trusted digital certificates can execute on Windows systems protected by digital signature validation. Several Microsoft signed binaries that are default on Windows installations can be used to proxy execution of other files. This behavior may be abused by adversaries to execute malicious files that could bypass application whitelisting and signature validation on systems. This technique accounts for proxy execution methods that are not already accounted for within the existing techniques.",
+        "short": "Signed Binary Proxy Execution"
+    },
+    "T1219": {
+        "long": "An adversary may use legitimate desktop support and remote access software, such as Team Viewer, Go2Assist, LogMein, AmmyyAdmin, etc, to establish an interactive command and control channel to target systems within networks. These services are commonly used as legitimate technical support software, and may be whitelisted within a target environment. Remote access tools like VNC, Ammy, and Teamviewer are used frequently when compared with other legitimate software commonly used by adversaries.",
+        "short": "Remote Access Tools"
+    },
+    "T1220": {
+        "long": "Extensible Stylesheet Language (XSL) files are commonly used to describe the processing and rendering of data within XML files. To support complex operations, the XSL standard includes support for embedded scripting in various languages.",
+        "short": "XSL Script Processing"
+    },
+    "T1221": {
+        "long": "Microsoft\u2019s Open Office XML (OOXML) specification defines an XML-based format for Office documents (.docx, xlsx, .pptx) to replace older binary formats (.doc, .xls, .ppt). OOXML files are packed together ZIP archives compromised of various XML files, referred to as parts, containing properties that collectively define how a document is rendered.",
+        "short": "Template Injection"
+    },
+    "T1222": {
+        "long": "File permissions are commonly managed by discretionary access control lists (DACLs) specified by the file owner. File DACL implementation may vary by platform, but generally explicitly designate which users/groups can perform which actions (ex: read, write, execute, etc.).",
+        "short": "File Permissions Modification"
+    },
+    "T1223": {
+        "long": "Compiled HTML files (.chm) are commonly distributed as part of the Microsoft HTML Help system. CHM files are compressed compilations of various content such as HTML documents, images, and scripting/web related programming languages such VBA, JScript, Java, and ActiveX.  CHM content is displayed using underlying components of the Internet Explorer browser  loaded by the HTML Help executable program (hh.exe).",
+        "short": "Compiled HTML File"
+    },
+    "T1224": {
+        "long": "Leadership assesses the areas of most interest to them and generates Key Intelligence Topics (KIT) or Key Intelligence Questions (KIQ). For example, an adversary knows from open and closed source reporting that cyber is of interest, resulting in it being a KIT.",
+        "short": "Assess leadership areas of interest"
+    },
+    "T1225": {
+        "long": "Leadership identifies gap areas that generate a compelling need to generate a Key Intelligence Topic (KIT) or Key Intelligence Question (KIQ).",
+        "short": "Identify gap areas"
+    },
+    "T1226": {
+        "long": "Leadership conducts a cost/benefit analysis that generates a compelling need for information gathering which triggers a Key Intelligence Toptic (KIT) or Key Intelligence Question (KIQ). For example, an adversary compares the cost of cyber intrusions with the expected benefits from increased intelligence collection on cyber adversaries.",
+        "short": "Conduct cost/benefit analysis"
+    },
+    "T1227": {
+        "long": "Leadership derives Key Intelligence Topics (KITs) and Key Intelligence Questions (KIQs) from the areas of most interest to them.  KITs are an expression of management's intelligence needs with respect to early warning, strategic and operational decisions, knowing the competition, and understanding the competitive situation. KIQs are the critical questions aligned by KIT which provide the basis for collection plans, create a context for analytic work, and/or identify necessary external operations.",
+        "short": "Develop KITs/KIQs"
+    },
+    "T1228": {
+        "long": "Leadership organizes Key Intelligence Topics (KITs) and Key Intelligence Questions (KIQs) into three types of categories and creates more if necessary.  An example of a description of key players KIT would be when an adversary assesses the cyber defensive capabilities of a nation-state threat actor.",
+        "short": "Assign KITs/KIQs into categories"
+    },
+    "T1229": {
+        "long": "Key Intelligence Topics (KITs) and Key Intelligence Questions (KIQs) may be further subdivided to focus on political, economic, diplomatic, military, financial, or intellectual property categories.  An adversary may specify KITs or KIQs in this manner in order to understand how the information they are pursuing can have multiple uses and to consider all aspects of the types of information they need to target for a particular purpose.  KIT.",
+        "short": "Assess KITs/KIQs benefits"
+    },
+    "T1230": {
+        "long": "Leadership or key decision makers may derive specific intelligence requirements from Key Intelligence Topics (KITs) or Key Intelligence Questions (KIQs).  Specific intelligence requirements assist analysts in gathering information to establish a baseline of information about a topic or question and collection managers to clarify the types of information that should be collected to satisfy the requirement.",
+        "short": "Derive intelligence requirements"
+    },
+    "T1231": {
+        "long": "Strategic plans outline the mission, vision, and goals for an adversary at a high level in relation to the key partners, topics, and functions the adversary carries out.",
+        "short": "Create strategic plan"
+    },
+    "T1232": {
+        "long": "Implementation plans specify how the goals of the strategic plan will be executed.",
+        "short": "Create implementation plan"
+    },
+    "T1233": {
+        "long": "Analysts identify gap areas that generate a compelling need to generate a Key Intelligence Topic (KIT) or Key Intelligence Question (KIQ).",
+        "short": "Identify analyst level gaps"
+    },
+    "T1234": {
+        "long": "Analysts may receive Key Intelligence Topics (KITs) and Key Intelligence Questions (KIQs) from leadership or key decision makers and generate intelligence requirements to articulate intricacies of information required on a topic or question.",
+        "short": "Generate analyst intelligence requirements"
+    },
+    "T1235": {
+        "long": "Analysts may receive intelligence requirements from leadership and begin research process to satisfy a requirement.  Part of this process may include delineating between needs and wants and thinking through all the possible aspects associating with satisfying a requirement.",
+        "short": "Receive operator KITs/KIQs tasking"
+    },
+    "T1236": {
+        "long": "Analysts assess current information available against requirements that outline needs and wants as part of the research baselining process to begin satisfying a requirement.",
+        "short": "Assess current holdings, needs, and wants"
+    },
+    "T1237": {
+        "long": "Once they have been created, intelligence requirements, Key Intelligence Topics (KITs), and Key Intelligence Questions (KIQs) are submitted into a central management system.",
+        "short": "Submit KITs, KIQs, and intelligence requirements"
+    },
+    "T1238": {
+        "long": "Once generated, Key Intelligence Topics (KITs), Key Intelligence Questions (KIQs), and/or intelligence requirements are assigned to applicable agencies and/or personnel. For example, an adversary may decide nuclear energy requirements should be assigned to a specific organization based on their mission.",
+        "short": "Assign KITs, KIQs, and/or intelligence requirements"
+    },
+    "T1239": {
+        "long": "Applicable agencies and/or personnel receive intelligence requirements and evaluate them to determine sub-requirements related to topics, questions, or requirements.  For example, an adversary's  nuclear energy requirements may be further divided into nuclear facilities versus nuclear warhead capabilities.",
+        "short": "Receive KITs/KIQs and determine requirements"
+    },
+    "T1240": {
+        "long": "Once divided into the most granular parts, analysts work with collection managers to task the collection management system with requirements and sub-requirements.",
+        "short": "Task requirements"
+    },
+    "T1241": {
+        "long": "An adversary undergoes an iterative target selection process that may begin either broadly and narrow down into specifics (strategic to tactical) or narrowly and expand outward (tactical to strategic).  As part of this process, an adversary may determine a high level target they wish to attack. One example of this may be a particular country, government, or commercial sector.",
+        "short": "Determine strategic target"
+    },
+    "T1242": {
+        "long": "If going from strategic down to tactical or vice versa, an  adversary would next consider the operational element.  For example, the specific company within an industry or agency within a government.",
+        "short": "Determine operational element"
+    },
+    "T1243": {
+        "long": "From a tactical viewpoint, an adversary could potentially have a primary and secondary level target.  The primary target represents the highest level tactical element the adversary wishes to attack.  For example, the corporate network within a corporation or the division within an agency.",
+        "short": "Determine highest level tactical element"
+    },
+    "T1244": {
+        "long": "The secondary level tactical element the adversary seeks to attack is the specific network or area of a network that is vulnerable to attack.  Within the corporate network example, the secondary level tactical element might be a SQL server or a domain controller with a known vulnerability.",
+        "short": "Determine secondary level tactical element"
+    },
+    "T1245": {
+        "long": "The approach or attack vector outlines the specifics behind how the adversary would like to attack the target.  As additional information is known through the other phases of PRE-ATT&CK, an adversary may update the approach or attack vector.",
+        "short": "Determine approach/attack vector"
+    },
+    "T1246": {
+        "long": "Supply chains include the people, processes, and technologies used to move a product or service from a supplier to a consumer. Understanding supply chains may provide an adversary with opportunities to exploit the technology or interconnections that are part of the supply chain.",
+        "short": "Identify supply chains"
+    },
+    "T1247": {
+        "long": "Open source intelligence (OSINT) is intelligence gathered from publicly available sources. This can include both information gathered on-line, such as from search engines, as well as in the physical world.",
+        "short": "Acquire OSINT data sets and information"
+    },
+    "T1248": {
+        "long": "Job postings, on either company sites, or in other forums, provide information on organizational structure and often provide contact information for someone within the organization. This may give an adversary  information on technologies within the organization which could be valuable in attack or provide insight in to possible security weaknesses or limitations in detection or protection mechanisms.",
+        "short": "Identify job postings and needs/gaps"
+    },
+    "T1249": {
+        "long": "Social Engineering is the practice of manipulating people in order to get them to divulge information or take an action.",
+        "short": "Conduct social engineering"
+    },
+    "T1250": {
+        "long": "Domain Names are the human readable names used to represent one or more IP addresses. IP addresses are the unique identifier of computing devices on a network. Both pieces of information are valuable to an adversary who is looking to understand the structure of a network.",
+        "short": "Determine domain and IP address space"
+    },
+    "T1251": {
+        "long": "For a computing resource to be accessible to the public, domain names and IP addresses must be registered with an authorized organization.",
+        "short": "Obtain domain/IP registration information"
+    },
+    "T1252": {
+        "long": "A network topology is the arrangement of the various elements of a network (e.g., servers, workstations, printers, routers, firewalls, etc.). Mapping a network allows an adversary to understand how the elements are connected or related.",
+        "short": "Map network topology"
+    },
+    "T1253": {
+        "long": "Passive scanning is the act of looking at existing network traffic in order to identify information about the communications system.",
+        "short": "Conduct passive scanning"
+    },
+    "T1254": {
+        "long": "Active scanning is the act of sending transmissions to end nodes, and analyzing the responses, in order to identify information about the communications system.",
+        "short": "Conduct active scanning"
+    },
+    "T1255": {
+        "long": "Email addresses, logon credentials, and other forms of online identification typically share a common format. This makes guessing other credentials within the same domain easier. For example if a known email address is first.last@company.com it is likely that others in the company will have an email in the same format.",
+        "short": "Discover target logon/email address format"
+    },
+    "T1256": {
+        "long": "An adversary can attempt to identify web defensive services as CloudFlare, IPBan, and Snort. This may be done by passively detecting services, like CloudFlare routing, or actively, such as by purposefully tripping security defenses.",
+        "short": "Identify web defensive services"
+    },
+    "T1257": {
+        "long": "Technical blogs and forums provide a way for technical staff to ask for assistance or troubleshoot problems. In doing so they may reveal information such as operating system (OS), network devices, or applications in use.",
+        "short": "Mine technical blogs/forums"
+    },
+    "T1258": {
+        "long": "Firmware is permanent software programmed into the read-only memory of a device. As with other types of software, firmware may be updated over time and have multiple versions.",
+        "short": "Determine firmware version"
+    },
+    "T1259": {
+        "long": "Network trusts enable communications between different networks with specific accesses and permissions. Network trusts could include the implementation of domain trusts or the use of virtual private networks (VPNs).",
+        "short": "Determine external network trust dependencies"
+    },
+    "T1260": {
+        "long": "Infrastructure services includes the hardware, software, and network resources required to operate a communications environment. This infrastructure can be managed by a 3rd party rather than being managed by the owning organization.",
+        "short": "Determine 3rd party infrastructure services"
+    },
+    "T1261": {
+        "long": "Software applications will be built using different technologies, languages, and dependencies. This information may reveal vulnerabilities or opportunities to an adversary.",
+        "short": "Enumerate externally facing software applications technologies, languages, and dependencies"
+    },
+    "T1262": {
+        "long": "Client configurations information such as the operating system and web browser, along with additional information such as version or language, are often transmitted as part of web browsing communications.  This can be accomplished in several ways including use of a compromised web site to collect details on visiting computers.",
+        "short": "Enumerate client configurations"
+    },
+    "T1263": {
+        "long": "Security defensive capabilities are designed to stop or limit unauthorized network traffic or other types of accesses.",
+        "short": "Identify security defensive capabilities"
+    },
+    "T1264": {
+        "long": "Technology usage patterns include identifying if users work offsite, connect remotely, or other possibly less restricted/secured access techniques.",
+        "short": "Identify technology usage patterns"
+    },
+    "T1265": {
+        "long": "Supply chains include the people, processes, and technologies used to move a product or service from a supplier to a consumer. Understanding supply chains may provide an adversary with opportunities to exploit the people, their positions, and relationships, that are part of the supply chain.",
+        "short": "Identify supply chains"
+    },
+    "T1266": {
+        "long": "Open source intelligence (OSINT) provides free, readily available information about a target while providing the target no indication they are of interest.  Such information can assist an adversary in crafting a successful approach for compromise.",
+        "short": "Acquire OSINT data sets and information"
+    },
+    "T1267": {
+        "long": "Job postings, on either company sites, or in other forums, provide information on organizational structure and often provide contact information for someone within the organization. This may give an adversary  information on people within the organization which could be valuable in social engineering attempts.",
+        "short": "Identify job postings and needs/gaps"
+    },
+    "T1268": {
+        "long": "Social Engineering is the practice of manipulating people in order to get them to divulge information or take an action.",
+        "short": "Conduct social engineering"
+    },
+    "T1269": {
+        "long": "The attempt to identify people of interest or with an inherent weakness for direct or indirect targeting to determine an approach to compromise a person or organization.  Such targets may include individuals with poor OPSEC practices or those who have a trusted relationship with the intended target.",
+        "short": "Identify people of interest"
+    },
+    "T1270": {
+        "long": "Personnel internally to a company may belong to a group or maintain a role with  electronic specialized access, authorities, or privilege that make them an attractive target for an adversary.  One example of this is a system administrator.",
+        "short": "Identify groups/roles"
+    },
+    "T1271": {
+        "long": "Personnel internally to a company may have non-electronic specialized access, authorities, or privilege that make them an attractive target for an adversary.  One example of this is an individual with financial authority to authorize large transactions.  An adversary who compromises this individual might be able to subvert large dollar transfers.",
+        "short": "Identify personnel with an authority/privilege"
+    },
+    "T1272": {
+        "long": "Business relationship information includes the associates of a target and may be discovered via social media sites such as LinkedIn or public press releases announcing new partnerships between organizations or people (such as key hire announcements in industry articles).  This information may be used by an adversary to shape social engineering attempts (exploiting who a target expects to hear from) or to plan for technical actions such as exploiting network trust relationship.",
+        "short": "Identify business relationships"
+    },
+    "T1273": {
+        "long": "An adversary may research available open source information about a target commonly found on social media sites such as Facebook, Instagram, or Pinterest.  Social media is public by design and provides insight into the interests and potentially inherent weaknesses of a target for exploitation by the adversary.",
+        "short": "Mine social media"
+    },
+    "T1274": {
+        "long": "An adversary may identify sensitive personnel information not typically posted on a social media site, such as address, marital status, financial history, and law enforcement infractions. This could be conducted by searching public records that are frequently available for free or at a low cost online.",
+        "short": "Identify sensitive personnel information"
+    },
+    "T1275": {
+        "long": "In addition to a target's social media presence may exist a larger digital footprint, such as accounts and credentials on e-commerce sites or usernames and logins for email.  An adversary familiar with a target's username can mine to determine the target's larger digital footprint via publicly available sources.",
+        "short": "Aggregate individual's digital footprint"
+    },
+    "T1276": {
+        "long": "Supply chains include the people, processes, and technologies used to move a product or service from a supplier to a consumer. Understanding supply chains may provide an adversary with opportunities to exploit organizational relationships.",
+        "short": "Identify supply chains"
+    },
+    "T1277": {
+        "long": "Data sets can be anything from Security Exchange Commission (SEC) filings to public phone numbers. Many datasets are now either publicly available for free or can be purchased from a variety of data vendors.  Open source intelligence (OSINT) is intelligence gathered from publicly available sources. This can include both information gathered on-line as well as in the physical world.",
+        "short": "Acquire OSINT data sets and information"
+    },
+    "T1278": {
+        "long": "Job postings, on either company sites, or in other forums, provide information on organizational structure, needs, and gaps in an organization. This may give an adversary an indication of weakness in an organization (such as under-resourced IT shop). Job postings can also provide information on an organizations structure which could be valuable in social engineering attempts.",
+        "short": "Identify job postings and needs/gaps"
+    },
+    "T1279": {
+        "long": "Social Engineering is the practice of manipulating people in order to get them to divulge information or take an action.",
+        "short": "Conduct social engineering"
+    },
+    "T1280": {
+        "long": "Understanding an organizations business processes and tempo may allow an adversary to more effectively craft social engineering attempts or to better hide technical actions, such as those that generate network traffic.",
+        "short": "Identify business processes/tempo"
+    },
+    "T1281": {
+        "long": "Templates and branding materials may be used by an adversary to add authenticity to social engineering message.",
+        "short": "Obtain templates/branding materials"
+    },
+    "T1282": {
+        "long": "Physical locality information may be used by an adversary to shape social engineering attempts (language, culture, events, weather, etc.) or to plan for physical actions such as dumpster diving or attempting to access a facility.",
+        "short": "Determine physical locations"
+    },
+    "T1283": {
+        "long": "Business relationship information may be used by an adversary to shape social engineering attempts (exploiting who a target expects to hear from) or to plan for technical actions such as exploiting network trust relationship.",
+        "short": "Identify business relationships"
+    },
+    "T1284": {
+        "long": "A wide variety of cloud, virtual private services, hosting, compute, and storage solutions are available as 3rd party infrastructure services. These services could provide an adversary with another avenue of approach or compromise.",
+        "short": "Determine 3rd party infrastructure services"
+    },
+    "T1285": {
+        "long": "Determining if a \"corporate\" help desk exists, the degree of access and control it has, and whether there are \"edge\" units that may have different support processes and standards.",
+        "short": "Determine centralization of IT management"
+    },
+    "T1286": {
+        "long": "Dumpster diving is looking through waste for information on technology, people, and/or organizational items of interest.",
+        "short": "Dumpster dive"
+    },
+    "T1287": {
+        "long": "An adversary will assess collected information such as software/hardware versions, vulnerabilities, patch level, etc.  They will analyze technical scanning results to identify weaknesses in the confirmation or architecture.",
+        "short": "Analyze data collected"
+    },
+    "T1288": {
+        "long": "An adversary may analyze technical scanning results to identify weaknesses in the configuration or architecture of a victim network. These weaknesses could include  architectural flaws, misconfigurations, or improper security controls.",
+        "short": "Analyze architecture and configuration posture"
+    },
+    "T1289": {
+        "long": "Analyze strengths and weaknesses of the target for potential areas of where to focus compromise efforts.",
+        "short": "Analyze organizational skillsets and deficiencies"
+    },
+    "T1290": {
+        "long": "If an adversary can identify which security tools a victim is using they may be able to identify ways around those tools.",
+        "short": "Research visibility gap of security vendors"
+    },
+    "T1291": {
+        "long": "Common Vulnerability Enumeration (CVE) is a dictionary of publicly known information about security vulnerabilities and exposures. An adversary can use this information to target specific software that may be vulnerable.",
+        "short": "Research relevant vulnerabilities/CVEs"
+    },
+    "T1292": {
+        "long": "An adversary can test the detections of malicious emails or files by using  publicly available services, such as virus total, to see if their files or emails cause an alert. They can also use similar services that are not openly available and don't publicly publish results or they can test on their own internal infrastructure.",
+        "short": "Test signature detection"
+    },
+    "T1293": {
+        "long": "An adversary can probe a victim's network to determine configurations. The configurations may provide opportunities to route traffic through the network in an undetected or less detectable way.",
+        "short": "Analyze application security posture"
+    },
+    "T1294": {
+        "long": "An adversary can probe a victim's network to determine configurations. The configurations may provide opportunities to route traffic through the network in an undetected or less detectable way.",
+        "short": "Analyze hardware/software security defensive capabilities"
+    },
+    "T1295": {
+        "long": "Social media provides insight into the target's affiliations with groups and organizations.  Certification information can explain their technical associations and professional associations. Personal information can provide data for exploitation or even blackmail.",
+        "short": "Analyze social and business relationships, interests, and affiliations"
+    },
+    "T1296": {
+        "long": "An adversary may assess a target's operational security (OPSEC) practices in order to identify targeting options. A target may share different information in different settings or be more of less cautious in different environments.",
+        "short": "Assess targeting options"
+    },
+    "T1297": {
+        "long": "Understanding organizational skillsets and deficiencies could provide insight in to weakness in defenses, or opportunities for exploitation.",
+        "short": "Analyze organizational skillsets and deficiencies"
+    },
+    "T1298": {
+        "long": "Once a 3rd party vendor has been identified as being of interest it can be probed for vulnerabilities just like the main target would be.",
+        "short": "Assess vulnerability of 3rd party vendors"
+    },
+    "T1299": {
+        "long": "During mergers, divestitures, or other period of change in joint infrastructure or business processes there may be an opportunity for exploitation. During this type of churn, unusual requests, or other non standard practices may not be as noticeable.",
+        "short": "Assess opportunities created by business deals"
+    },
+    "T1300": {
+        "long": "Analyze strengths and weaknesses of the target for potential areas of where to focus compromise efforts.",
+        "short": "Analyze organizational skillsets and deficiencies"
+    },
+    "T1301": {
+        "long": "Business processes, such as who typically communicates with who, or what the supply chain is for a particular part, provide opportunities for social engineering or other",
+        "short": "Analyze business processes"
+    },
+    "T1302": {
+        "long": "Physical access may be required for certain types of adversarial actions.",
+        "short": "Assess security posture of physical locations"
+    },
+    "T1303": {
+        "long": "Outsourcing, the arrangement of one company providing goods or services to another company for something that could be done in-house, provides another avenue for an adversary to target. Businesses often have networks, portals, or other technical connections between themselves and their outsourced/partner organizations that could be exploited. Additionally, outsourced/partner organization information could provide opportunities for phishing.",
+        "short": "Analyze presence of outsourced capabilities"
+    },
+    "T1304": {
+        "long": "Proxies act as an intermediary for clients seeking resources from other systems. Using a proxy may make it more difficult to track back the origin of a network communication.",
+        "short": "Proxy/protocol relays"
+    },
+    "T1305": {
+        "long": "Every domain registrar maintains a publicly viewable database that displays contact information for every registered domain. Private 'whois' services display alternative information, such as their own company data, rather than the owner of the domain.",
+        "short": "Private whois services"
+    },
+    "T1306": {
+        "long": "Anonymity services reduce the amount of information available that can be used to track an adversary's activities.  Multiple options are available to hide activity, limit tracking, and increase anonymity.",
+        "short": "Anonymity services"
+    },
+    "T1307": {
+        "long": "A wide variety of cloud, virtual private services, hosting, compute, and storage solutions are available. Additionally botnets are available for rent or purchase. Use of these solutions allow an adversary to stage, launch, and execute an attack from infrastructure that does not physically tie back to them and can be rapidly provisioned, modified, and shut down.",
+        "short": "Acquire and/or use 3rd party infrastructure services"
+    },
+    "T1308": {
+        "long": "A wide variety of 3rd party software services  are available (e.g., Twitter, Dropbox, GoogleDocs). Use of these solutions allow an adversary to stage, launch, and execute an attack from infrastructure that does not physically tie back to them and can be rapidly provisioned, modified, and shut down.",
+        "short": "Acquire and/or use 3rd party software services"
+    },
+    "T1309": {
+        "long": "Obfuscation is hiding the day-to-day building and testing of new tools, chat servers, etc.",
+        "short": "Obfuscate infrastructure"
+    },
+    "T1310": {
+        "long": "Code signing is the process of digitally signing executables or scripts to confirm the software author and guarantee that the code has not been altered or corrupted. Users may trust a signed piece of code more than an unsigned piece of code even if they don't know who issued the certificate or who the author is.",
+        "short": "Acquire or compromise 3rd party signing certificates"
+    },
+    "T1311": {
+        "long": "Dynamic DNS is a method of automatically updating a name in the DNS system. Providers offer this rapid reconfiguration of IPs to hostnames as a service.",
+        "short": "Dynamic DNS"
+    },
+    "T1312": {
+        "long": "Instead of buying, leasing, or renting infrastructure an adversary may compromise infrastructure and use it for some or all of the attack cycle.",
+        "short": "Compromise 3rd party infrastructure to support delivery"
+    },
+    "T1313": {
+        "long": "Obfuscation is the act of creating communications that are more difficult to understand.  Encryption transforms the communications such that it requires a key to reverse the encryption.",
+        "short": "Obfuscation or cryptography"
+    },
+    "T1314": {
+        "long": "Host based hiding techniques are designed to allow an adversary to remain undetected on a machine upon which they have taken action. They may do this through the use of  static linking of binaries, polymorphic code, exploiting weakness in file formats, parsers, or self-deleting code.",
+        "short": "Host-based hiding techniques"
+    },
+    "T1315": {
+        "long": "Technical network hiding techniques are methods of modifying traffic to evade network signature detection or to utilize misattribution techniques. Examples include channel/IP/VLAN hopping, mimicking legitimate operations, or seeding with misinformation.",
+        "short": "Network-based hiding techniques"
+    },
+    "T1316": {
+        "long": "Using alternative payment options allows an adversary to hide their activities. Options include crypto currencies, barter systems, pre-paid cards or shell accounts.",
+        "short": "Non-traditional or less attributable payment options"
+    },
+    "T1317": {
+        "long": "An adversary may secure and protect their infrastructure just as defenders do. This could include the use of VPNs, security software, logging and monitoring, passwords, or other defensive measures.",
+        "short": "Secure and protect infrastructure"
+    },
+    "T1318": {
+        "long": "Obfuscation is hiding the day-to-day building and testing of new tools, chat servers, etc.",
+        "short": "Obfuscate operational infrastructure"
+    },
+    "T1319": {
+        "long": "Obfuscation is the act of creating code that is more difficult to understand. Encoding transforms the code using a publicly available format. Encryption transforms the code such that it requires a key to reverse the encryption.",
+        "short": "Obfuscate or encrypt code"
+    },
+    "T1320": {
+        "long": "Certain types of traffic (e.g., DNS tunneling, header inject) allow for user-defined fields. These fields can then be used to hide data. In addition to hiding data in network protocols, steganography techniques can be used to hide data in images or other file formats. Detection can be difficult unless a particular signature is already known.",
+        "short": "Data Hiding"
+    },
+    "T1321": {
+        "long": "Certain types of traffic (e.g., Twitter14, HTTP) are more commonly used than others. Utilizing more common protocols and software may make an adversary's traffic more difficult to distinguish from legitimate traffic.",
+        "short": "Common, high volume protocols and software"
+    },
+    "T1322": {
+        "long": "The use of credentials by an adversary with the intent to hide their true identity and/or portray them self as another person or entity.  An adversary may use misattributable credentials in an attack to convince a victim that credentials are legitimate and trustworthy when this is not actually the case.",
+        "short": "Misattributable credentials"
+    },
+    "T1323": {
+        "long": "The use of algorithms in malware to periodically generate a large number of domain names which function as rendezvous points for malware command and control servers.",
+        "short": "Domain Generation Algorithms (DGA)"
+    },
+    "T1324": {
+        "long": "DNS Calc is a technique in which the octets of an IP address are used to calculate the port  for command and control servers from an initial DNS request.",
+        "short": "DNSCalc"
+    },
+    "T1325": {
+        "long": "A technique in which a fully qualified domain name has multiple IP addresses assigned to it which are swapped with extreme frequency, using a combination of round robin IP address and short Time-To-Live (TTL) for a DNS resource record.",
+        "short": "Fast Flux DNS"
+    },
+    "T1326": {
+        "long": "Domain Registration Hijacking is the act of changing the registration of a domain name without the permission of the original registrant.",
+        "short": "Domain registration hijacking"
+    },
+    "T1327": {
+        "long": "A technique used by the adversary similar to Dynamic DNS with the exception that the use of multiple DNS infrastructures likely have whois records.",
+        "short": "Use multiple DNS infrastructures"
+    },
+    "T1328": {
+        "long": "Domain Names are the human readable names used to represent one or more IP addresses. They can be purchased or, in some cases, acquired for free.",
+        "short": "Buy domain name"
+    },
+    "T1329": {
+        "long": "A wide variety of cloud, virtual private services, hosting, compute, and storage solutions are available. Additionally botnets are available for rent or purchase. Use of these solutions allow an adversary to stage, launch, and execute an attack from infrastructure that does not physically tie back to them and can be rapidly provisioned, modified, and shut down.",
+        "short": "Acquire and/or use 3rd party infrastructure services"
+    },
+    "T1330": {
+        "long": "A wide variety of 3rd party software services  are available (e.g., Twitter, Dropbox, GoogleDocs). Use of these solutions allow an adversary to stage, launch, and execute an attack from infrastructure that does not physically tie back to them and can be rapidly provisioned, modified, and shut down.",
+        "short": "Acquire and/or use 3rd party software services"
+    },
+    "T1331": {
+        "long": "Obfuscation is hiding the day-to-day building and testing of new tools, chat servers, etc.",
+        "short": "Obfuscate infrastructure"
+    },
+    "T1332": {
+        "long": "Code signing is the process of digitally signing executables and scripts to confirm the software author and guarantee that the code has not been altered or corrupted. Users may trust a signed piece of code more than an unsigned piece of code even if they don't know who issued the certificate or who the author is.",
+        "short": "Acquire or compromise 3rd party signing certificates"
+    },
+    "T1333": {
+        "long": "Dynamic DNS is a automated method to rapidly update the domain name system mapping of hostnames to IPs.",
+        "short": "Dynamic DNS"
+    },
+    "T1334": {
+        "long": "Instead of buying, leasing, or renting infrastructure an adversary may compromise infrastructure and use it for some or all of the attack cycle.",
+        "short": "Compromise 3rd party infrastructure to support delivery"
+    },
+    "T1335": {
+        "long": "An adversary will require some physical hardware and software. They may only need a lightweight set-up if most of their activities will take place using on-line infrastructure. Or, they may need to build extensive infrastructure if they want to test, communicate, and control other aspects of their activities on their own systems.",
+        "short": "Procure required equipment and software"
+    },
+    "T1336": {
+        "long": "An adversary needs the necessary skills to set up procured equipment and software to create their desired infrastructure.",
+        "short": "Install and configure hardware, network, and systems"
+    },
+    "T1337": {
+        "long": "Certificates are designed to instill trust. They  include information about the key, information about its owner's identity, and the digital signature of an entity that has verified the certificate's contents are correct. If the signature is valid, and the person examining the certificate trusts the signer, then they know they can use that key to communicate with its owner. Acquiring a certificate for a  domain name similar to one that is expected to be trusted may allow an adversary to trick a user in to trusting the domain (e.g., vvachovia instead of Wachovia -- homoglyphs).",
+        "short": "SSL certificate acquisition for domain"
+    },
+    "T1338": {
+        "long": "Fake certificates can be acquired by legal process or coercion. Or, an adversary can trick a Certificate Authority into issuing a certificate. These fake certificates can be used as a part of Man-in-the-Middle attacks.",
+        "short": "SSL certificate acquisition for trust breaking"
+    },
+    "T1339": {
+        "long": "Backup infrastructure allows an adversary to recover from environmental and system failures. It also facilitates recovery or movement to other infrastructure if the primary infrastructure is discovered or otherwise is no longer viable.",
+        "short": "Create backup infrastructure"
+    },
+    "T1340": {
+        "long": "The process of gathering domain account credentials in order to silently create subdomains pointed at malicious servers without tipping off the actual owner.",
+        "short": "Shadow DNS"
+    },
+    "T1341": {
+        "long": "For attacks incorporating social engineering the utilization of an on-line persona is important. These personas may be fictitious or impersonate real people. The persona may exist on a single site or across multiple sites (Facebook, LinkedIn, Twitter, Google+, etc.).",
+        "short": "Build social network persona"
+    },
+    "T1342": {
+        "long": "Both newly built personas and pre-compromised personas may require development of additional documentation to make them seem real. This could include filling out profile information, developing social networks, or incorporating photos.",
+        "short": "Develop social network persona digital footprint"
+    },
+    "T1343": {
+        "long": "For attacks incorporating social engineering the utilization of an on-line persona is important. Utilizing an existing persona with compromised accounts may engender a level of trust in a potential victim if they have a relationship, or knowledge of, the compromised persona.",
+        "short": "Choose pre-compromised persona and affiliated accounts"
+    },
+    "T1344": {
+        "long": "Once a persona has been developed an adversary will use it to create connections to targets of interest. These connections may be direct or may include trying to connect through others.",
+        "short": "Friend/Follow/Connect to targets of interest"
+    },
+    "T1345": {
+        "long": "A payload is the part of the malware which performs a malicious action. The adversary may create custom payloads when none exist with the needed capability or when targeting a specific environment.",
+        "short": "Create custom payloads"
+    },
+    "T1346": {
+        "long": "A payload is the part of the malware which performs a malicious action. The adversary may re-use payloads when the needed capability is already available.",
+        "short": "Obtain/re-use payloads"
+    },
+    "T1347": {
+        "long": "Delivery systems are the infrastructure used by the adversary to host malware or other tools used during exploitation. Building and configuring delivery systems may include multiple activities such as registering domain names, renting hosting space, or configuring previously exploited environments.",
+        "short": "Build and configure delivery systems"
+    },
+    "T1348": {
+        "long": "As with legitimate development efforts, different skill sets may be required for different phases of an attack. The skills needed may be located in house, can be developed, or may need to be contracted out.",
+        "short": "Identify resources required to build capabilities"
+    },
+    "T1349": {
+        "long": "An exploit takes advantage of a bug or vulnerability in order to cause unintended or unanticipated behavior to occur on computer hardware or software. The adversary may use or modify existing exploits when those exploits are still relevant to the environment they are trying to compromise.",
+        "short": "Build or acquire exploits"
+    },
+    "T1350": {
+        "long": "An exploit takes advantage of a bug or vulnerability in order to cause unintended or unanticipated behavior to occur on computer hardware or software. The adversary may need to discover new exploits when existing exploits are no longer relevant to the environment they are trying to compromise. An adversary may monitor exploit provider forums to understand the state of existing, as well as newly discovered, exploits.",
+        "short": "Discover new exploits and monitor exploit-provider forums"
+    },
+    "T1351": {
+        "long": "A remote access tool (RAT) is a piece of software that allows a remote user to control a system as if they had physical access to that system. An adversary may utilize existing RATs, modify existing RATs, or create their own RAT.",
+        "short": "Remote access tool development"
+    },
+    "T1352": {
+        "long": "Command and Control (C2 or C&C) is a method by which the adversary communicates with malware. An adversary may use a variety of protocols and methods to execute C2 such as a centralized server, peer to peer, IRC, compromised web sites, or even social media.",
+        "short": "C2 protocol development"
+    },
+    "T1353": {
+        "long": "After compromise, an adversary may utilize additional tools to facilitate their end goals. This may include tools to further explore the system, move laterally within a network, exfiltrate data, or destroy data.",
+        "short": "Post compromise tool development"
+    },
+    "T1354": {
+        "long": "There is usually a delay between when a vulnerability or exploit is discovered and when it is made public. An adversary may target the systems of those known to research vulnerabilities in order to gain that knowledge for use during a different attack.",
+        "short": "Compromise 3rd party or closed-source vulnerability/exploit information"
+    },
+    "T1355": {
+        "long": "Use of removable media as part of the Launch phase requires an adversary to determine type, format, and content of the media and associated malware.",
+        "short": "Create infected removable media"
+    },
+    "T1356": {
+        "long": "Callbacks are malware communications seeking instructions. An adversary will test their malware to ensure the appropriate instructions are conveyed and the callback software can be reached.",
+        "short": "Test callback functionality"
+    },
+    "T1357": {
+        "long": "Malware may perform differently on different platforms (computer vs handheld) and different operating systems (Ubuntu vs OS X), and versions (Windows 7 vs 10) so malicious actors will test their malware in the environment(s) where they most expect it to be executed.",
+        "short": "Test malware in various execution environments"
+    },
+    "T1358": {
+        "long": "Execution of code and network communications often result in logging or other system or network forensic artifacts. An adversary can run their code to identify what is recorded under different conditions. This may result in changes to their code or adding additional actions (such as deleting a record from a log) to the code.",
+        "short": "Review logs and residual traces"
+    },
+    "T1359": {
+        "long": "An adversary can run their code on systems with cyber security protections, such as antivirus products, in place to see if their code is detected. They can also test their malware on freely available public services.",
+        "short": "Test malware to evade detection"
+    },
+    "T1360": {
+        "long": "An  adversary can test physical access options in preparation for the actual attack. This could range from observing behaviors and noting security precautions to actually attempting access.",
+        "short": "Test physical access"
+    },
+    "T1361": {
+        "long": "An adversary can test their planned method of attack against existing security products such as email filters or intrusion detection sensors (IDS).",
+        "short": "Test signature detection for file upload/email filters"
+    },
+    "T1362": {
+        "long": "An adversary may stage software and tools for use during later stages of an attack. The software and tools may be placed on systems legitimately in use by the adversary or may be placed on previously compromised infrastructure.",
+        "short": "Upload, install, and configure software/tools"
+    },
+    "T1363": {
+        "long": "Redirecting a communication request from one address and port number combination to another. May be set up to obfuscate the final location of communications that will occur in later stages of an attack.",
+        "short": "Port redirector"
+    },
+    "T1364": {
+        "long": "A form of social engineering designed build trust and to lay the foundation for future interactions or attacks.",
+        "short": "Friend/Follow/Connect to targets of interest"
+    },
+    "T1365": {
+        "long": "During production and distribution, the placement of software, firmware, or a CPU chip in a computer, handheld, or other electronic device that enables an adversary to gain illegal entrance.",
+        "short": "Hardware or software supply chain implant"
+    },
+    "T1366": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Targeted social media phishing"
+    },
+    "T1367": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Spear phishing messages with malicious attachments"
+    },
+    "T1368": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Spear phishing messages with text only"
+    },
+    "T1369": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Spear phishing messages with malicious links"
+    },
+    "T1370": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Untargeted client-side exploitation"
+    },
+    "T1371": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Targeted client-side exploitation"
+    },
+    "T1372": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Unconditional client-side exploitation/Injected Website/Driveby"
+    },
+    "T1373": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Push-notification client-side exploit"
+    },
+    "T1374": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Credential pharming"
+    },
+    "T1375": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Leverage compromised 3rd party resources"
+    },
+    "T1376": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Conduct social engineering or HUMINT operation"
+    },
+    "T1377": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Exploit public-facing application"
+    },
+    "T1378": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Replace legitimate binary with malware"
+    },
+    "T1379": {
+        "long": "Removable media containing malware can be injected in to a supply chain at large or small scale. It can also be physically placed for someone to find or can be sent to someone in a more targeted manner. The intent is to have the user utilize the removable media on a system where the adversary is trying to gain access.",
+        "short": "Disseminate removable media"
+    },
+    "T1380": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Deploy exploit using advertising"
+    },
+    "T1381": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Authentication attempt"
+    },
+    "T1382": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "DNS poisoning"
+    },
+    "T1383": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Confirmation of launched compromise achieved"
+    },
+    "T1384": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Automated system performs requested action"
+    },
+    "T1385": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Human performs requested action of physical nature"
+    },
+    "T1386": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Authorized user performs requested cyber action"
+    },
+    "T1387": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Unauthorized user introduces compromise delivery mechanism"
+    },
+    "T1388": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Compromise of externally facing system"
+    },
+    "T1389": {
+        "long": "Many applications use third-party software libraries, often without full knowledge of the behavior of the libraries by the application developer. For example, mobile applications often incorporate advertising libraries to generate revenue for the application developer. Vulnerabilities in these third-party libraries could potentially be exploited in any application that uses the library, and even if the vulnerabilities are fixed, many applications may still use older, vulnerable versions of the library.",
+        "short": "Identify vulnerabilities in third-party software libraries"
+    },
+    "T1390": {
+        "long": "Google and Apple provide Google Cloud Messaging and Apple Push Notification Service, respectively, services designed to enable efficient communication between third-party mobile app backend servers and the mobile apps running on individual devices. These services maintain an encrypted connection between every mobile device and Google or Apple that cannot easily be inspected and must be allowed to traverse networks as part of normal device operation. These services could be used by adversaries for communication to compromised mobile devices.",
+        "short": "OS-vendor provided communication channels"
+    },
+    "T1391": {
+        "long": "The adversary can use account credentials or signing keys of an existing mobile app developer to publish malicious updates of existing mobile apps to an application store, or to abuse the developer's identity and reputation to publish new malicious apps.  Many mobile devices are configured to automatically install new versions of already-installed apps.",
+        "short": "Choose pre-compromised mobile app developer account credentials or signing keys"
+    },
+    "T1392": {
+        "long": "The adversary can obtain an Apple iOS enterprise distribution key pair and certificate and use it to distribute malicious apps directly to Apple iOS devices without the need to publish the apps to the Apple App Store (where the apps could potentially be detected).",
+        "short": "Obtain Apple iOS enterprise distribution key pair and certificate"
+    },
+    "T1393": {
+        "long": "Many mobile devices are configured to only allow applications to be installed from the mainstream vendor app stores (e.g., Apple App Store and Google Play Store). An adversary can submit multiple code samples to these stores deliberately designed to probe the stores' security analysis capabilities, with the goal of determining effective techniques to place malicious applications in the stores that could then be delivered to targeted devices.",
+        "short": "Test ability to evade automated mobile application security analysis performed by app stores"
+    },
+    "T1394": {
+        "long": "An adversary could distribute malicious software development tools (e.g., compiler) that hide malicious behavior in software built using the tools.",
+        "short": "Distribute malicious software development tools"
+    },
+    "T1395": {
+        "long": "****Deprecation Warning****\nThis technique has been deprecated. Please see ATT&CK's Initial Access and Execution tactics for replacement techniques.",
+        "short": "Runtime code download and execution"
+    },
+    "T1396": {
+        "long": "Configure and setup booter/stressor services, often intended for server stress testing, to enable denial of service attacks.",
+        "short": "Obtain booter/stressor subscription"
+    },
+    "T1397": {
+        "long": "Spearphishing for information is a specific variant of spearphishing. Spearphishing for information is different from other forms of spearphishing in that it it doesn't leverage malicious code. All forms of spearphishing are elctronically delivered social engineering targeted at a specific individual, company, or industry. Spearphishing for information is an attempt to trick targets into divulging information, frequently credentials, without involving malicious code. Spearphishing for information frequently involves masquerading as a source with a reason to collect information (such as a system administrator or a bank) and providing a user with a website link to visit. The given website often closely resembles a legitimate site in appearance and has a URL containing elements from the real site. From the fake website, information is gathered in web forms and sent to the attacker. Spearphishing for information may also try to obtain information directly through the exchange of emails, instant messengers or other electronic conversation means.",
+        "short": "Spearphishing for Information"
+    },
+    "T1398": {
+        "long": "If an adversary can escalate privileges, he or she may be able to use those privileges to place malicious code in the device kernel or other boot partition components, where the code may evade detection, may persist after device resets, and may not be removable by the device user. In some cases (e.g., the Samsung Knox warranty bit as described under Detection), the attack may be detected but could result in the device being placed in a state that no longer allows certain functionality.",
+        "short": "Modify OS Kernel or Boot Partition"
+    },
+    "T1399": {
+        "long": "If an adversary can escalate privileges, he or she may be able to use those privileges to place malicious code in the device's Trusted Execution Environment (TEE) or other similar isolated execution environment where the code can evade detection, may persist after device resets, and may not be removable by the device user. Running code within the TEE may provide an adversary with the ability to monitor or tamper with overall device behavior.",
+        "short": "Modify Trusted Execution Environment"
+    },
+    "T1400": {
+        "long": "If an adversary can escalate privileges, he or she may be able to use those privileges to place malicious code in the device system partition, where it may persist after device resets and may not be easily removed by the device user.",
+        "short": "Modify System Partition"
+    },
+    "T1401": {
+        "long": "A malicious application can request Device Administrator privileges. If the user grants the privileges, the application can take steps to make its removal more difficult.",
+        "short": "Abuse Device Administrator Access to Prevent Removal"
+    },
+    "T1402": {
+        "long": "An Android application can listen for the BOOT_COMPLETED broadcast, ensuring that the app's functionality will be activated every time the device starts up without having to wait for the device user to manually start the app.",
+        "short": "App Auto-Start at Device Boot"
+    },
+    "T1403": {
+        "long": "ART (the Android Runtime) compiles optimized code on the device itself to improve performance. If an adversary can escalate privileges, he or she may be able to use those privileges to modify the cached code in order to hide malicious behavior. Since the code is compiled on the device, it may not receive the same level of integrity checks that are provided to code running in the system partition.",
+        "short": "Modify cached executable code"
+    },
+    "T1404": {
+        "long": "A malicious app can exploit unpatched vulnerabilities in the operating system to obtain escalated privileges.",
+        "short": "Exploit OS Vulnerability"
+    },
+    "T1405": {
+        "long": "A malicious app or other attack vector could be used to exploit vulnerabilities in code running within the Trusted Execution Environment (TEE) . The adversary could then obtain privileges held by the TEE potentially including the ability to access cryptographic keys or other sensitive data . Escalated operating system privileges may be first required in order to have the ability to attack the TEE . If not, privileges within the TEE can potentially be used to exploit the operating system .",
+        "short": "Exploit TEE Vulnerability"
+    },
+    "T1406": {
+        "long": "An app could contain malicious code in obfuscated or encrypted form, then deobfuscate or decrypt the code at runtime to evade many app vetting techniques, as described in     .",
+        "short": "Obfuscated or Encrypted Payload"
+    },
+    "T1407": {
+        "long": "An app could download and execute dynamic code (not included in the original application package) after installation to evade static analysis techniques (and potentially dynamic analysis techniques) used for application vetting or application store review .",
+        "short": "Download New Code at Runtime"
+    },
+    "T1408": {
+        "long": "An adversary could use knowledge of the techniques used by security software to evade detection. For example, some mobile security products perform compromised device detection by searching for particular artifacts such as an installed \"su\" binary, but that check could be evaded by naming the binary something else. Similarly, polymorphic code techniques could be used to evade signature-based detection as described by Rastogi et al. .",
+        "short": "Disguise Root/Jailbreak Indicators"
+    },
+    "T1409": {
+        "long": "An adversary could attempt to read files that contain sensitive data or credentials (e.g., private keys, passwords, access tokens). This technique requires either escalated privileges or for the targeted app to have stored the data in an insecure manner (e.g., with insecure file permissions or in an insecure location such as an external storage directory).",
+        "short": "Access Sensitive Data or Credentials in Files"
+    },
+    "T1410": {
+        "long": "An adversary may capture network traffic to and from the device to obtain credentials or other sensitive data, or redirect network traffic to flow through an adversary-controlled gateway to do the same.",
+        "short": "Network Traffic Capture or Redirection"
+    },
+    "T1411": {
+        "long": "User Interface Spoofing can be used to trick users into providing sensitive information, such as account credentials, bank account information, or Personally Identifiable Information (PII) to an unintended entity.",
+        "short": "User Interface Spoofing"
+    },
+    "T1412": {
+        "long": "A malicious application could capture sensitive data sent via SMS, including authentication credentials. SMS is frequently used to transmit codes used for multi-factor authentication.",
+        "short": "Capture SMS Messages"
+    },
+    "T1413": {
+        "long": "On versions of Android prior to 4.1, an adversary may use a malicious application that holds the READ_LOGS permission to obtain private keys, passwords, other credentials, or other sensitive data stored in the device's system log. On Android 4.1 and later, an adversary would need to attempt to perform an operating system privilege escalation attack to be able to access the log.",
+        "short": "Access Sensitive Data in Device Logs"
+    },
+    "T1414": {
+        "long": "A malicious app or other attack vector could capture sensitive data stored in the device clipboard, for example passwords being copy-and-pasted from a password manager app.",
+        "short": "Capture Clipboard Data"
+    },
+    "T1415": {
+        "long": "An iOS application may be able to maliciously claim a URL scheme, allowing it to intercept calls that are meant for a different application. This technique, for example, could be used to capture OAuth authorization codes as described in   or to phish user credentials as described in  . Related potential security implications are described in  . FireEye researchers describe URL scheme hijacking in a blog post , including evidence of its use.",
+        "short": "URL Scheme Hijacking"
+    },
+    "T1416": {
+        "long": "A malicious app can register to receive intents meant for other applications and may then be able to receive sensitive values such as OAuth authorization codes as described in  .",
+        "short": "Android Intent Hijacking"
+    },
+    "T1417": {
+        "long": "A malicious app can register as a device keyboard and intercept keypresses containing sensitive values such as usernames and passwords. Zeltser  describes these risks.",
+        "short": "Malicious Third Party Keyboard App"
+    },
+    "T1418": {
+        "long": "Adversaries may seek to identify all applications installed on the device. One use case for doing so is to identify the presence of endpoint security applications that may increase the adversary's risk of detection. Another use case is to identify the presence of applications that the adversary may wish to target.",
+        "short": "Application Discovery"
+    },
+    "T1419": {
+        "long": "On Android, device type information is accessible to apps through the android.os.Build class . Device information could be used to target privilege escalation exploits.",
+        "short": "Device Type Discovery"
+    },
+    "T1420": {
+        "long": "On Android, command line tools or the Java file APIs can be used to enumerate file system contents. However, Linux file permissions and SELinux policies generally strongly restrict what can be accessed by apps (without taking advantage of a privilege escalation exploit). The contents of the external storage directory are generally visible, which could present concern if sensitive data is inappropriately stored there.",
+        "short": "File and Directory Discovery"
+    },
+    "T1421": {
+        "long": "On Android, applications can use standard APIs to gather a list of network connections to and from the device. For example, the Network Connections app available in the Google Play Store  advertises this functionality.",
+        "short": "Local Network Connections Discovery"
+    },
+    "T1422": {
+        "long": "On Android, details of onboard network interfaces are accessible to apps through the java.net.NetworkInterface class . The Android TelephonyManager class can be used to gather related information such as the IMSI, IMEI, and phone number .",
+        "short": "Local Network Configuration Discovery"
+    },
+    "T1423": {
+        "long": "Adversaries may attempt to get a listing of services running on remote hosts, including those that may be vulnerable to remote software exploitation. Methods to acquire this information include port scans and vulnerability scans from the mobile device. This technique may take advantage of the mobile device's access to an internal enterprise network either through local connectivity or through a Virtual Private Network (VPN).",
+        "short": "Network Service Scanning"
+    },
+    "T1424": {
+        "long": "On Android versions prior to 5, applications can observe information about other processes that are running through methods in the ActivityManager class. On Android versions prior to 7, applications can obtain this information by executing the ps command, or by examining the /proc directory. Starting in Android version 7, use of the Linux kernel's hidepid feature prevents applications (without escalated privileges) from accessing this information .",
+        "short": "Process Discovery"
+    },
+    "T1426": {
+        "long": "An adversary may attempt to get detailed information about the operating system and hardware, including version, patches, and architecture.",
+        "short": "System Information Discovery"
+    },
+    "T1427": {
+        "long": "With escalated privileges, an adversary could program the mobile device to impersonate USB devices such as input devices (keyboard and mouse), storage devices, and/or networking devices in order to attack a physically connected PC. Wang and Stavrou  and Kamkar  describe this technique. This technique has been demonstrated on Android, and we are unaware of any demonstrations on iOS.",
+        "short": "Attack PC via USB Connection"
+    },
+    "T1428": {
+        "long": "Adversaries may attempt to exploit enterprise servers, workstations, or other resources over the network. This technique may take advantage of the mobile device's access to an internal enterprise network either through local connectivity or through a Virtual Private Network (VPN).",
+        "short": "Exploit Enterprise Resources"
+    },
+    "T1429": {
+        "long": "An adversary could use a malicious or exploited application to surreptitiously record activities using the device microphone and/or camera through use of standard operating system APIs.",
+        "short": "Microphone or Camera Recordings"
+    },
+    "T1430": {
+        "long": "An adversary could use a malicious or exploited application to surreptitiously track the device's physical location through use of standard operating system APIs.",
+        "short": "Location Tracking"
+    },
+    "T1432": {
+        "long": "An adversary could call standard operating system APIs from a malicious application to gather contact list (i.e., address book) data, or with escalated privileges could directly access files containing contact list data.",
+        "short": "Access Contact List"
+    },
+    "T1433": {
+        "long": "On Android, an adversary could call standard operating system APIs from a malicious application to gather call log data, or with escalated privileges could directly access files containing call log data.",
+        "short": "Access Call Log"
+    },
+    "T1435": {
+        "long": "An adversary could call standard operating system APIs from a malicious application to gather calendar entry data, or with escalated privileges could directly access files containing calendar data.",
+        "short": "Access Calendar Entries"
+    },
+    "T1436": {
+        "long": "Adversaries may communicate over a commonly used port to bypass firewalls or network detection systems and to blend with normal network activity to avoid more detailed inspection. They may use commonly open ports such as",
+        "short": "Commonly Used Port"
+    },
+    "T1437": {
+        "long": "Adversaries may communicate using a common, standardized application layer protocol such as HTTP, HTTPS, SMTP, or DNS to avoid detection by blending in with existing traffic.",
+        "short": "Standard Application Layer Protocol"
+    },
+    "T1438": {
+        "long": "Adversaries can communicate using cellular networks rather than enterprise Wi-Fi in order to bypass enterprise network monitoring systems. Adversaries may also communicate using other non-Internet Protocol mediums such as SMS, NFC, or Bluetooth to bypass network monitoring systems.",
+        "short": "Alternate Network Mediums"
+    },
+    "T1439": {
+        "long": "If network traffic between the mobile device and remote servers is unencrypted or is encrypted in an insecure manner, then an adversary positioned on the network can eavesdrop on communication. For example, He et al.  describe numerous healthcare-related applications that did not properly protect network communication.",
+        "short": "Eavesdrop on Insecure Network Communication"
+    },
+    "T1444": {
+        "long": "An adversary could download a legitimate app, disassemble it, add malicious code, and then reassemble the app, for example as described by Zhou and Jiang in . The app would appear to be the original app but contain additional malicious functionality. The adversary could then publish this app to app stores or use another delivery technique.",
+        "short": "Repackaged Application"
+    },
+    "T1446": {
+        "long": "An adversary may seek to lock the legitimate user out of the device, for example until a ransom is paid.",
+        "short": "Lock User Out of Device"
+    },
+    "T1447": {
+        "long": "A malicious application could abuse Android device administrator access to wipe device contents, for example if a ransom is not paid.",
+        "short": "Wipe Device Data"
+    },
+    "T1448": {
+        "long": "A malicious app could use standard Android APIs to send SMS messages. SMS messages could potentially be sent to premium numbers that charge the device owner and generate revenue for an adversary, for example as described by Lookout in  .",
+        "short": "Premium SMS Toll Fraud"
+    },
+    "T1449": {
+        "long": "An adversary could exploit signaling system vulnerabilities to redirect calls or text messages to a phone number under the attacker's control. The adversary could then act as a man-in-the-middle to intercept or manipulate the communication.",
+        "short": "Exploit SS7 to Redirect Phone Calls/SMS"
+    },
+    "T1450": {
+        "long": "An adversary could exploit signaling system vulnerabilities to track the location of mobile devices.",
+        "short": "Exploit SS7 to Track Device Location"
+    },
+    "T1451": {
+        "long": "An adversary could convince the mobile network operator (e.g. through social networking, forged identification, or insider attacks performed by trusted employees) to issue a new SIM card and associate it with an existing phone number and account  . The adversary could then obtain SMS messages or hijack phone calls intended for someone else .",
+        "short": "SIM Card Swap"
+    },
+    "T1452": {
+        "long": "An adversary could use access to a compromised device's credentials to attempt to manipulate app store rankings or ratings by triggering application downloads or posting fake reviews of applications. This technique likely requires privileged access (a rooted or jailbroken device).",
+        "short": "Manipulate App Store Rankings or Ratings"
+    },
+    "T1453": {
+        "long": "A malicious app could abuse Android's accessibility features to capture sensitive data or perform other malicious actions, as demonstrated in a proof of concept created by Skycure .",
+        "short": "Abuse Accessibility Features"
+    },
+    "T1456": {
+        "long": "As described by ATT&CK for Enterprise, a drive-by compromise is when an adversary gains access to a system through a user visiting a website over the normal course of browsing. With this technique, the user's web browser is targeted for exploitation. For example, a website may contain malicious media content intended to exploit vulnerabilities in media parsers as demonstrated by the Android Stagefright vulnerability  .",
+        "short": "Drive-by Compromise"
+    },
+    "T1458": {
+        "long": "If the mobile device is connected (typically via USB) to a charging station or a PC, for example to charge the device's battery, then a compromised or malicious charging station or PC could attempt to exploit the mobile device via the connection.",
+        "short": "Exploit via Charging Station or PC"
+    },
+    "T1461": {
+        "long": "An adversary with physical access to a mobile device may seek to bypass the device's lockscreen.",
+        "short": "Lockscreen Bypass"
+    },
+    "T1463": {
+        "long": "If network traffic between the mobile device and a remote server is not securely protected, then an attacker positioned on the network may be able to manipulate network communication without being detected. For example, FireEye researchers found in 2014 that 68% of the top 1,000 free applications in the Google Play Store had at least one Transport Layer Security (TLS) implementation vulnerability potentially opening the applications' network traffic to man-in-the-middle attacks .",
+        "short": "Manipulate Device Communication"
+    },
+    "T1464": {
+        "long": "An attacker could jam radio signals (e.g. Wi-Fi, cellular, GPS) to prevent the mobile device from communicating.",
+        "short": "Jamming or Denial of Service"
+    },
+    "T1465": {
+        "long": "An adversary could set up unauthorized Wi-Fi access points or compromise existing access points and, if the device connects to them, carry out network-based attacks such as eavesdropping on or modifying network communication as described in NIST SP 800-153 .",
+        "short": "Rogue Wi-Fi Access Points"
+    },
+    "T1466": {
+        "long": "An adversary could cause the mobile device to use less secure protocols, for example by jamming frequencies used by newer protocols such as LTE and only allowing older protocols such as GSM to communicate as described in NIST SP 800-187 . Use of less secure protocols may make communication easier to eavesdrop upon or manipulate.",
+        "short": "Downgrade to Insecure Protocols"
+    },
+    "T1467": {
+        "long": "An adversary could set up a rogue cellular base station and then use it to eavesdrop on or manipulate cellular device communication. For example, Ritter and DePerry of iSEC Partners demonstrated this technique using a compromised cellular femtocell at Black Hat USA 2013 .",
+        "short": "Rogue Cellular Base Station"
+    },
+    "T1468": {
+        "long": "An adversary who is able to obtain unauthorized access to or misuse authorized access to cloud services (e.g. Google's Android Device Manager or Apple iCloud's Find my iPhone) or to an enterprise mobility management (EMM) / mobile device management (MDM) server console could use that access to track mobile devices.",
+        "short": "Remotely Track Device Without Authorization"
+    },
+    "T1469": {
+        "long": "An adversary who is able to obtain unauthorized access to or misuse authorized access to cloud services (e.g. Google's Android Device Manager or Apple iCloud's Find my iPhone) or to an EMM console could use that access to wipe enrolled devices .",
+        "short": "Remotely Wipe Data Without Authorization"
+    },
+    "T1470": {
+        "long": "An adversary who is able to obtain unauthorized access to or misuse authorized access to cloud backup services (e.g. Google's Android backup service or Apple's iCloud) could use that access to obtain sensitive data stored in device backups. For example, the Elcomsoft Phone Breaker product advertises the ability to retrieve iOS backup data from Apple's iCloud . Elcomsoft also describes  obtaining WhatsApp communication histories from backups stored in iCloud.",
+        "short": "Obtain Device Cloud Backups"
+    },
+    "T1471": {
+        "long": "An adversary may encrypt files stored on the mobile device to prevent the user from accessing them, only unlocking access to the files after a ransom is paid. Without escalated privileges, the adversary is generally limited to only encrypting files in external/shared storage locations. This technique has been demonstrated on Android, and we are unaware of any demonstrated use on iOS.",
+        "short": "Encrypt Files for Ransom"
+    },
+    "T1472": {
+        "long": "An adversary could seek to generate fraudulent advertising revenue from mobile devices, for example by triggering automatic clicks of advertising links without user involvement.",
+        "short": "Generate Fraudulent Advertising Revenue"
+    },
+    "T1474": {
+        "long": "As further described in ATT&CK for Enterprise, supply chain compromise is the manipulation of products or product delivery mechanisms prior to receipt by a final consumer for the purpose of data or system compromise. Somewhat related, adversaries could also identify and exploit inadvertently present vulnerabilities. In many cases, it may be difficult to be certain whether exploitable functionality is due to malicious intent or simply inadvertent mistake.",
+        "short": "Supply Chain Compromise"
+    },
+    "T1475": {
+        "long": "Malicious applications are a common attack vector used by adversaries to gain a presence on mobile devices. Mobile devices often are configured to allow application installation only from an authorized app store (e.g., Google Play Store or Apple App Store). An adversary may seek to place a malicious application in an authorized app store, enabling the application to be installed onto targeted devices.",
+        "short": "Deliver Malicious App via Authorized App Store"
+    },
+    "T1476": {
+        "long": "Malicious applications are a common attack vector used by adversaries to gain a presence on mobile devices. This technique describes installing a malicious application on targeted mobile devices without involving an authorized app store (e.g., Google Play Store or Apple App Store). Adversaries may wish to avoid placing malicious applications in an authorized app store due to increased potential risk of detection or other reasons. However, mobile devices often are configured to allow application installation only from an authorized app store which would prevent this technique from working.",
+        "short": "Deliver Malicious App via Other Means"
+    },
+    "T1477": {
+        "long": "The mobile device may be targeted for exploitation through its interface to cellular networks or other radio interfaces.",
+        "short": "Exploit via Radio Interfaces"
+    },
+    "T1478": {
+        "long": "An adversary could attempt to install insecure or malicious configuration settings on the mobile device, through means such as phishing emails or text messages either directly containing the configuration settings as an attachment, or containing a web link to the configuration settings. The device user may be tricked into installing the configuration settings through social engineering techniques .",
+        "short": "Install Insecure or Malicious Configuration"
+    }
+}

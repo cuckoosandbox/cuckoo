@@ -34,7 +34,7 @@ class AnalysisController:
 
     @staticmethod
     def _get_dnsinfo(report):
-        """Create DNS information dicts by domain and ip"""
+        """Create DNS information dicts by domain and ip."""
 
         if "network" in report and "domains" in report["network"]:
             domainlookups = dict((i["domain"], i["ip"]) for i in report["network"]["domains"])

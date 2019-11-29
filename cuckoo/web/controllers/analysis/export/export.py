@@ -44,7 +44,7 @@ class ExportController:
     @staticmethod
     def create(task_id, taken_dirs, taken_files, report=None):
         """
-        Returns a zip file as a file like object.
+        Return a zip file as a file like object.
         :param task_id: task id
         :param taken_dirs: directories to include
         :param taken_files: files to include

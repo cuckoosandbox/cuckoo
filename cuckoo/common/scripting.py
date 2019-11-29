@@ -105,7 +105,7 @@ class CmdExe(Scripting):
         return " ".join(self.args.get("command", []))
 
 def ps1_cmdarg(s, minimum=1):
-    """Creates an exactly matching PowerShell command line argument regex,
+    """Create an exactly matching PowerShell command line argument regex,
     instead of a regex that matches anything with the same characters."""
     return "".join(
         "([%s%s^]" % (ch.lower(), ch.upper()) for ch in s

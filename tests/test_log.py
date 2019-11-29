@@ -18,7 +18,7 @@ from cuckoo.misc import set_cwd, cwd
 db = Database()
 
 def reset_logging():
-    """Resets the logging module to its initial state so that we can
+    """Reset the logging module to its initial state so that we can
     re-register all kinds of logging logic for unit testing purposes."""
     logging.root = logging.RootLogger(logging.WARNING)
     logging.Logger.root = logging.root
@@ -76,7 +76,7 @@ def test_process_json_logging():
     init_yara()
     init_logfile("process-p0.json")
 
-    def process_tasks(instance, maxcount):
+    def process_tasks(instance, maxcount, timeout):
         logger("foo bar", action="hello.world", status="success")
 
     with mock.patch("cuckoo.main.Database"):

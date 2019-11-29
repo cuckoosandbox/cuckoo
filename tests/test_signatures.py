@@ -159,7 +159,7 @@ def test_should_enable_signature_windows_platform():
     assert rs.should_enable_signature(sig_windows_platform())
 
 def test_signature_order():
-    class sig(object):
+    class sig(Signature):
         enabled = True
         minimum = "2.0.0"
         maximum = None
@@ -181,6 +181,8 @@ def test_signature_order():
         name = "sig3"
         order = 2
 
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
     with mock.patch("cuckoo.core.plugins.cuckoo") as p:
         p.signatures = sig1, sig2, sig3
         RunSignatures.init_once()
@@ -191,7 +193,7 @@ def test_signature_order():
     assert isinstance(rs.signatures[2], sig1)
 
 class test_call_signature():
-    class sig(object):
+    class sig(Signature):
         enabled = True
         name = "sig"
         minimum = "2.0.0"
@@ -206,6 +208,8 @@ class test_call_signature():
         def on_signature(self, sig):
             pass
 
+    set_cwd(tempfile.mkdtemp())
+    cuckoo_create()
     with mock.patch("cuckoo.core.plugins.cuckoo") as p:
         p.signatures = sig,
         RunSignatures.init_once()
@@ -350,7 +354,7 @@ def test_on_yara():
         "vmware1": [(0, 0)],
     }
 
-    class sig1(object):
+    class sig1(Signature):
         name = "sig1"
 
         @property
@@ -377,7 +381,7 @@ def test_on_yara():
 
     rs = RunSignatures(results)
 
-    rs.signatures = sig1(),
+    rs.signatures = sig1(rs),
     rs.run()
 
     assert sig1.on_yara.call_count == 3
@@ -481,3 +485,80 @@ class TestSignatureMethods(object):
         })
         r.check_command_line("foo") == "foo"
         r.check_command_line("ar$", regex=True) == "bar"
+
+def classes(objects):
+    return [s.__class__ for s in objects]
+
+def lazy_compare(unsorted, sorted_lst):
+    items = sorted(unsorted, key=lambda v: repr(v))
+    assert items == sorted_lst
+
+class TestRunSignatures(object):
+    _fake_results = {
+        "behavior": {
+            "processes": [{
+                "process_path": "C:\\Temp\\malware.exe",
+                "pid": 123,
+                "calls": [
+                    {"category": "system", "api": "LdrLoadDll"},
+                    {"category": "registry", "api": "GetSystemTimeAsFileTime"},
+                    {"category": "xundefined", "api": "XUndefined"}
+                ]
+            }]
+        }
+    }
+
+    def _runner(self, signatures):
+        class TestRunSignatures(RunSignatures):
+            available_signatures = signatures
+        return TestRunSignatures(self._fake_results)
+
+    def test_yield_calls(self):
+        pass
+
+    def test_dispatch_building(self):
+        class SignatureAll(Signature):
+            def on_call(self, call, proc):
+                pass
+        class SignatureDispatch(Signature):
+            def on_call_LdrLoadDll(self, call, proc):
+                pass
+        class SignatureAPI(Signature):
+            filter_apinames = ["GetSystemTimeAsFileTime"]
+            def on_call(self, call, proc):
+                pass
+        class SignatureCategory(Signature):
+            filter_categories = ["system"]
+            def on_call(self, call, proc):
+                pass
+        class SignatureDummy(Signature):
+            pass
+
+        r = self._runner([SignatureAPI, SignatureAll, SignatureCategory,
+            SignatureDispatch, SignatureDummy])
+        assert len(r.signatures) == 5
+        lazy_compare(
+            r.call_for_api.keys(),
+            ["GetSystemTimeAsFileTime", "LdrLoadDll"]
+        )
+        assert classes(r.call_for_api["LdrLoadDll"]) == [SignatureDispatch]
+        assert classes(r.call_for_cat["system"]) == [SignatureCategory]
+        assert SignatureDummy not in classes(r.call_always)
+        for v in r.call_for_api.values():
+            assert SignatureDummy not in classes(v)
+        for v in r.call_for_cat.values():
+            assert SignatureDummy not in classes(v)
+        assert not r.api_sigs
+        r.run()
+        lazy_compare(
+            r.api_sigs.keys(),
+            ["GetSystemTimeAsFileTime", "LdrLoadDll", "XUndefined"]
+        )
+        lazy_compare(
+            classes(r.api_sigs["GetSystemTimeAsFileTime"]),
+            [SignatureAPI, SignatureAll]
+        )
+        lazy_compare(
+            classes(r.api_sigs["LdrLoadDll"]),
+            [SignatureAll, SignatureCategory, SignatureDispatch]
+        )

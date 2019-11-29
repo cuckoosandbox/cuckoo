@@ -1,0 +1,5 @@
+# IPs that should not be reported to MISP should be added here
+13.74.179.117
+40.81.120.221
+40.77.226.249
+8.8.8.8

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2016-2018 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - https://cuckoosandbox.org/.
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -149,7 +149,7 @@ def do_setup(**kwargs):
 
 do_setup(
     name="Cuckoo",
-    version="2.0.7a1",
+    version="2.0.7",
     author="Stichting Cuckoo Foundation",
     author_email="cuckoo@cuckoofoundation.org",
     packages=[
@@ -185,7 +185,7 @@ do_setup(
         ],
     },
     install_requires=[
-        "alembic==0.8.8",
+        "alembic==1.0.10",
         "androguard==3.0.1",
         "beautifulsoup4==4.5.3",
         "chardet==2.3.0",
@@ -196,8 +196,10 @@ do_setup(
         "egghatch>=0.2.3, <0.3",
         "elasticsearch==5.3.0",
         "flask==0.12.2",
-        "flask-sqlalchemy==2.1",
+        "flask-sqlalchemy==2.4.0",
         "httpreplay>=0.2.4, <0.3",
+        "ipaddress>=1.0.22",
+        "gevent>=1.2, <1.3",
         "jinja2==2.9.6",
         "jsbeautifier==1.6.2",
         "oletools==0.51",
@@ -206,13 +208,13 @@ do_setup(
         "pillow==3.2",
         "pyelftools==0.24",
         "pyguacamole==0.6",
-        "pymisp==2.4.54",
+        "pymisp==2.4.106",
         "pymongo==3.0.3",
         "python-dateutil==2.4.2",
         "python-magic==0.4.12",
         "roach>=0.1.2, <0.2",
-        "sflock>=0.3.8, <0.4",
-        "sqlalchemy==1.0.8",
+        "sflock>=0.3.10, <0.4",
+        "sqlalchemy==1.3.3",
         "unicorn==1.0.1",
         "wakeonlan==0.2.2",
         "yara-python==3.6.3",
@@ -229,7 +231,6 @@ do_setup(
             "scapy==2.3.2",
         ],
         "distributed": [
-            "gevent==1.1.1",
             "psycopg2==2.6.2",
         ],
         "postgresql": [

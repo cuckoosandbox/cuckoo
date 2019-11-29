@@ -21,7 +21,7 @@ db = Database()
 updates = {}
 
 def latest_updates():
-    """Updates the latest Cuckoo version & blogposts at maximum once a day."""
+    """Update the latest Cuckoo version & blogposts at maximum once a day."""
     next_check = datetime.datetime.now() - datetime.timedelta(days=1)
     if updates and updates["timestamp"] > next_check:
         return updates
@@ -36,7 +36,7 @@ class CuckooApi(object):
     @api_get
     def status(request):
         """
-        Returns a variety of information about both
+        Return a variety of information about both
         Cuckoo and the operating system.
         :return: Dictionary
         """

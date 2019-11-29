@@ -14,7 +14,7 @@ from lib.core.config import Config
 log = logging.getLogger(__name__)
 
 class STAP(Auxiliary):
-    """system-wide syscall trace with stap."""
+    """System-wide syscall trace with stap."""
     priority = -10  # low prio to wrap tightly around the analysis
 
     def __init__(self):

@@ -110,6 +110,7 @@ MIDDLEWARE_CLASSES = (
     "django.middleware.csrf.CsrfViewMiddleware",
     # Cuckoo Authentication & headers.
     "web.middle.CuckooAuthentication",
+    # "web.middle.CuckooFileDownloadAuthentication",
     "web.middle.CuckooHeaders",
     # Our custom exception handler.
     "web.errors.ExceptionMiddleware"

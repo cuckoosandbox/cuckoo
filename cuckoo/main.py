@@ -8,6 +8,7 @@ import logging
 import os
 import shutil
 import subprocess
+import signal
 import sys
 
 import cuckoo
@@ -16,7 +17,7 @@ from cuckoo.apps import (
     fetch_community, submit_tasks, process_tasks, process_task_range,
     cuckoo_rooter, cuckoo_api, cuckoo_distributed, cuckoo_distributed_instance,
     cuckoo_clean, cuckoo_dnsserve, cuckoo_machine, import_cuckoo,
-    migrate_database, migrate_cwd
+    migrate_database, migrate_cwd, cleanup_rooter
 )
 from cuckoo.common.config import read_kv_conf
 from cuckoo.common.exceptions import CuckooCriticalError
@@ -89,6 +90,41 @@ def cuckoo_create(username=None, cfg=None, quiet=False):
             open(cwd("cwd", "init-post.jinja2", private=True), "rb").read()
         ).render()
 
+def cuckoo_resources():
+    try:
+        import resource
+    except ImportError:
+        # Only Unix platforms have this option; should not be an issue on
+        # Windows
+        return
+
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    limit = soft
+    if soft != hard:
+        log.debug("Increasing resource limit for number of open files to %s",
+                  hard if hard != resource.RLIM_INFINITY else '[unlimited]')
+        try:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
+            limit = hard
+        except ValueError:
+            log.debug(
+                "Failed to increase open file limit from %s to %s", soft, hard
+            )
+
+    if limit != resource.RLIM_INFINITY:
+        # This can really affect the stability of Cuckoo, so the user should
+        # really fix it.  TODO: find a good minimum.
+        if limit <= 4096:
+            log.error("The maximum number of open files is low (%s). If you "
+                      "do not increase it, you may run into errors later "
+                      "on.", hard)
+            log.error("See also: https://cuckoo.sh/docs/faq/index.html#"
+                      "ioerror-errno-24-too-many-open-files")
+
+    # IDEAS:
+    # Check if limit is realistic versus the number of VMs
+    # Same for pool_size
+
 def cuckoo_init(level, ctx, cfg=None):
     """Initialize Cuckoo configuration.
     @param quiet: enable quiet mode.
@@ -103,15 +139,21 @@ def cuckoo_init(level, ctx, cfg=None):
 
     # Determine if this is a proper CWD.
     if not os.path.exists(cwd(".cwd")):
-        sys.exit(
-            "No proper Cuckoo Working Directory was identified, did you pass "
-            "along the correct directory? For new installations please use a "
-            "non-existant directory to build up the CWD! You can craft a CWD "
-            "manually, but keep in mind that the CWD layout may change along "
-            "with Cuckoo releases (and don't forget to fill out '$CWD/.cwd')!"
-        )
+        sys.stderr.write(red(
+            "\nNo proper Cuckoo Working Directory was identified, did you "
+            "pass along the correct directory?\n"
+            "The '.cwd' file is missing in the specified directory. "
+            "For new installations please use a non-existant directory to "
+            "build up the CWD! You can craft a CWD manually, but keep in mind "
+            "that the CWD layout may change along with Cuckoo releases "
+            "(and don't forget to fill out '$CWD/.cwd')!\n"
+        ))
+        sys.exit(1)
 
     init_console_logging(level)
+
+    # Make sure user is aware of potential resource limits
+    cuckoo_resources()
 
     # Only one Cuckoo process should exist per CWD. Run this check before any
     # files are possibly modified. Note that we mkdir $CWD/pidfiles/ here as
@@ -125,7 +167,7 @@ def cuckoo_init(level, ctx, cfg=None):
     pidfile.create()
 
     check_configs()
-    check_version()
+    check_version(ctx.ignore_vuln)
 
     ctx.log and init_logging(level)
 
@@ -167,7 +209,7 @@ def cuckoo_init(level, ctx, cfg=None):
             "pretty important!"
         )
         log.warning(
-            "You'll be able to fetch all the latest Cuckoo Signaturs, Yara "
+            "You'll be able to fetch all the latest Cuckoo Signatures, Yara "
             "rules, and more goodies by running the following command:"
         )
         log.info("$ %s", green(format_command("community")))
@@ -176,25 +218,46 @@ def cuckoo_main(max_analysis_count=0):
     """Cuckoo main loop.
     @param max_analysis_count: kill cuckoo after this number of analyses
     """
+    rs, sched = None, None
+
+    def stop():
+        if sched:
+            sched.running = False
+        if rs:
+            rs.instance.stop()
+
+        Pidfile("cuckoo").remove()
+        if sched:
+            sched.stop()
+
+    def handle_sigterm(sig, f):
+        stop()
+
+    # Handle a SIGTERM, to reduce the chance of Cuckoo exiting without
+    # cleaning
+    signal.signal(signal.SIGTERM, handle_sigterm)
+
     try:
-        ResultServer()
+        rs = ResultServer()
         sched = Scheduler(max_analysis_count)
         sched.start()
     except KeyboardInterrupt:
-        sched.stop()
-
-    Pidfile("cuckoo").remove()
+        log.info("CTRL+C detected! Stopping.. This can take a few seconds")
+    finally:
+        if Pidfile("cuckoo").exists():
+            stop()
 
 @click.group(invoke_without_command=True)
 @click.option("-d", "--debug", is_flag=True, help="Enable verbose logging")
 @click.option("-q", "--quiet", is_flag=True, help="Only log warnings and critical messages")
 @click.option("--nolog", is_flag=True, help="Don't log to file.")
 @click.option("-m", "--maxcount", default=0, help="Maximum number of analyses to process")
+@click.option("--ignore-vuln", is_flag=True, help="Ignore vulnerability warnings and start")
 @click.option("--user", help="Drop privileges to this user")
 @click.option("--cwd", help="Cuckoo Working Directory")
 @click.pass_context
-def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
-    """Invokes the Cuckoo daemon or one of its subcommands.
+def main(ctx, debug, quiet, nolog, maxcount, ignore_vuln, user, cwd):
+    """Invoke the Cuckoo daemon or one of its subcommands.
 
     To be able to use different Cuckoo configurations on the same machine with
     the same Cuckoo installation, we use the so-called Cuckoo Working
@@ -215,6 +278,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
     ctx.user = user
 
     ctx.log = not nolog
+    ctx.ignore_vuln = ignore_vuln
 
     if quiet:
         level = logging.WARN
@@ -247,7 +311,7 @@ def main(ctx, debug, quiet, nolog, maxcount, user, cwd):
 @click.pass_context
 @click.option("--conf", type=click.Path(exists=True, file_okay=True, readable=True), help="Flat key/value configuration file")
 def init(ctx, conf):
-    """Initializes Cuckoo and its configuration."""
+    """Initialize Cuckoo and its configuration."""
     if conf and os.path.exists(conf):
         cfg = read_kv_conf(conf)
     else:
@@ -398,7 +462,7 @@ def process(ctx, instance, report, maxcount, timeout):
 @click.option("--sudo", is_flag=True, help="Request superuser privileges")
 @click.pass_context
 def rooter(ctx, socket, group, service, iptables, ip, sudo):
-    """Instantiates the Cuckoo Rooter."""
+    """Instantiate the Cuckoo Rooter."""
     init_console_logging(level=ctx.parent.level)
 
     if sudo:
@@ -423,6 +487,7 @@ def rooter(ctx, socket, group, service, iptables, ip, sudo):
             cuckoo_rooter(socket, group, service, iptables, ip)
         except KeyboardInterrupt:
             print(red("Aborting the Cuckoo Rooter.."))
+            cleanup_rooter()
 
 @main.command()
 @click.option("-H", "--host", default="localhost", help="Host to bind the API server on")
@@ -465,6 +530,10 @@ def api(ctx, host, port, uwsgi, nginx):
 
     init_console_logging(level=ctx.parent.level)
     Database().connect()
+
+    if not ensure_tmpdir():
+        sys.exit(1)
+
     cuckoo_api(host, port, ctx.parent.level == logging.DEBUG)
 
 @main.command()
@@ -573,6 +642,9 @@ def web(ctx, args, host, port, uwsgi, nginx):
     init_console_logging(level=ctx.parent.level)
     Database().connect()
 
+    if not ensure_tmpdir():
+        sys.exit(1)
+
     try:
         execute_from_command_line(
             ("cuckoo", "runserver", "%s:%d" % (host, port))
@@ -626,7 +698,7 @@ def migrate(revision):
 @click.argument("path", type=click.Path(file_okay=False, exists=True))
 @click.pass_context
 def import_(ctx, mode, path):
-    """Imports an older Cuckoo setup into a new CWD. The old setup should be
+    """Import an older Cuckoo setup into a new CWD. The old setup should be
     identified by PATH and the new CWD may be specified with the --cwd
     parameter, e.g., "cuckoo --cwd /tmp/cwd import old-cuckoo"."""
     if os.path.exists(os.path.join(path, ".cwd")):

@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Claudio Guarnieri.
-# Copyright (C) 2014-2018 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -148,7 +148,7 @@ class UUID(Type):
             log.error("Incorrect UUID %s", value)
 
     def check(self, value):
-        """Checks if the value is of type UUID."""
+        """Check if the value is of type UUID."""
         try:
             click.UUID(value)
             return True
@@ -207,6 +207,7 @@ class Config(object):
         "cuckoo": {
             "cuckoo": {
                 "version_check": Boolean(True),
+                "ignore_vulnerabilities": Boolean(False, required=False),
                 "delete_original": Boolean(False),
                 "delete_bin_copy": Boolean(False),
                 "machinery": String("virtualbox"),
@@ -242,7 +243,8 @@ class Config(object):
             "resultserver": {
                 "ip": String("192.168.56.1"),
                 "port": Int(2042),
-                "force_port": Boolean(False),
+                "force_port": Boolean(False, False),  # Unused
+                "pool_size": Int(0, False),
                 "upload_max_size": Int(128 * 1024 * 1024),
             },
             "processing": {
@@ -750,6 +752,12 @@ class Config(object):
                 "url": String(),
                 "apikey": String(sanitize=True),
                 "mode": String("maldoc ipaddr hashes url"),
+                "distribution": Int(0, required=False),
+                "analysis": Int(0, required=False),
+                "threat_level": Int(4, required=False),
+                "min_malscore": Int(0, required=False),
+                "tag": String("Cuckoo", required=False),
+                "upload_sample": Boolean(False, required=False),
             },
             "mongodb": {
                 "enabled": Boolean(False),
@@ -1041,7 +1049,7 @@ class Config(object):
 
     @staticmethod
     def from_confdir(dirpath, loose=False, sanitize=False):
-        """Reads all the configuration from a configuration directory. If
+        """Read all the configuration from a configuration directory. If
         `sanitize` is set, then black out sensitive fields."""
         ret = {}
         for filename in os.listdir(dirpath):
@@ -1182,7 +1190,7 @@ def cast(s, value):
     return type_.parse(value)
 
 def read_kv_conf(filepath):
-    """Reads a flat Cuckoo key/value configuration file."""
+    """Read a flat Cuckoo key/value configuration file."""
     ret = {}
     for line in open(filepath, "rb"):
         line = line.strip()

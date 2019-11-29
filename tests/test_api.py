@@ -157,7 +157,7 @@ class TestAPI(object):
         assert t.memory is True
         assert t.enforce_timeout is True
         assert t.options == {
-            "free": "yes",
+            "free": "yes", "procmemdump": "no"
         }
 
     def test_create_submit_urls(self):
