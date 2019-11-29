@@ -53,6 +53,13 @@ class VirusTotal(Processing):
                 "Unsupported task category: %s" % self.task["category"]
             )
 
+        # Scan any dropped files that have an interesting filetype.
+        for row in self.results.get("dropped", []):
+            if not self.should_scan_file(row["type"]):
+                continue
+
+            row["virustotal"] = self.scan_file(row["path"], summary=True)
+
         return results
 
     def scan_file(self, filepath, summary=False):
