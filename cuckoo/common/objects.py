@@ -16,7 +16,7 @@ import shutil
 import tempfile
 import zipfile
 
-from cuckoo.common.whitelist import is_whitelisted_domain
+from cuckoo.common.whitelist import is_whitelisted_domain, is_whitelisted_url
 
 try:
     import pydeep
@@ -383,7 +383,7 @@ class File(object):
         # http://stackoverflow.com/a/454589
         urls, f = set(), open(self.file_path, "rb")
         for url in re.findall(URL_REGEX, self.mmap(f.fileno())):
-            if not is_whitelisted_domain(url[1]):
+            if not is_whitelisted_url("".join(url[1:])):
                 urls.add("".join(url))
         return list(urls)
 
