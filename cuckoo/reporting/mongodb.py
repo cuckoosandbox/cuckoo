@@ -97,7 +97,7 @@ class MongoDB(Report):
         report["info"]["analysis_path"] = self.analysis_path
 
         # Store the sample in GridFS.
-        if results.get("info", {}).get("category") == "file" and "target" in results:
+        if results.get("info", {}).get("category") in ["file", "archive"] and "target" in results:
             sample = File(self.file_path)
             if sample.valid():
                 fname = results["target"]["file"]["name"]
