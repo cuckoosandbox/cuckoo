@@ -14,6 +14,7 @@ from cuckoo.common.exceptions import (
 from cuckoo.common.virustotal import (
     VirusTotalAPI, VirusTotalResourceNotScanned
 )
+from cuckoo.common.objects import Archive
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +43,13 @@ class VirusTotal(Processing):
         # Scan the original sample or URL.
         if self.task["category"] == "file":
             results = self.scan_file(self.file_path)
+        elif self.task["category"] == "archive":
+            if self.task["options"].get("filename",None):
+                a = Archive(self.file_path)
+                file = a.get_file(self.task["options"]["filename"])
+                results = self.scan_file(file.file_path)
+            else:
+                results = self.scan_file(self.file_path)
         elif self.task["category"] == "url":
             results = self.scan_url(self.task["target"])
         elif self.task["category"] == "baseline":
