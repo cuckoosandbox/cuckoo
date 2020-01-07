@@ -655,6 +655,27 @@ class Database(object):
             session.close()
 
     @classlock
+    def set_processingNone(self, task_id):
+        """Set the taken route of this task.
+        @param task_id: task identifier
+        @param route: route string
+        @return: operation status
+        """
+        session = self.Session()
+        try:
+            row = session.query(Task).get(task_id)
+            if not row:
+                return
+
+            row.processing = None
+            session.commit()
+        except SQLAlchemyError as e:
+            log.exception("Database error setting processing to NULL: {0}".format(e))
+            session.rollback()
+        finally:
+            session.close()
+
+    @classlock
     def set_route(self, task_id, route):
         """Set the taken route of this task.
         @param task_id: task identifier
