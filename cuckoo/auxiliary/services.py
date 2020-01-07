@@ -58,7 +58,7 @@ class Services(Auxiliary):
         wait_states = "starting", "running", "stopping"
         for task_id, service in self.tasks:
             while db.guest_get_status(task_id) not in wait_states:
-                time.sleep(1)
+                time.sleep(3)
 
         # Wait an additional timeout before starting the actual analysis.
         timeout = self.options.get("timeout")

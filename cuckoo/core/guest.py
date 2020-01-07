@@ -136,7 +136,7 @@ class OldGuestManager(object):
                 pass
 
             log.debug("%s: not ready yet", self.id)
-            time.sleep(1)
+            time.sleep(3)
 
         self.server._set_timeout(None)
         return True
@@ -237,7 +237,7 @@ class OldGuestManager(object):
         self.server._set_timeout(self.timeout)
 
         while db.guest_get_status(self.task_id) == "running" and self.do_run:
-            time.sleep(1)
+            time.sleep(3)
 
             # If the analysis hits the critical timeout, just return straight
             # away and try to recover the analysis results from the guest.
@@ -351,7 +351,7 @@ class GuestManager(object):
                 log.debug("%s: not ready yet", self.vmid)
             except socket.error:
                 log.debug("%s: not ready yet", self.vmid)
-                time.sleep(1)
+                time.sleep(3)
 
             if time.time() > end:
                 raise CuckooGuestCriticalTimeout(
@@ -544,7 +544,7 @@ class GuestManager(object):
                 count = 0
 
             count += 1
-            time.sleep(1)
+            time.sleep(3)
 
             # If the analysis hits the critical timeout, just return straight
             # away and try to recover the analysis results from the guest.
