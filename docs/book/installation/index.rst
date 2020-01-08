@@ -10,7 +10,8 @@ Cuckoo has proved to work smoothly on *Mac OS X* and *Microsoft Windows 7* as
 host as well. The recommended and tested setup for guests are *Windows XP* and
 *64-bit Windows 7* for Windows analysis, *Mac OS X Yosemite* for Mac OS X
 analysis, and Debian for Linux Analysis, although Cuckoo should work with
-other releases of guest Operating Systems as well.
+other releases of guest Operating Systems as well. Don't use 
+**Windows linux subsystem (WLS)** as system to run Cuckoo Sandbox.
 
 .. note::
 
