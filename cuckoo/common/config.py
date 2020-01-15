@@ -267,6 +267,47 @@ class Config(object):
                 "guacd_port": Int(4822),
             },
         },
+        "az": {
+            "az": {
+                "region_name": String(),
+                "group": String(),
+                "subscription_id": String(),
+                "client_id": String(),
+                "secret": String(),
+                "tenant": String(),
+                "machines": List(String, "cuckoo1"),
+                "interface": String("eth1"),
+                "running_machines_gap": Int(1),
+                "vnet": String(),
+                "cuckoo_subnet": String(),
+            },
+            "autoscale": {
+                "autoscale": Boolean(False),
+                "dynamic_machines_limit": Int(10),
+                "instance_type": String(),
+                "platform": String("windows"),
+                "interface": String(),
+                "options": List(String, None, ",\\s"),
+                "tags": String(),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(2042),
+                "guest_snapshot": String(),
+                "storage_account_type": String()
+            },
+            "*": {
+                "__section__": "cuckoo1",
+                "label": String("cuckoo1"),
+                "platform": String("windows"),
+                "ip": String(),
+                "snapshot": String(),
+                "interface": String("eth1"),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "options": List(String, None, ",\\s"),
+                "tags": String(),
+            },
+            "__star__": ("az", "machines")
+        },
         "virtualbox": {
             "virtualbox": {
                 "mode": String("headless"),
