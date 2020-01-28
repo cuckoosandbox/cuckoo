@@ -1197,6 +1197,23 @@ interface = virbr0
     assert cfg["reporting"]["misp"]["upload_sample"] is False
 
 
+def test_migration_207_208():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.7", "2.0.8")
+
+    assert cfg["proxmox"]["proxmox"]["username"] == "cuckoo@pam"
+    assert cfg["proxmox"]["proxmox"]["password"] == "changeme"
+    assert cfg["proxmox"]["proxmox"]["hostname"] == "proxmox"
+    assert cfg["proxmox"]["proxmox"]["interface"] == "eth1"
+    assert cfg["proxmox"]["proxmox"]["machines"] == ["cuckoo1"]
+    assert cfg["proxmox"]["cuckoo1"]["label"] == "cuckoo1"
+    assert cfg["proxmox"]["cuckoo1"]["platform"] == "windows"
+    assert cfg["proxmox"]["cuckoo1"]["ip"] == "192.168.122.101"
+
+
 class FullMigration(object):
     DIRPATH = None
     VERSION = None
@@ -1222,7 +1239,7 @@ class FullMigration(object):
 
         machineries = (
             "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
-            "vmware", "vsphere", "xenserver",
+            "vmware", "vsphere", "xenserver", "proxmox",
         )
 
         for machinery in machineries:

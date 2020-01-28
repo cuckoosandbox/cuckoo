@@ -724,7 +724,23 @@ def _206_207(c):
     c["reporting"]["misp"]["min_malscore"] = 0
     c["reporting"]["misp"]["tag"] = "Cuckoo"
     c["reporting"]["misp"]["upload_sample"] = False
+    return c
 
+def _207_208(c):
+    c["proxmox"] = {
+        "proxmox": {
+            "username": "cuckoo@pam",
+            "password": "changeme",
+            "hostname": "proxmox",
+            "interface": "eth1",
+            "machines": ["cuckoo1"],
+        },
+        "cuckoo1": {
+            "label": "cuckoo1",
+            "platform": "windows",
+            "ip": "192.168.122.101",
+        }
+    }
     return c
 
 migrations = {
@@ -746,6 +762,7 @@ migrations = {
     "2.0.4": ("2.0.5", _204_205),
     "2.0.5": ("2.0.6", _205_206),
     "2.0.6": ("2.0.7", _206_207),
+    "2.0.7": ("2.0.8", _207_208),
 
     # We're also capable of migrating away from 2.0-dev which basically means
     # that we might have to a partial migration from either 2.0-rc2 or 2.0-rc1.
