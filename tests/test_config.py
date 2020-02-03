@@ -1127,7 +1127,7 @@ platform = windows
 """)
     # Except for virtualbox.
     machineries = (
-        "avd", "az", "esx", "kvm", "physical", "qemu",
+        "avd", "esx", "kvm", "physical", "qemu",
         "vmware", "vsphere", "xenserver",
     )
     for machinery in machineries:
@@ -1160,7 +1160,7 @@ arch = x64
     assert cfg["processing"]["extracted"]["enabled"] is True
     # Except for qemu.
     machineries = (
-        "avd", "az", "esx", "kvm", "physical", "virtualbox",
+        "avd", "esx", "kvm", "physical", "virtualbox",
         "vmware", "vsphere", "xenserver",
     )
     for machinery in machineries:
