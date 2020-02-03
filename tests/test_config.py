@@ -723,7 +723,6 @@ snapshot = snapshot
 [xenserver]
 machines = cuckoo1
 """)
-
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     assert "store_csvs" in cfg["cuckoo"]["resultserver"]
     assert "mmdef" in cfg["reporting"]
