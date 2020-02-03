@@ -867,7 +867,7 @@ class Azure(Machinery):
                                   nic.provisioning_state == "Succeeded"
                 nic_is_to_be_deleted = \
                     nic.tags and nic.tags.get("status", "") == "to_be_deleted"
-                if nic_is_detached or nic_is_to_be_deleted:
+                if nic_is_detached and nic_is_to_be_deleted:
                     try:
                         log.debug(
                             "Deleting leftover network interface card '%s'.",

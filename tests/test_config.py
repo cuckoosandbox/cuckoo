@@ -648,6 +648,30 @@ snapshot = snapshot
     assert cfg["xenserver"]["cuckoo1"]["platform"] == "windows"
     assert cfg["xenserver"]["cuckoo1"]["ip"] == "192.168.54.111"
     assert cfg["xenserver"]["xenserver"]["user"] == "root"
+    assert cfg["az"]["az"]["region_name"] == "earth"
+    assert cfg["az"]["az"]["group"] == "malware_fighters"
+    assert cfg["az"]["az"][
+               "subscription_id"] == "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    assert cfg["az"]["az"][
+               "client_id"] == "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    assert cfg["az"]["az"][
+               "secret"] == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    assert cfg["az"]["az"]["machines"] == "cuckoo1"
+    assert cfg["az"]["az"]["interface"] == "eth1"
+    assert cfg["az"]["az"]["running_machines_gap"] == 1
+    assert cfg["az"]["az"]["vnet"] == "cuckoo-vnet"
+    assert cfg["az"]["az"]["subnet"] == "cuckoo-subnet"
+    assert cfg["az"]["autoscale"]["autoscale"] is False
+    assert cfg["az"]["autoscale"]["dynamic_machines_limit"] == 10
+    assert cfg["az"]["autoscale"]["instance_type"] == "average"
+    assert cfg["az"]["autoscale"]["platform"] == "windows"
+    assert cfg["az"]["autoscale"]["interface"] == "eth1"
+    assert cfg["az"]["autoscale"]["options"] is None
+    assert cfg["az"]["autoscale"]["tags"] == ""
+    assert cfg["az"]["autoscale"]["resultserver_ip"] == "192.168.54.111"
+    assert cfg["az"]["autoscale"]["resultserver_port"] == 2042
+    assert cfg["az"]["autoscale"]["guest_snapshot"] == "cuckoo-snapshot"
+    assert cfg["az"]["autoscale"]["storage_account_type"] == "sample-type"
 
 def test_migration_120_20c1():
     set_cwd(tempfile.mkdtemp())
@@ -1222,7 +1246,7 @@ class FullMigration(object):
 
         machineries = (
             "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
-            "vmware", "vsphere", "xenserver",
+            "vmware", "vsphere", "xenserver", "az",
         )
 
         for machinery in machineries:
