@@ -1221,7 +1221,7 @@ class FullMigration(object):
                     assert actual_value == value.parse(actual_value)
 
         machineries = (
-            "avd", "esx", "kvm", "physical", "qemu", "virtualbox",
+            "avd", "az", "esx", "kvm", "physical", "qemu", "virtualbox",
             "vmware", "vsphere", "xenserver",
         )
 
