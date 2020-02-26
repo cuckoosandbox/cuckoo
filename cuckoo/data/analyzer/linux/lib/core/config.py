@@ -25,9 +25,10 @@ class Config:
                 setattr(self, name, value)
 
     def get(self, name, default=None):
-        if hasattr(self, name):
-            return getattr(self, name)
-        return default
+        """Get attribute.
+        @return: attribute.
+        """
+        return getattr(self, name, default)
 
     def get_options(self):
         """Get analysis options.
