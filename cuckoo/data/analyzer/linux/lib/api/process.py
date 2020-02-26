@@ -38,6 +38,10 @@ class Process:
         return {}
 
     def execute(self, cmd):
+        """Start a subprocess.
+        @param cmd: process path
+        @return: subprocess status
+        """
         self.proc = proc = subprocess.Popen(cmd)
         self.pid = proc.pid
         return True
