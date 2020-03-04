@@ -373,7 +373,7 @@ var Uploader = function () {
                         e.preventDefault();
                         var dropCallbackOutput = _self._drop_callback(_self, holder);
 
-                        // if this callback returns 'false', don't process the file directly. This 
+                        // if this callback returns 'false', don't process the file directly. This
                         // controls auto-uploading from the configuration. Developer can now
                         // embed an upload-trigger himself, if wanted.
                         if (dropCallbackOutput === false) return;
@@ -1796,7 +1796,7 @@ var TopSelect = function (_UserInputController2) {
 			// hook up interaction things
 			this.view.afterRender(function (controller) {
 
-				// this = html	
+				// this = html
 				// controller = interface base controller
 
 				$(this).find('input:radio').bind('change', function (e) {
@@ -2142,9 +2142,9 @@ var Form = function () {
 					this.fields[element.name] = element;
 					this.fields[element.name].form = this;
 
-					// this hooks a callback listener to a change event 
+					// this hooks a callback listener to a change event
 					// from an included field. if it triggers, it will trigger
-					// the form 'change' event. 
+					// the form 'change' event.
 					element.on('change', function () {
 						self.trigger('change', self.serialize());
 					});
@@ -2419,7 +2419,7 @@ var default_analysis_options = {
 // package field contents - hardcoded options vs auto-detected properties
 // gets updated when packages come back that aren;t in this array in the response
 // serialization code.
-var default_package_selection_options = ['default', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'jse', 'hta', 'hwp', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'python', 'vbs', 'wsf', 'xls', 'zip'];
+var default_package_selection_options = ['default', 'bash', 'com', 'cpl', 'dll', 'doc', 'exe', 'generic', 'ie', 'ff', 'jar', 'js', 'jse', 'hta', 'hwp', 'msi', 'pdf', 'ppt', 'ps1', 'pub', 'perl', 'python', 'vbs', 'wsf', 'wget', 'xls', 'zip'];
 var routing_prefs = {};
 
 // appends a helper to handlebars for humanizing sizes

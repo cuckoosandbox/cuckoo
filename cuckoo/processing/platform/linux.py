@@ -56,9 +56,9 @@ class LinuxSystemTap(BehaviorHandler):
 
             pid = syscall["pid"]
 
-            # skip first analyzer process
-            if pid not in self.forkmap:
-                continue
+            # no need skip first analyzer process
+            #if pid not in self.forkmap:
+            #    continue
 
             if self.is_newpid(pid):
                 p_pid = self.forkmap.get(pid, -1)
@@ -139,7 +139,7 @@ class StapParser(object):
                 "time": dt, "process_name": pname, "pid": pid,
                 "instruction_pointer": ip, "api": fn, "arguments": arguments,
                 "return_value": retval, "status": ecode,
-                "type": "apicall", "raw": line,
+                "type": "apicall", "raw": line, "category": "process",
             }
 
     def parse_args(self, args):

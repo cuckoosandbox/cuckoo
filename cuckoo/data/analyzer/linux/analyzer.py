@@ -13,14 +13,16 @@ import urllib
 import urllib2
 import time
 import datetime
+import zipfile
 
 from lib.api.process import Process
-from lib.common.abstracts import Package, Auxiliary
+from lib.common.abstracts import Auxiliary
 from lib.common.constants import PATHS
 from lib.common.exceptions import CuckooError, CuckooPackageError
 from lib.common.results import upload_to_host
 from lib.core.config import Config
 from lib.core.startup import create_folders, init_logging
+from lib.core.packages import choose_package_class
 from modules import auxiliary
 
 log = logging.getLogger()
@@ -44,10 +46,12 @@ def add_pids(pids):
             PROCESS_LIST.add(pid)
         SEEN_LIST.add(pid)
 
+
 def dump_files():
     """Dump all the dropped files."""
     for file_path in FILES_LIST:
         log.info("PLS IMPLEMENT DUMP, want to dump %s", file_path)
+
 
 class Analyzer:
     """Cuckoo Linux Analyzer.
@@ -56,8 +60,8 @@ class Analyzer:
     procedure, including the auxiliary modules and the analysis packages.
     """
 
-    def __init__(self):
-        self.config = None
+    def __init__(self, config):
+        self.config = config
         self.target = None
 
     def prepare(self):
@@ -82,6 +86,12 @@ class Analyzer:
         # we store the path.
         if self.config.category == "file":
             self.target = os.path.join(tempfile.gettempdir(), self.config.file_name)
+        elif self.config.category == "archive":
+            zip_path = os.path.join(os.environ.get("TEMP", "/tmp"), self.config.file_name)
+            zipfile.ZipFile(zip_path).extractall(os.environ.get("TEMP", "/tmp"))
+            self.target = os.path.join(
+                os.environ.get("TEMP", "/tmp"), self.config.options["filename"]
+            )
         # If it's a URL, well.. we store the URL.
         else:
             self.target = self.config.target
@@ -93,6 +103,7 @@ class Analyzer:
 
         # Hell yeah.
         log.info("Analysis completed.")
+        return True
 
     def run(self):
         """Run analysis.
@@ -105,57 +116,38 @@ class Analyzer:
 
         # If no analysis package was specified at submission, we try to select
         # one automatically.
-        if not self.config.package:
-            log.debug("No analysis package specified, trying to detect "
-                      "it automagically.")
-
-            if self.config.category == "file":
-                package = "generic"
-            else:
-                package = "wget"
-
-            # If we weren't able to automatically determine the proper package,
-            # we need to abort the analysis.
-            if not package:
-                raise CuckooError("No valid package available for file "
-                                  "type: {0}".format(self.config.file_type))
-
-            log.info("Automatically selected analysis package \"%s\"", package)
-        # Otherwise just select the specified package.
+        if self.config.package:
+            suggestion = self.config.package
+        elif self.config.category != "file":
+            suggestion = "url"
         else:
-            package = self.config.package
+            suggestion = None
+        #no ie in linux
+        if self.config.package == "ie":
+            suggestion = "ff"
+        # Try to figure out what analysis package to use with this target
+        kwargs = {"suggestion" : suggestion}
+        if self.config.category == "file":
+            package_class = choose_package_class(self.config.file_type,
+                                             self.config.file_name, **kwargs)
+        else:
+            package_class = choose_package_class(None, None, **kwargs)
 
-        # Generate the package path.
-        package_name = "modules.packages.%s" % package
-
-        # Try to import the analysis package.
-        try:
-            __import__(package_name, globals(), locals(), ["dummy"], -1)
-        # If it fails, we need to abort the analysis.
-        except ImportError:
-            raise CuckooError("Unable to import package \"{0}\", does "
-                              "not exist.".format(package_name))
-
-        # Initialize the package parent abstract.
-        Package()
-
-        # Enumerate the abstract subclasses.
-        try:
-            package_class = Package.__subclasses__()[0]
-        except IndexError as e:
-            raise CuckooError("Unable to select package class "
-                              "(package={0}): {1}".format(package_name, e))
-
+        if not package_class:
+            raise Exception("Could not find an appropriate analysis package")
+        # Package initialization
+        kwargs = {
+            "options" : self.config.options,
+            "timeout" : self.config.timeout
+        }
         # Initialize the analysis package.
-        pack = package_class(self.config.get_options())
-
+        pack = package_class(self.target, **kwargs)
         # Initialize Auxiliary modules
         Auxiliary()
         prefix = auxiliary.__name__ + "."
         for loader, name, ispkg in pkgutil.iter_modules(auxiliary.__path__, prefix):
             if ispkg:
                 continue
-
             # Import the auxiliary module.
             try:
                 __import__(name, globals(), locals(), ["dummy"], -1)
@@ -182,23 +174,23 @@ class Analyzer:
             finally:
                 log.debug("Started auxiliary module %s",
                           aux.__class__.__name__)
-                aux_enabled.append(aux)
+                if aux:
+                    aux_enabled.append(aux)
 
         # Start analysis package. If for any reason, the execution of the
         # analysis package fails, we have to abort the analysis.
         try:
-            pids = pack.start(self.target)
+            pids = pack.start()
         except NotImplementedError:
             raise CuckooError("The package \"{0}\" doesn't contain a run "
-                              "function.".format(package_name))
+                              "function.".format(str(package_class)))
         except CuckooPackageError as e:
             raise CuckooError("The package \"{0}\" start function raised an "
-                              "error: {1}".format(package_name, e))
+                              "error: {1}".format(str(package_class), e))
         except Exception as e:
             raise CuckooError("The package \"{0}\" start function encountered "
                               "an unhandled exception: "
-                              "{1}".format(package_name, e))
-
+                              "{1}".format(str(package_class), e))
         # If the analysis package returned a list of process IDs, we add them
         # to the list of monitored processes and enable the process monitor.
         if pids:
@@ -223,7 +215,7 @@ class Analyzer:
 
         while True:
             time_counter += 1
-            if time_counter == int(self.config.timeout):
+            if time_counter > int(self.config.timeout):
                 log.info("Analysis timeout hit, terminating analysis.")
                 break
 
@@ -235,9 +227,6 @@ class Analyzer:
                         if not Process(pid=pid).is_alive():
                             log.info("Process with pid %s has terminated", pid)
                             PROCESS_LIST.remove(pid)
-
-                    # ask the package if it knows any new pids
-                    add_pids(pack.get_pids())
 
                     # also ask the auxiliaries
                     for aux in aux_avail:
@@ -270,7 +259,7 @@ class Analyzer:
                 # throw a warning.
                 except Exception as e:
                     log.warning("The package \"%s\" check function raised "
-                                "an exception: %s", package_name, e)
+                                "an exception: %s", package_class, e)
             except Exception as e:
                 log.exception("The PID watching loop raised an exception: %s", e)
             finally:
@@ -281,9 +270,10 @@ class Analyzer:
             # Before shutting down the analysis, the package can perform some
             # final operations through the finish() function.
             pack.finish()
+            pack.stop()
         except Exception as e:
             log.warning("The package \"%s\" finish function raised an "
-                        "exception: %s", package_name, e)
+                        "exception: %s", package_class, e)
 
         try:
             # Upload files the package created to package_files in the results folder
@@ -293,9 +283,10 @@ class Analyzer:
                     upload_to_host(
                         package[0], os.path.join("package_files", package[1])
                     )
+
         except Exception as e:
             log.warning("The package \"%s\" package_files function raised an "
-                        "exception: %s", package_name, e)
+                        "exception: %s", package_class, e)
 
         # Terminate the Auxiliary modules.
         for aux in sorted(aux_enabled, key=lambda x: x.priority):
@@ -340,8 +331,9 @@ if __name__ == "__main__":
     error = ""
 
     try:
+        config = Config(cfg="analysis.conf")
         # Initialize the main analyzer class.
-        analyzer = Analyzer()
+        analyzer = Analyzer(config)
 
         # Run it and wait for the response.
         success = analyzer.run()
@@ -368,10 +360,6 @@ if __name__ == "__main__":
     # back to the agent, notifying that it can report back to the host.
     finally:
         try:
-            # old agent
-            server = xmlrpclib.Server("http://127.0.0.1:8000")
-            server.complete(success, error, PATHS["root"])
-        except xmlrpclib.ProtocolError:
             # new agent
             data = {
                 "status": "complete",
@@ -380,3 +368,8 @@ if __name__ == "__main__":
             urllib2.urlopen(
                 "http://127.0.0.1:8000/status", urllib.urlencode(data)
             )
+        except Exception as e:
+            log.debug(str(e))
+            # old agent
+            server = xmlrpclib.Server("http://127.0.0.1:8000")
+            server.complete(success, error, PATHS["root"])
