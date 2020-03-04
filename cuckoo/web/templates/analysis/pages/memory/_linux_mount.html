@@ -1,0 +1,22 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Dev name</th>
+            <th>Path</th>
+            <th>FS type</th>
+            <th>RR</th>
+            <th>Mount string</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_mount.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.dev_name}}</td>
+            <td class="{{ row.class_ }}">{{row.path}}</td>
+            <td class="{{ row.class_ }}">{{row.fstype}}</td>
+            <td class="{{ row.class_ }}">{{row.rr}}</td>
+            <td class="{{ row.class_ }}">{{row.mnt_string}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

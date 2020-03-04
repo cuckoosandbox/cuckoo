@@ -1,0 +1,30 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Offset</th>
+            <th>Name</th>
+            <th>PID</th>
+            <th>pslist</th>
+            <th>psscan</th>
+            <th>pid_hash</th>
+            <th>kmem_cache</th>
+            <th>parents</th>
+            <th>thread_leaders</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_psxview.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.offset}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.pslist}}</td>
+            <td class="{{ row.class_ }}">{{row.psscan}}</td>
+            <td class="{{ row.class_ }}">{{row.pid_hash}}</td>
+            <td class="{{ row.class_ }}">{{row.kmem_cache}}</td>
+            <td class="{{ row.class_ }}">{{row.parents}}</td>
+            <td class="{{ row.class_ }}">{{row.thread_leaders}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

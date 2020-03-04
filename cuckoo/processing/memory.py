@@ -6,6 +6,9 @@
 import logging
 import os
 import time
+import socket
+import shutil
+import psutil
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.config import config
@@ -31,6 +34,7 @@ try:
     import volatility.exceptions as exc
     import volatility.plugins.filescan as filescan
     import volatility.protos as protos
+    import volatility.plugins.linux.common as linux_common
 
     HAVE_VOLATILITY = True
 
@@ -183,6 +187,59 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def _get_task_vals(self, task):
+        if task.parent.is_valid():
+            ppid       = str(task.parent.pid)
+        else:
+            ppid       = "-"
+
+        uid = task.uid
+        if uid == None or uid > 10000:
+            uid = "-"
+
+        gid = task.gid
+        if gid == None or gid > 100000:
+            gid = "-"
+
+        start_time = task.get_task_start_time()
+        if start_time == None:
+            start_time = "-"
+
+        if task.mm.pgd == None:
+            dtb = None
+        else:
+            dtb = self.addr_space.vtop(task.mm.pgd) or task.mm.pgd
+
+        task_offset = None
+        if hasattr(self, "wants_physical") and task.obj_vm.base:
+            task_offset = self.addr_space.vtop(task.obj_offset)
+
+        if task_offset == None:
+            task_offset = task.obj_offset
+
+        return task_offset, dtb, ppid, uid, gid, str(start_time)
+
+    def linux_pslist(self):
+        """Volatility pslist plugin.
+        @see volatility/plugins/taskmods.py
+        """
+        results = []
+
+        command = self.plugins["linux_pslist"](self.config)
+        for task in command.calculate():
+            task_offset, dtb, ppid, uid, gid, start_time = self._get_task_vals(task)
+            results.append({
+                "process_name": str(task.comm),
+                "process_id": str(task.pid),
+                "parent_id": str(ppid),
+                "uid": str(uid),
+                "gid": str(gid),
+                "DTB": str(dtb),
+                "create_time": str(start_time or "")
+            })
+
+        return dict(config={}, data=results)
+
     def psxview(self):
         """Volatility psxview plugin.
         @see volatility/plugins/malware/psxview.py
@@ -201,6 +258,61 @@ class VolatilityAPI(object):
                 "csrss": str(offset in ps_sources["csrss"]),
                 "session": str(offset in ps_sources["session"]),
                 "deskthrd": str(offset in ps_sources["deskthrd"]),
+            })
+
+        return dict(config={}, data=results)
+
+    def linux_psxview(self):
+        """Volatility psxview plugin.
+        @see volatility/plugins/malware/psxview.py
+        """
+        results = []
+
+        command = self.plugins["linux_psxview"](self.config)
+        for offset, process, ps_sources in command.calculate():
+            results.append({
+                #"offset": str(offset),
+                "process_name": str(process.comm),
+                "process_id": str(process.pid),
+                "pslist": str(offset in ps_sources["pslist"]),
+                "psscan": str(offset in ps_sources["psscan"]),
+                "pid_hash": str(offset in ps_sources["pid_hash"]),
+                "kmem_cache": str(offset in ps_sources["kmem_cache"]),
+                "parents": str(offset in ps_sources["parents"]),
+                "thread_leaders": str(offset in ps_sources["thread_leaders"]),
+            })
+
+        return dict(config={}, data=results)
+
+    def malconfscan(self):
+        """ Volatility malconfscan plugin
+        https://github.com/JPCERTCC/MalConfScan
+        @see volatility/plugins/malware/malconfscan.py
+        """
+        results = []
+        malconf = []
+        command = self.plugins["malconfscan"](self.config)
+
+        for task, vad_base_addr, end, hit, memory_model, config_data in command.calculate():
+
+            # strip null bytes and convert dict data to list data.
+            for i in range(len(config_data)):
+                conf = []
+                for field, value in config_data[i].iteritems():
+                    value = str(value).strip(chr(0))
+                    config_data[i][field]= value
+                    conf.append({
+                        field: value
+                        })
+                malconf.append(conf)
+
+            results.append({
+                "process_name": str(task.ImageFileName),
+                "process_id": str(task.UniqueProcessId),
+                "malware_name": str(hit),
+                "vad_base_addr": '0x' + str(vad_base_addr).zfill(8),
+                "size": '0x' + str(end - vad_base_addr + 1).zfill(8),
+                "malconf": malconf,
             })
 
         return dict(config={}, data=results)
@@ -224,7 +336,6 @@ class VolatilityAPI(object):
 
             results.append({
                 "type": str(sym),
-                "callback": hex(int(cb)),
                 "module": str(module_name),
                 "details": str(detail or "-"),
             })
@@ -255,6 +366,57 @@ class VolatilityAPI(object):
                 "address": hex(int(addr)),
                 "module": module_name,
                 "section": sect_name,
+            })
+
+        return dict(config={}, data=results)
+
+    def linux_check_idt(self):
+        """Volatility idt plugin.
+        @see volatility/plugins/malware/idt.py
+        """
+        results = []
+
+        command = self.plugins["linux_check_idt"](self.config)
+        for (i, _, idt_addr, sym_name, hooked) in command.calculate():
+            results.append({
+                "index": str(i),
+                "address": str(idt_addr),
+                "module": str(sym_name)
+            })
+
+        return dict(config={}, data=results)
+
+    def linux_mount(self):
+        """Volatility idt plugin.
+        @see volatility/plugins/malware/idt.py
+        """
+        results = []
+
+        command = self.plugins["linux_mount"](self.config)
+        for (_sb, dev_name, path, fstype, rr, mnt_string) in command.calculate():
+            results.append({
+                "dev_name": str(dev_name),
+                "path": str(path),
+                "fstype": str(fstype),
+                "rr": str(rr),
+                "mnt_string": str(mnt_string)
+            })
+
+        return dict(config={}, data=results)
+
+    def linux_check_modules(self):
+        """Volatility idt plugin.
+        @see volatility/plugins/malware/idt.py
+        """
+        results = []
+
+        command = self.plugins["linux_check_modules"](self.config)
+        for mod in command.calculate():
+            results.append({
+                "Module_Address": str(mod),
+                "Core_Address": str(mod.module_core),
+                "Init_Address": str(mod.module_init),
+                "Module_Name": str(mod.name)
             })
 
         return dict(config={}, data=results)
@@ -572,6 +734,51 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def linux_malfind(self, dump_dir=None):
+        """Volatility malfind plugin.
+        @param dump_dir: optional directory for dumps
+        @see volatility/plugins/malware/linux/malfind.py
+        """
+        results = []
+
+        command = self.plugins["linux_malfind"](self.config)
+        for task in command.calculate():
+            proc_as = task.get_process_address_space()
+            for vma in task.get_proc_maps():
+                if vma.is_suspicious():
+                    fname = vma.vm_name(task)
+                    if fname == "[vdso]":
+                        continue
+
+                    prots = vma.protection()
+                    flags = vma.flags()
+
+                    content = proc_as.zread(vma.vm_start, 64)
+
+                    hexdump = "".join(
+                        "{0:#010x}  {1:<48}  {2}\n".format(vma.vm_start + o, h, ''.join(c))
+                        for o, h, c in utils.Hexdump(content[0:64]))
+
+                    results.append({
+                        "process_name": str(task.comm),
+                        "process_id": str(task.pid),
+                        "vm_start": str(vma.vm_start),
+                        "fname": str(fname),
+                        "protection": str(prots),
+                        "flags": str(flags),
+                        "hexdump": hexdump
+                    })
+
+                # if dump_dir:
+                #     filename = os.path.join(
+                #         dump_dir, "process.{0:#x}.{1:#x}.dmp".format(
+                #             task.comm, vma.vm_start
+                #         )
+                #     )
+                #     command.dump_vad(filename, vad, address_space)
+
+        return dict(config={}, data=results)
+
     def yarascan(self):
         """Volatility yarascan plugin.
         @see volatility/plugins/malware/yarascan.py
@@ -610,6 +817,41 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def linux_yarascan(self):
+        """Volatility yarascan plugin.
+        @see volatility/plugins/malware/yarascan.py
+        """
+        results = []
+
+        yarapath = cwd("stuff", "index_memory.yar")
+        if not os.path.exists(yarapath):
+            return dict(config={}, data=[])
+
+        self.config.update("YARA_FILE", yarapath)
+
+        command = self.plugins["linux_yarascan"](self.config)
+        for task, address, hit, buf in command.calculate():
+            # Comment: this code is pretty much ripped from
+            # render_text in volatility.
+            # Find out if the hit is from user or kernel mode
+            hexdump = "".join(
+                "{0:#010x}  {1:<48}  {2}\n".format(address + o, h, ''.join(c))
+                for o, h, c in utils.Hexdump(buf[0:64]))
+            if task:
+                results.append({
+                    "rule": str(hit.rule),
+                    "owner": "Task: {0} pid {1}".format(task.comm, task.pid),
+                    "addr": str(address),
+                    "hexdump": hexdump
+                })
+            else:
+                results.append({
+                    "rule": str(hit.rule),
+                    "addr": str(address),
+                    "hexdump": hexdump
+                })
+        return dict(config={}, data=results)
+
     def apihooks(self):
         """Volatility apihooks plugin.
         @see volatility/plugins/malware/apihooks.py
@@ -638,6 +880,35 @@ class VolatilityAPI(object):
                 new["process_name"] = str(process.ImageFileName)
 
             results.append(new)
+
+        return dict(config={}, data=results)
+
+    def linux_apihooks(self):
+        """Volatility apihooks plugin.
+        @see volatility/plugins/malware/apihooks.py
+        """
+        results = []
+
+        command = self.plugins["linux_apihooks"](self.config)
+        for task in command.calculate():
+            for hook_desc, sym_name, addr, hook_type, hook_addr, hookfuncdesc in task.apihook_info():
+                proc_name = str(task.comm)
+                if command.whitelist(hook_desc | hook_type,
+                                     proc_name, sym_name,
+                                     addr, hookfuncdesc):
+                    continue
+                new = {
+                    "process_id" : str(task.pid),
+                    "process_name" : str(task.comm),
+                    "hook_vma": str(hook_desc),
+                    "hook_symbol": str(sym_name),
+                    "hooked_address": addr,
+                    "hook_address": hook_addr,
+                    "type": hook_type,
+                    "hook_address": hookfuncdesc
+                }
+
+                results.append(new)
 
         return dict(config={}, data=results)
 
@@ -755,6 +1026,63 @@ class VolatilityAPI(object):
                     new["mem_full_dll_name"] = str(mem_mod.FullDllName)
 
                 results.append(new)
+
+        return dict(config={}, data=results)
+
+    def linux_ldrmodules(self):
+        """Volatility ldrmodules plugin.
+        @see volatility/plugins/malware/malfind.py
+        """
+        results = []
+
+        command = self.plugins["linux_ldrmodules"](self.config)
+        for task in command.calculate():
+            for vm_start, vma_name, pmaps, dmaps in task.ldrmodules():
+                results.append({
+                    "process_id": str(task.pid),
+                    "process_name": str(task.comm),
+                    "vm_start": str(vm_start),
+                    "vma_name": str(vma_name),
+                    "pmaps": str(pmaps),
+                    "dmaps": str(dmaps)
+                })
+
+        return dict(config={}, data=results)
+
+    def linux_tmpfs(self):
+        """Volatility ldrmodules plugin.
+        @see volatility/plugins/linux/tmpfs.py
+        not working: https://github.com/volatilityfoundation/volatility/issues/532
+        """
+        results = []
+
+        #self.config.update('SB', '5')
+        #self.config.update('DUMP_DIR', '/tmp/tmpfs')
+        command = self.plugins["linux_tmpfs"](self.config)
+        for (i, path) in command.calculate():
+            results.append({
+                    "i": str(i),
+                    "path": str(path)
+            })
+
+        return dict(config={}, data=results)
+
+    def linux_lsof(self):
+        """Volatility ldrmodules plugin.
+        @see volatility/plugins/malware/malfind.py
+        """
+        results = []
+
+        command = self.plugins["linux_lsof"](self.config)
+        for task in command.calculate():
+            for filp, fd in task.lsof():
+                results.append({
+                    "offset": str(task.obj_offset),
+                    "process_id": str(task.pid),
+                    "process_name": str(task.comm),
+                    "fd": str(fd),
+                    "path": str(linux_common.get_path(task, filp))
+                })
 
         return dict(config={}, data=results)
 
@@ -960,11 +1288,71 @@ class VolatilityAPI(object):
 
         return dict(config={}, data=results)
 
+    def linux_netscan(self):
+        """Volatility sockscan plugin.
+        @see volatility/plugins/netscan.py
+        """
+        results = []
+
+        commands = self.plugins["linux_netscan"](self.config).calculate()
+        for net_obj, proto, laddr, lport, raddr, rport, state in commands:
+            results.append({
+                "offset": "{0:#010x}".format(net_obj.obj_offset),
+                "process_id": str(net_obj),
+                "local_address": str(laddr),
+                "local_port": str(lport),
+                "remote_address": str(raddr),
+                "remote_port": str(rport),
+                "protocol": str(proto),
+            })
+
+        return dict(config={}, data=results)
+
+    def linux_netstat(self):
+        """Volatility sockscan plugin.
+        @see volatility/plugins/netscan.py
+        """
+        results = []
+
+        commands = self.plugins["linux_netstat"](self.config).calculate()
+        for task in commands:
+            for ents in task.netstat():
+                if ents[0] == socket.AF_INET:
+                    (_, proto, saddr, sport, daddr, dport, state) = ents[1]
+                    results.append({
+                        "protocol": str(proto),
+                        "source_address": str(saddr),
+                        "source_port": str(sport),
+                        "destination_address": str(daddr),
+                        "destination_port": str(dport),
+                        "state": str(state),
+                        "process_id" : str(task.pid),
+                        "process_name" : str(task.comm),
+                        "name": "-"
+                    })
+
+                elif ents[0] == 1 and not self.config.IGNORE_UNIX:
+                    (name, inum) = ents[1]
+                    results.append({
+                        "protocol": str("UNIX "+str(inum)),
+                        "source_address": "-",
+                        "source_port": "-",
+                        "destination_address": "-",
+                        "destination_port": "-",
+                        "state": "-",
+                        "process_id" : str(task.pid),
+                        "process_name" : str(task.comm),
+                        "name": str(name)
+                    })
+
+        return dict(config={}, data=results)
+
 class VolatilityManager(object):
     """Handle several volatility results."""
     PLUGINS = [
         "pslist",
         "psxview",
+        "malconfscan",
         "callbacks",
         ["idt", "x86"],
         "ssdt",
@@ -986,12 +1374,28 @@ class VolatilityManager(object):
         ["sockscan", "winxp"],
         ["netscan", "vista", "win7"],
     ]
+    LINUX_PLUGINS = [
+        "linux_pslist",
+        "linux_psxview",
+        "linux_malfind",
+        "linux_apihooks",
+        "linux_mount",
+        "linux_check_modules",
+        "linux_ldrmodules",
+        "linux_check_idt",
+        "linux_netstat",
+        "linux_yarascan",
+        "linux_netscan",
+        "linux_lsof",
+        "linux_tmpfs",
+    ]
 
-    def __init__(self, memfile, osprofile):
+    def __init__(self, memfile, osprofile, platform):
         self.mask_pid = []
         self.taint_pid = set()
         self.memfile = memfile
         self.osprofile = osprofile
+        self.platform = platform
 
         for pid in config("memory:mask:pid_generic"):
             if pid and pid.isdigit():
@@ -1025,8 +1429,13 @@ class VolatilityManager(object):
 
     def run(self):
         results = {}
+        platform = self.platform.lower()
+        if platform == "linux":
+            plugins = self.LINUX_PLUGINS
+        else:
+            plugins = self.PLUGINS
 
-        for plugin_name in self.PLUGINS:
+        for plugin_name in plugins:
             if isinstance(plugin_name, list):
                 plugin_name, profiles = plugin_name[0], plugin_name[1:]
             else:
@@ -1110,14 +1519,57 @@ class Memory(Processing):
             return
 
         osprofile = (
-            self.machine.get("osprofile") or
-            config("memory:basic:guest_profile")
+            self.machine.get("osprofile") or None
+            #or config("memory:basic:guest_profile")
         )
 
+        platform = (
+            self.machine.get("platform") or None
+             #or config("memory:basic:platform")
+        )
+        #log.debug(str(self.machine))
+        #workaround for multi machinery
+        if not platform:
+            if self.machine.get("name").startswith("Ubuntu"):
+                platform = "linux"
+                osprofile = "LinuxUbuntu1904x64"
+            elif self.machine.get("name").startswith("Mac"):
+                platform = "darwin"
+                osprofile = "Mac10_14_2_18C54x64"
+            else:
+                osprofile = config("memory:basic:guest_profile")
+                platform = "windows"
+
         try:
-            return VolatilityManager(self.memory_path, osprofile).run()
-        except CuckooOperationalError as e:
+            if config("cuckoo:ramfs:enabled"):
+                space_available = psutil.disk_usage(config("cuckoo:ramfs:path")).free >> 20
+                ramfs_path = os.path.join(config("cuckoo:ramfs:path"), str(self.task.id) + ".dmp")
+                if space_available > config("cuckoo:ramfs:freespace"):
+                    shutil.copy(self.memory_path,ramfs_path)
+                return VolatilityManager(ramfs_path, osprofile, platform).run()
+            else:
+                return VolatilityManager(self.memory_path, osprofile, platform).run()
+        except Exception as e:
             log.error(
-                "Error running Volatility on machine '%s': %s",
-                (self.machine.get("name") or "unknown VM name"), e
+                "Error running Volatility on machine '%s %s': %s",
+                (self.machine.get("name") or "unknown VM name"), osprofile, e, exc_info=True
             )
+        finally:
+            if config("cuckoo:ramfs:enabled"):
+                try:
+                    if os.path.exists(ramfs_path):
+                        os.remove(ramfs_path)
+                except OSError:
+                    log.error(
+                        "Unable to delete memory dump file at ramfs \"%s\"",
+                        ramfs_path
+                    )
+                if config("memory:basic:delete_memdump"):
+                    try:
+                        if os.path.exists(self.memory_path):
+                            os.remove(self.memory_path)
+                    except OSError:
+                        log.error(
+                            "Unable to delete memory dump file at path \"%s\"",
+                            self.memory_path
+                        )

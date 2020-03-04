@@ -20,50 +20,160 @@
                 <div class="col-md-12 grouped-buttons__rows">
 
                     <div class="grouped-buttons__bordered page-switcher__nav justify">
+                      {% if report.analysis.memory.pslist.data or report.analysis.memory.linux_pslist.data %}
                         <a href="memory-process-list" class="no-badge active">Process List</a>
+                      {% endif %}
+                      {% if report.analysis.memory.svcscan.data  %}
                         <a href="memory-services" class="no-badge">Services</a>
+                      {% endif %}
+                      {% if report.analysis.memory.modscan.data  %}
                         <a href="memory-kernel" class="no-badge">Kernel Modules</a>
+                      {% endif %}
+                        {% if report.analysis.memory.devicetree.data  %}
                         <a href="memory-device-tree" class="no-badge">Device Tree</a>
+                        {% endif %}
+                        {% if report.analysis.memory.malfind.data or report.analysis.memory.linux_malfind.data %}
                         <a href="memory-code-injection" class="no-badge">Code Injection</a>
+                        {% endif %}
+                        {% if report.analysis.memory.timers.data  %}
                         <a href="memory-timers" class="no-badge">Timers</a>
+                        {% endif %}
+                        {% if report.analysis.memory.psxview.data or report.analysis.memory.linux_psxview.data %}
                         <a href="memory-psxview" class="no-badge">Psxview</a>
+                        {% endif %}
                     </div>
 
                     <div class="grouped-buttons__bordered page-switcher__nav justify">
+                        {% if report.analysis.memory.messagehooks.data %}
                         <a href="memory-messagehooks" class="no-badge">Messagehooks</a>
+                        {% endif %}
+                        {% if report.analysis.memory.apihooks.data or report.analysis.memory.linux_apihooks.data%}
                         <a href="memory-apihooks" class="no-badge">API Hooks</a>
+                        {% endif %}
+                        {% if report.analysis.memory.callbacks.data %}
                         <a href="memory-callbacks" class="no-badge">Callbacks</a>
+                        {% endif %}
+                        {% if report.analysis.memory.yarascan.data %}
                         <a href="memory-yarascan" class="no-badge">Yarascan</a>
+                        {% endif %}
+                        {% if report.analysis.memory.ssdt.data %}
                         <a href="memory-ssdt" class="no-badge">SSDT</a>
+                        {% endif %}
+                        {% if report.analysis.memory.idt.data %}
                         <a href="memory-idt" class="no-badge">IDT</a>
+                        {% endif %}
+                        {% if report.analysis.memory.gdt.data %}
                         <a href="memory-gdt" class="no-badge">GDT</a>
+                        {% endif %}
+                        {% if report.analysis.memory.sockscan.data or report.analysis.memory.netscan.data or report.analysis.memory.linux_netscan.data %}
                         <a href="memory-sockets" class="no-badge">Sockets</a>
+                        {% endif %}
+                        {% if report.analysis.memory.malconfscan.data %}
+                        <a href="memory-malconfscan" class="no-badge">MalConfScan</a>
+                        {% endif %}
+                        {% if report.analysis.memory.linux_mount.data  %}
+                        <a href="memory-linux_mount" class="no-badge">Mount</a>
+                        {% endif %}
+                        {% if report.analysis.memory.linux_check_modules.data %}
+                        <a href="memory-linux_check_modules" class="no-badge">Modules</a>
+                        {% endif %}
+                        {% if report.analysis.memory.linux_ldrmodules.data %}
+                        <a href="memory-linux_ldrmodules" class="no-badge">LDR Modules</a>
+                        {% endif %}
+                        {% if report.analysis.memory.linux_lsof.data %}
+                        <a href="memory-linux_lsof" class="no-badge">LSOF</a>
+                        {% endif %}
+                        {% if report.analysis.memory.linux_netstat.data %}
+                        <a href="memory-linux_netstat" class="no-badge">Netstat</a>
+                        {% endif %}
                     </div>
 
                 </div>
 
                 <div class="col-md-12 page-switcher__pages">
+                    {% if report.analysis.memory.pslist.data  %}
                     <div id="memory-process-list" class="active">{% include "analysis/pages/memory/_pslist.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_pslist.data  %}
+                      <div id="memory-process-list" class="active">{% include "analysis/pages/memory/_linux_pslist.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.svcscan.data  %}
                     <div id="memory-services">{% include "analysis/pages/memory/_svcscan.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.modscan.data  %}
                     <div id="memory-kernel">{% include "analysis/pages/memory/_modscan.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.devicetree.data  %}
                     <div id="memory-device-tree">{% include "analysis/pages/memory/_devicetree.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.malfind.data  %}
                     <div id="memory-code-injection">{% include "analysis/pages/memory/_malfind.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_malfind.data  %}
+                    <div id="memory-code-injection">{% include "analysis/pages/memory/_linux_malfind.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.timer.data %}
                     <div id="memory-timers">{% include "analysis/pages/memory/_timers.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_psxview.data %}
+                    <div id="memory-psxview">{% include "analysis/pages/memory/_linux_psxview.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.psxview.data %}
                     <div id="memory-psxview">{% include "analysis/pages/memory/_psxview.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.messagehooks %}
                     <div id="memory-messagehooks">{% include "analysis/pages/memory/_messagehooks.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.apihooks.data %}
                     <div id="memory-apihooks">{% include "analysis/pages/memory/_apihooks.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_apihooks.data %}
+                    <div id="memory-apihooks">{% include "analysis/pages/memory/_linux_apihooks.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.callbacks.data %}
                     <div id="memory-callbacks">{% include "analysis/pages/memory/_callbacks.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.yarascan.data %}
                     <div id="memory-yarascan">{% include "analysis/pages/memory/_yarascan.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_yarascan.data %}
+                    <div id="memory-yarascan">{% include "analysis/pages/memory/_linux_yarascan.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.ssdt.data %}
                     <div id="memory-ssdt">{% include "analysis/pages/memory/_ssdt.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.idt.data %}
                     <div id="memory-idt">{% include "analysis/pages/memory/_idt.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_check_idt.data %}
+                    <div id="memory-idt">{% include "analysis/pages/memory/_linux_check_idt.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.gdt.data %}
                     <div id="memory-gdt">{% include "analysis/pages/memory/_gdt.html" %}</div>
-                    <div id="memory-sockets">
-                        {% if report.analysis.memory.sockscan %}
-                            {% include "analysis/pages/memory/_sockscan.html" %}
-                        {% elif report.analysis.memory.netscan %}
-                            {% include "analysis/pages/memory/_netscan.html" %}
-                        {% endif %}
-                    </div>
+                    {% endif %}
+                    {% if report.analysis.memory.sockscan.data %}
+                    <div id="memory-sockets">{% include "analysis/pages/memory/_sockscan.html" %}</div>
+                    {% elif report.analysis.memory.netscan.data or report.analysis.memory.linux_netscan.data %}
+                    <div id="memory-sockets">{% include "analysis/pages/memory/_netscan.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.malconfscan.data %}
+                    <div id="memory-malconfscan">{% include "analysis/pages/memory/_malconfscan.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_mount.data %}
+                    <div id="memory-linux_mount">{% include "analysis/pages/memory/_linux_mount.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_check_modules.data %}
+                    <div id="memory-linux_check_modules">{% include "analysis/pages/memory/_linux_check_modules.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_ldrmodules.data %}
+                    <div id="memory-linux_ldrmodules">{% include "analysis/pages/memory/_linux_ldrmodules.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_lsof.data %}
+                    <div id="memory-linux_lsof">{% include "analysis/pages/memory/_linux_lsof.html" %}</div>
+                    {% endif %}
+                    {% if report.analysis.memory.linux_netstat.data %}
+                    <div id="memory-linux_netstat">{% include "analysis/pages/memory/_linux_netstat.html" %}</div>
+                    {% endif %}
                 </div>
 
             </div>

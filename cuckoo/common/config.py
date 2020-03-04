@@ -508,6 +508,58 @@ class Config(object):
                 "enabled": Boolean(False),
                 "pid_generic": List(String, None),
             },
+            "linux_malfind": {
+                "enabled": Boolean(False),
+                "filter": Boolean(True),
+            },
+            "linux_apihooks": {
+                "enabled": Boolean(False),
+                "filter": Boolean(True),
+            },
+            "linux_pslist": {
+                "enabled": Boolean(False),
+                "filter": Boolean(False),
+            },
+            "linux_psxview": {
+                "enabled": Boolean(False),
+                "filter": Boolean(False),
+            },
+            "linux_check_idt": {
+                "enabled": Boolean(False),
+                "filter": Boolean(False),
+            },
+            "linux_ldrmodules": {
+                "enabled": Boolean(False),
+                "filter": Boolean(True),
+            },
+            "linux_mount": {
+                "enabled": Boolean(False),
+                "filter": Boolean(True),
+            },
+            "linux_check_modules": {
+                "enabled": Boolean(False),
+                "filter": Boolean(True),
+            },
+            "linux_yarascan": {
+                "enabled": Boolean(False),
+                "filter": Boolean(True),
+            },
+            "linux_netscan": {
+                "enabled": Boolean(False),
+                "filter": Boolean(False),
+            },
+            "linux_netstat": {
+                "enabled": Boolean(False),
+                "filter": Boolean(False),
+            },
+            "linux_tmpfs": {
+                "enabled": Boolean(False),
+                "filter": Boolean(False),
+            },
+            "linux_lsof": {
+                "enabled": Boolean(False),
+                "filter": Boolean(False),
+            },
         },
         "physical": {
             "physical": {

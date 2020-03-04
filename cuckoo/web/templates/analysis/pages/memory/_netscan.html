@@ -22,5 +22,16 @@
             <td class="{{ row.class_ }}">{{row.protocol}}</td>
         </tr>
     {% endfor %}
+    {% for row in report.analysis.memory.linux_netscan.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.offset}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.local_address}}</td>
+            <td class="{{ row.class_ }}">{{row.local_port}}</td>
+            <td class="{{ row.class_ }}">{{row.remote_address}}</td>
+            <td class="{{ row.class_ }}">{{row.remote_port}}</td>
+            <td class="{{ row.class_ }}">{{row.protocol}}</td>
+        </tr>
+    {% endfor %}
     </tbody>
 </table>

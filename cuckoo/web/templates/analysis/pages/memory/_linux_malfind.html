@@ -1,0 +1,26 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>PID</th>
+            <th>Process Name</th>
+            <th>Start</th>
+            <th>Fname</th>
+            <th>Protection</th>
+            <th>Flags</th>
+            <th>Hexdump</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_malfind.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.vm_start}}</span></td>
+            <td class="{{ row.class_ }}">{{row.fname}}</td>
+            <td class="{{ row.class_ }}">{{row.protection}}</td>
+            <td class="{{ row.class_ }}">{{row.flags}}</td>
+            <td class="{{ row.class_ }}"><pre>{{row.hexdump}}</pre></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

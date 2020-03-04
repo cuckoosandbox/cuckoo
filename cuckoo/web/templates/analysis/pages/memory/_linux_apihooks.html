@@ -1,0 +1,28 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>PID</th>
+            <th>Process Name</th>
+            <th>Hook VMA</th>
+            <th>Hook Symbol</th>
+            <th>Hooked Address</th>
+            <th>Hook Address</th>
+            <th>Hook Type</th>
+            <th>Hooking Library</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_apihooks.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.hook_vma}}</td>
+            <td class="{{ row.class_ }}">{{row.hook_symbol}}</td>
+            <td class="{{ row.class_ }}">{{row.hooked_address}}</td>
+            <td class="{{ row.class_ }}">{{row.hook_address}}</td>
+            <td class="{{ row.class_ }}">{{row.hook_type}}</td>
+            <td class="{{ row.class_ }}">{{row.hook_address}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
