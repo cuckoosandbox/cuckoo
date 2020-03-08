@@ -66,6 +66,7 @@ class AnalysisManager(threading.Thread):
         self.unrouted_network = False
         self.stopped_aux = False
         self.rs_port = config("cuckoo:resultserver:port")
+        self.nat_redirections = []
 
     def init(self):
         """Initialize the analysis."""
@@ -281,6 +282,11 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
 
+        # Compute redirections
+        if "mitm_port" in self.task.options:
+            mitm_port = self.task.options.get("mitm_port")
+            self.nat_redirections.append( ("tcp", "80,443", str(mitm_port)) )
+
         # Check if the network interface is still available. If a VPN dies for
         # some reason, its tunX interface will no longer be available.
         if self.interface and not rooter("nic_available", self.interface):
@@ -304,6 +310,13 @@ class AnalysisManager(threading.Thread):
                 "drop_enable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
                 str(self.rs_port)
+            )
+
+        if self.route == "internet":
+            rooter(
+                "redirect_enable",
+                self.machine.interface, self.machine.ip,
+                self.nat_redirections
             )
 
         if self.route == "inetsim":
@@ -356,6 +369,13 @@ class AnalysisManager(threading.Thread):
                 "drop_disable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
                 str(self.rs_port)
+            )
+
+        if self.route == "internet":
+            rooter(
+                "redirect_disable",
+                self.machine.interface, self.machine.ip,
+                self.nat_redirections
             )
 
         if self.route == "inetsim":

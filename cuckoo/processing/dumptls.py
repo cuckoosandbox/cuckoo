@@ -13,7 +13,7 @@ class TLSMasterSecrets(Processing):
     information extracted from the PCAP to dump a master secrets file
     compatible with, e.g., Wireshark."""
 
-    order = 3
+    order = 1
     key = "dumptls"
 
     def run(self):
@@ -39,7 +39,7 @@ class TLSMasterSecrets(Processing):
             results[metakeys[server_random]] = master_secret
 
         # Write the TLS master secrets file.
-        with open(self.tlsmaster_path, "wb") as f:
+        with open(self.tlsmaster_path, "a+b") as f:
             for session_id, master_secret in sorted(results.items()):
                 print>>f, "RSA Session-ID:%s Master-Key:%s" % (
                     session_id, master_secret)

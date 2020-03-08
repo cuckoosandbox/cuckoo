@@ -21,9 +21,9 @@ class InstallCertificate(Auxiliary):
 
         cert_path = self.options["cert"]
 
-        if not cert_path.endswith(".p12"):
+        if not cert_path.endswith(".cer"):
             log.error("An invalid certificate has been provided - only "
-                      "PFX certificates, with file extension .p12, are "
+                      "CER certificates, with file extension .cer, are "
                       "supported.")
             return
 
@@ -33,12 +33,10 @@ class InstallCertificate(Auxiliary):
                       "analyzer/windows/ directory).", cert_path)
             return
 
-        p = subprocess.Popen(["certutil.exe", "-importpfx", cert_path],
+        p = subprocess.Popen(["certutil.exe", "-addstore", "Root", cert_path],
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
+        outs, errs = p.communicate()
+        log.error("%s" % errs)
+        log.info("%s" % outs)
 
-        # Send an empty string as certutil expects to see a password for our
-        # certificate on the command-line. Our certificate has no password.
-        p.communicate("")
-
-        log.info("Successfully installed PFX certificate.")

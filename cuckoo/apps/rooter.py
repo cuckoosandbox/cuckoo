@@ -210,6 +210,27 @@ def forward_disable(src, dst, ipaddr):
         "--destination", ipaddr, "-j", "ACCEPT"
     )
 
+def redirect_toggle(action, src, ipaddr, redirections):
+    """Toggle interception (REDIRECT) on a specific IP address
+    from one interface into another."""
+    for (src_type, src_ports, dst_port) in redirections:
+        run_iptables(
+            "-t", "nat",
+            action, "PREROUTING", "-i", src, "--source", ipaddr,
+            "-m", "multiport", "-p", src_type, "--dports", "%s" % src_ports,
+            "-j", "REDIRECT", "--to-port", dst_port
+        )
+
+def redirect_enable(src, ipaddr, redirections):
+    """Enable interception (REDIRECT) on a specific IP address
+    from one interface into another."""
+    redirect_toggle("-A", src, ipaddr, redirections)
+
+def redirect_disable(src, ipaddr, redirections):
+    """Disable interception (REDIRECT) on a specific IP address
+    from one interface into another."""
+    redirect_toggle("-D", src, ipaddr, redirections)
+
 def srcroute_enable(rt_table, ipaddr):
     """Enable routing policy for specified source IP address."""
     run(s.ip, "rule", "add", "from", ipaddr, "table", rt_table)
@@ -382,6 +403,8 @@ handlers = {
     "flush_rttable": flush_rttable,
     "forward_enable": forward_enable,
     "forward_disable": forward_disable,
+    "redirect_enable": redirect_enable,
+    "redirect_disable": redirect_disable,
     "srcroute_enable": srcroute_enable,
     "srcroute_disable": srcroute_disable,
     "inetsim_enable": inetsim_enable,
@@ -496,15 +519,21 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
             log.info("Invalid keyword arguments: %r", kwargs)
             continue
 
-        for arg in args + kwargs.keys() + kwargs.values():
+        for arg in kwargs.keys():
             if not isinstance(arg, basestring):
                 log.info("Invalid argument detected: %r", arg)
                 break
+
+        for arg in args + kwargs.values():
+            if not isinstance(arg, (basestring, tuple, list, bool)):
+                log.info("Invalid argument detected: %r", arg)
+                break
+
         else:
             log.info(
                 "Processing command: %s %s %s", command,
-                " ".join(args),
-                " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
+                " ".join(str(arg) for arg in args),
+                " ".join("%s=%s" % (k, str(v)) for k, v in kwargs.items())
             )
 
             output = e = None
