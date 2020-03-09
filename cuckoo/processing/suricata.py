@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 import time
+import urlparse
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
@@ -163,21 +164,23 @@ class Suricata(Processing):
                 if user_agent == "<unknown>":
                     user_agent = None
 
-                self.results["http"].append({
-                    "src_ip": event.get("src_ip"),
-                    "src_port": event.get("src_port"),
-                    "dst_ip": event.get("dest_ip"),
-                    "dst_port": event.get("dest_port"),
-                    "timestamp": event.get("timestamp"),
-                    "method": http.get("http_method"),
-                    "hostname": http.get("hostname"),
-                    "url": http.get("url"),
-                    "status": "%s" % http.get("status"),
-                    "content_type": http.get("http_content_type"),
-                    "user_agent": user_agent,
-                    "referer": referer,
-                    "length": http.get("length"),
-                })
+                url = urlparse.urlparse(http.get("url",""))
+                if not is_whitelisted_url(url.netloc+url.path):
+                    self.results["http"].append({
+                        "src_ip": event.get("src_ip"),
+                        "src_port": event.get("src_port"),
+                        "dst_ip": event.get("dest_ip"),
+                        "dst_port": event.get("dest_port"),
+                        "timestamp": event.get("timestamp"),
+                        "method": http.get("http_method"),
+                        "hostname": http.get("hostname"),
+                        "url": http.get("url"),
+                        "status": "%s" % http.get("status"),
+                        "content_type": http.get("http_content_type"),
+                        "user_agent": user_agent,
+                        "referer": referer,
+                        "length": http.get("length"),
+                    })
 
             elif event["event_type"] == "tls":
                 tls = event["tls"]
