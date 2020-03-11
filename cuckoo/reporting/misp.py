@@ -6,15 +6,17 @@ import logging
 import os.path
 import shlex
 import warnings
+from base64 import b64encode
 
 from cuckoo.common.abstracts import Report
-from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.exceptions import CuckooReportError
 from cuckoo.common.whitelist import (
     is_whitelisted_mispdomain, is_whitelisted_mispip, is_whitelisted_mispurl,
     is_whitelisted_misphash
 )
 
 log = logging.getLogger(__name__)
+
 
 class MISP(Report):
     """Enrich MISP with Cuckoo results."""
@@ -70,13 +72,88 @@ class MISP(Report):
         self.misp.add_domains_ips(event, domains)
         self.misp.add_ipdst(event, sorted(list(ipaddrs)))
 
+    def screenshots(self, results, event):
+        """
+        Add all the screenshots taken during analysis to a sandbox-report
+        MISP object.
+        """
+        from pymisp import MISPObject
+        report = MISPObject("sandbox-report", strict=True)
+        report.add_attribute("sandbox-type", "on-premise")
+        report.add_attribute("on-premise-sandbox", "cuckoo")
+        for entry in results.get("screenshots", []):
+            filepath = entry.get("path")
+            filename = os.path.basename(filepath)
+            with open(filepath, 'rb') as f:
+                # .decode('utf-8') in order to avoid the b'' format
+                img_data = b64encode(f.read()).decode('utf-8')
+
+            report.add_attribute("sandbox-file", value=filename,
+                                 data=img_data, type='attachment',
+                                 category="External analysis")
+
+        self.misp.add_object(event['Event']['id'], report)
+
+    def dropped_files(self, results, event):
+        """
+        Add all the dropped files as MISP attributes.
+        """
+        from pymisp import MISPEvent
+
+        # Upload all the dropped files at once
+        filepaths = [r.get("path") for r in results.get("dropped", [])]
+        if not filepaths:
+            return
+
+        try:
+            self.misp.upload_samplelist(
+                    filepaths=filepaths,
+                    event_id=event["Event"]["id"],
+                    category="Artifacts dropped",
+                    comment="Dropped file",
+            )
+        except:
+            log.error(
+                "Couldn't upload the dropped file, maybe "
+                "the max upload size has been reached."
+            )
+            return False
+
+        # Load the event from MISP (we cannot use event as it
+        # does not contain the sample uploaded above, nor it is
+        # a MISPEvent but a simple dict)
+        e = MISPEvent()
+        e.from_dict(Event=self.misp.get_event(event["Event"]["id"])["Event"])
+        dropped_files = {
+                f.get_attributes_by_relation("sha1")[0].value : f
+                for f in e.objects if f["name"] == "file"
+        }
+
+        # Add further details on the dropped files
+        for entry in results.get("dropped", []):
+            # Find the corresponding object
+            sha1 = entry.get("sha1")
+            obj = dropped_files[sha1]
+
+            # Add the real location of the dropped file (during the analysis)
+            real_filepath = entry.get("filepath")
+            obj.add_attribute("fullpath", real_filepath)
+
+            # Add Yara matches if any
+            for match in entry.get("yara", []):
+                desc = match["meta"]["description"]
+                obj.add_attribute("text", value=desc, comment="Yara match")
+
+        # Update the event
+        self.misp.update_event(event_id=event["Event"]["id"], event=e)
+
     def family(self, results, event):
         for config in results.get("metadata", {}).get("cfgextr", []):
             self.misp.add_detection_name(
-                event, config["family"], "External analysis"
+                event, config["family"], "Payload type"
             )
             for cnc in config.get("cnc", []):
-                self.misp.add_url(event, cnc)
+                self.misp.add_url(event, cnc, comment="cnc")
             for url in config.get("url", []):
                 self.misp.add_url(event, url)
             for mutex in config.get("mutex", []):
@@ -123,14 +200,15 @@ class MISP(Report):
             markslist = ", ".join([x for x in marks if x and x != " "])
 
             data = "%s - (%s)" % (sig["description"], markslist)
-            self.misp.add_internal_comment(event, data)
+            self.misp.add_internal_comment(event, data, category="External analysis")
             for att, description in sig["ttp"].items():
                 if not description:
                     log.warning("Description for %s is not found", att)
                     continue
 
                 self.misp.add_internal_comment(
-                    event, "TTP: %s, short: %s" % (att, description["short"])
+                    event, "TTP: %s, short: %s" % (att, description["short"]),
+                    category="External analysis"
                 )
 
     def run(self, results):
@@ -156,7 +234,7 @@ class MISP(Report):
             return
 
         if not url or not apikey:
-            raise CuckooProcessingError(
+            raise CuckooReportError(
                 "Please configure the URL and API key for your MISP "
                 "instance."
             )
@@ -188,12 +266,14 @@ class MISP(Report):
 
         if upload_sample:
             target = results.get("target", {})
-            if target.get("category") == "file" and target.get("file"):
+            f = target.get("file", {})
+            if target.get("category") == "file" and f:
                 self.misp.upload_sample(
-                    filename=os.path.basename(self.task["target"]),
-                    filepath_or_bytes=self.task["target"],
+                    filename=os.path.basename(f["name"]),
+                    filepath_or_bytes=f["path"],
                     event_id=event["Event"]["id"],
-                    category="External analysis",
+                    category="Payload delivery",
+                    comment="Sample run",
                 )
 
         self.signature(results, event)
@@ -206,5 +286,11 @@ class MISP(Report):
 
         if "ipaddr" in mode:
             self.domain_ipaddr(results, event)
+
+        if "screenshots" in mode:
+            self.screenshots(results, event)
+
+        if "dropped_files" in mode:
+            self.dropped_files(results, event)
 
         self.family(results, event)

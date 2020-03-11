@@ -595,7 +595,7 @@ def _20c2_200(c):
         "enabled": False,
         "url": None,
         "apikey": None,
-        "mode": "maldoc ipaddr hashes url",
+        "mode": "ipaddr hashes url",
     }
     c["reporting"]["mattermost"]["hash_url"] = False
     old_items = (
