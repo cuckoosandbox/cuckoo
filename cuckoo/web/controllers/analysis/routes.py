@@ -22,8 +22,9 @@ class AnalysisRoutes:
     def detail(request, task_id, page):
         report = AnalysisController.get_report(task_id)
         _ipInfos = {}
-        for host in report['analysis']['network']['hosts']:
-            _ipInfos[host] = AnalysisController.ipInfo(host)
+        if page == "network":
+            for host in report['analysis']['network']['hosts']:
+                _ipInfos[host] = AnalysisController.ipInfo(host)
 
         pages = {
             "summary": "summary/index",
