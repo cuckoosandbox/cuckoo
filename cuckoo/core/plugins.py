@@ -590,7 +590,7 @@ class RunSignatures(object):
         self.matched.sort(key=lambda key: key["severity"])
         self.results["signatures"] = self.matched
         if "info" in self.results:
-            self.results["info"]["score"] = score / 5.0
+            self.results["info"]["score"] = min(score / 5.0, 10)
 
         # If malware configuration has been extracted, simplify its
         # accessibility in the analysis report.
