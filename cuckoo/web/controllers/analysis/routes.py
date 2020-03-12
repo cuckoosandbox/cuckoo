@@ -21,6 +21,9 @@ class AnalysisRoutes:
     @staticmethod
     def detail(request, task_id, page):
         report = AnalysisController.get_report(task_id)
+        _ipInfos = {}
+        for host in report['analysis']['network']['hosts']:
+            _ipInfos[host] = AnalysisController.ipInfo(host)
 
         pages = {
             "summary": "summary/index",
@@ -40,7 +43,7 @@ class AnalysisRoutes:
         if page in pages.keys():
             return render_template(
                 request, "analysis/pages/%s.html" % pages[page],
-                report=report, page=page
+                report=report, page=page, ipInfo=_ipInfos
             )
         else:
             return view_error(

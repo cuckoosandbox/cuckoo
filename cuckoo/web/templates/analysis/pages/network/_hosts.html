@@ -4,6 +4,7 @@
         <thead>
             <tr>
                 <th>IP Address</th>
+                <th>Localization</th>
                 <th>Status</th>
                 <th>Action</th>
             </tr>
@@ -16,6 +17,13 @@
                         <tr>
                             <td class="cell-md">
                                 {{ host }}
+                            </td>
+                            <td>
+                                {% for key,value in ipInfos.items %}
+                                    {% if key == host %}
+                                        {{ value }}
+                                    {% endif %}
+                                {% endfor %}
                             </td>
                             <td class="cell-lg">
                                 {% if host|isdeadip:analysis %}
