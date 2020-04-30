@@ -17,8 +17,10 @@ Arguments:
   device_arch   CPU architecture of the target Android device.
 "
 python_version=e09359112e250268eca209355abeb17abf822486
-frida_version=fa888900710f3869582c5b4b66153f1578ec4dfb  # 12.7.11
+frida_version=6c9fc24f6e8004d90aa21b4707d4c2877c3cccf8
 host_arch=x86_64
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
 
 # Get command line argument
 target_arch=$1
@@ -50,17 +52,17 @@ if [ -f "$builddir/android-${target_arch}.tar.gz" ]; then
   exit 0
 fi
 
-# Download NDK r20
-export ANDROID_NDK_ROOT="$builddir/android-ndk-r20"
+# Download NDK r21
+export ANDROID_NDK_ROOT="$builddir/android-ndk-r21"
 if [ ! -d "$ANDROID_NDK_ROOT" ]; then
-  echo "Downloading Android Native development kit r20."
-  wget -P "$tmpdir" "https://dl.google.com/android/repository/android-ndk-r20-linux-${host_arch}.zip"
-  unzip "$tmpdir/android-ndk-r20-linux-${host_arch}.zip" -d "$builddir"
+  echo "Downloading Android Native development kit r21."
+  wget -P "$tmpdir" "https://dl.google.com/android/repository/android-ndk-r21-linux-${host_arch}.zip"
+  unzip "$tmpdir/android-ndk-r21-linux-${host_arch}.zip" -d "$builddir"
 else
-  echo "Found NDK r20!"
+  echo "Found NDK r21!"
 fi
 
-# Download Python v3.7 from source 
+# Download Python v3.7 from source
 python_src_dir="$builddir/cpython"
 if [ ! -d "$python_src_dir" ]; then
   echo "Downloading Python 3.7 from source."
@@ -69,9 +71,9 @@ else
   echo "Found Python already fetched!"
   echo ""
 fi
-git -C "$python_src_dir" checkout "$python_version"
-
 cd "$python_src_dir"
+git checkout "$python_version"
+git reset --hard "$python_version"
 
 # Building Python for host machine
 echo "Buildig the Python interpreter for host machine"
@@ -90,10 +92,25 @@ fi
 echo "Building the Python interpreter for Android ${target_arch}..."
 sleep 2
 
-export PATH="$builddir/host-python/usr/local/bin:$PATH"
+if [ $target_arch == "arm" ]; then
+  if [ ! -f "$script_dir/python-lld-compatibility.patch" ]; then
+    echo "Couldn't find python-lld-compatibility.patch"
+    exit 1
+  fi
+  patch -sNp1 --dry-run < "$script_dir/python-lld-compatibility.patch"
+  if [ $? -eq 0 ]; then
+    patch -p1 < "$script_dir/python-lld-compatibility.patch"
+  fi
+  autoreconf -ivf
+fi
+
+# Create config.site
+CONFIG_SITE="config.site"
+echo "ac_cv_file__dev_ptmx=yes" > $CONFIG_SITE
+echo "ac_cv_file__dev_ptc=no" >> $CONFIG_SITE
+
 android_toolroot="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-${host_arch}/bin"
 android_api=21  # Compilation breaks for API < 21
-
 if [ $target_arch == "x86" ]; then
   compiler_triplet="i686-linux-android"
 elif [ $target_arch == "x86_64" ]; then
@@ -104,47 +121,32 @@ elif [ $target_arch == "arm" ]; then
 elif [ $target_arch == "arm64" ]; then
   compiler_triplet="aarch64-linux-android"
 fi
-
 if [ -z "$tooltriplet" ]; then
   tooltriplet="$compiler_triplet"
 fi
 
-# Create config.site
-echo "ac_cv_file__dev_ptmx=yes" > config.site
-echo "ac_cv_file__dev_ptc=no" >> config.site
+export PATH="$builddir/host-python/usr/local/bin:$PATH"
 
-# Set environment variables for configure
-export CC="$android_toolroot/${compiler_triplet}${android_api}-clang"
-export CXX="$android_toolroot/${compiler_triplet}${android_api}-clang++"
-export CPP="$android_toolroot/${compiler_triplet}${android_api}-clang -E"
-export LD="${android_toolrot}/$tooltriplet-ld"
+./configure CC="$android_toolroot/${compiler_triplet}${android_api}-clang" \
+  CXX="$android_toolroot/${compiler_triplet}${android_api}-clang++" \
+  CPP="$android_toolroot/${compiler_triplet}${android_api}-clang -E" \
+  LD="${android_toolrot}/$tooltriplet-ld" \
+  AR="$android_toolroot/$tooltriplet-ar" \
+  AS="$android_toolroot/$tooltriplet-as" \
+  STRIP="$android_toolroot/$tooltriplet-strip" \
+  RANLIB="$android_toolroot/$tooltriplet-ranlib" \
+  READELF="$android_toolroot/$tooltriplet-readelf" \
+  OBJCOPY="$android_toolroot/$tooltriplet-objcopy" \
+  OBJDUMP="$android_toolroot/$tooltriplet-objdump" \
+  CFLAGS="-fPIC" \
+  CXXFLAGS="$CFLAGS" \
+  LDFLAGS="-fuse-ld=lld" \
+  CONFIG_SITE="$CONFIG_SITE" \
+  --prefix=/usr --host="$compiler_triplet" \
+  --build="${host_arch}-linux-gnu" --disable-ipv6
 
-export AR="$android_toolroot/$tooltriplet-ar"
-export AS="$android_toolroot/$tooltriplet-as"
-export STRIP="$android_toolroot/$tooltriplet-strip"
-export RANLIB="$android_toolroot/$tooltriplet-ranlib"
-export READELF="$android_toolroot/$tooltriplet-readelf"
-export OBJCOPY="$android_toolroot/$tooltriplet-objcopy"
-export OBJDUMP="$android_toolroot/$tooltriplet-objdump"
-
-export CFLAGS="-fPIC"
-export CXXFLAGS="$CFLAGS"
-export LDFLAGS="-fuse-ld=lld"
-
-export CONFIG_SITE="config.site"
-
-py_android_builddir="$tmpdir/android-${target_arch}-python"
-
-if [ $target_arch == "arm" ]; then
-    wget -q https://github.com/cuckoosandbox/cuckoo/raw/master/stuff/android/python-lld-compatibility.patch
-    patch -sNp1 --dry-run < python-lld-compatibility.patch
-    if [ $? -eq 0 ]; then
-        patch -p1 < python-lld-compatibility.patch
-    fi
-    autoreconf -ivf
-fi
-./configure --prefix=/usr --host="$compiler_triplet" --build="${host_arch}-linux-gnu" --disable-ipv6
 make
+py_android_builddir="$tmpdir/android-${target_arch}-python"
 make install DESTDIR="$py_android_builddir"
 make clean
 
@@ -164,19 +166,17 @@ else
   echo "Found Frida already fetched!"
 fi
 git -C "$frida_src_dir" checkout "$frida_version"
-
 cd "$frida_src_dir"
 
 # Build Frida's Python bindings
 echo "Building Frida's Python bindings -- https://github.com/frida/frida"
 sleep 2
 
-# Set environment variables.
-export FRIDA_HOST="android-$target_arch"
-export PYTHON_INCDIR="$py_android_builddir/usr/include/python3.7m"
-export PYTHON_NAME="python3.7"
+make FRIDA_HOST="android-$target_arch" \
+  PYTHON_INCDIR="$py_android_builddir/usr/include/python3.7m" \
+  PYTHON_NAME="python3.7" \
+  "build/tmp_thin-android-$target_arch/frida-python3.7/.frida-stamp"
 
-make "build/tmp_thin-android-$target_arch/frida-python3.7/.frida-stamp"
 cp -r "$frida_src_dir/build/frida_thin-android-$target_arch/lib/python3.7/site-packages/"* "$py_android_builddir/usr/lib/python3.7/site-packages"
 if [ ! $? -eq 0 ]; then
     make clean
