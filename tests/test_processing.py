@@ -12,6 +12,8 @@ import pytest
 import shutil
 import tempfile
 
+from collections import OrderedDict
+
 from cuckoo.common.abstracts import Processing, Extractor
 from cuckoo.common.exceptions import (
     CuckooProcessingError, CuckooOperationalError
@@ -138,6 +140,43 @@ class TestProcessing(object):
             "category": "none",
         })
         assert s.run() is None
+
+    def test_static_apk(self):
+        set_cwd(self.mkdtemp())
+
+        s = Static()
+        s.set_task({
+            "category": "file",
+            "package": "apk",
+            "target": "files/sample.apk"
+        })
+        s.file_path = "tests/files/sample.apk"
+
+        apkinfo = s.run()["apkinfo"]
+        manifest = apkinfo["manifest"]
+
+        assert len(manifest["activities"]) == 2
+        assert "com.taxationtex.giristexation.qes.Jsopbuzc" in manifest["providers"]
+
+        receivers_action = [act for r in manifest["receivers"] for act in r["action"]]
+        assert "android.intent.action.BOOT_COMPLETED" in receivers_action
+
+        services_action = [act for v in manifest["services"] for act in v["action"]]
+        assert "android.accessibilityservice.AccessibilityService" in services_action
+
+        assert "android.permission.REQUEST_INSTALL_PACKAGES" in \
+            map(lambda x: x["name"], manifest["permissions"])
+
+        assert "lib/arm64-v8a/libhoter.so" in map(lambda x: x["name"], apkinfo["files"])
+
+        assert "com.taxationtex.giristexation.qes.Sctdsqres.fyndmmn(Ljava/lang/Object;)V" in \
+            apkinfo["native_methods"]
+
+        assert apkinfo["certificates"][0]["sha256"] == \
+            "05acdae313eb09a47da17fa5cfbfb48aac767ccb8a460d7cc94ae29372f469ce"
+
+        callees = [name for api in apkinfo["api_calls"] for name in api["callees"]]
+        assert "com.taxationtex.giristexation.qes.Npwsb.MDQOfHCsgjXkJ" in callees
 
     def test_archive_pdf(self):
         set_cwd(self.mkdtemp())
@@ -1126,6 +1165,193 @@ class TestBehavior(object):
                 "track": True
             }],
         }
+
+    def test_android_runtime_log(self):
+        set_cwd(self.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
+        mkdir(cwd(analysis=1))
+        mkdir(cwd("logs", analysis=1))
+        shutil.copy(
+            "tests/files/log.jvmHook", cwd("logs", "3090.jvmHook", analysis=1)
+        )
+
+        ba = BehaviorAnalysis()
+        ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
+
+        assert ba.run() == {
+            'generic': [
+                {
+                    'process_path': None,
+                    'process_name': 'com.taxationtex.giristexation',
+                    'pid': 3090,
+                    'summary': {},
+                    'first_seen': datetime.datetime(2019, 9, 19, 1, 14, 17, 917572),
+                    'ppid': 1546
+                }
+            ],
+            'processes': [
+                {
+                    'uid': 10060,
+                    'calls': [
+                        {
+                            'category': 'reflection',
+                            'time': datetime.datetime(2019, 9, 19, 1, 14, 20),
+                            'api': 'java.lang.reflect.Field.set',
+                            'class': 'java.lang.reflect.Field',
+                            'method': 'set',
+                            'arguments': OrderedDict([
+                                ('p0', None),
+                                ('p1', 'moonlight.loader.aa@4095317')
+                            ]),
+                            'thisObject': {
+                                'class_name': 'com.taxationtex.giristexation.qes.Xptftvrd',
+                                'field_name': 'ietz'
+                            },
+                            'return_value': None
+                        },
+                        {
+                            'category': 'reflection',
+                            'time': datetime.datetime(2019, 9, 19, 1, 14, 20),
+                            'api': 'java.lang.reflect.Field.set',
+                            'class': 'java.lang.reflect.Field',
+                            'method': 'set',
+                            'arguments': OrderedDict([
+                                ('p0', None),
+                                ('p1', 'moonlight.loader.t@a139304')
+                            ]),
+                            'thisObject': {
+                                'class_name': 'com.taxationtex.giristexation.qes.Imdodk',
+                                'field_name': 'el'
+                            },
+                            'return_value': None
+                        },
+                        {
+                            'category': 'binder',
+                            'time': datetime.datetime(2019, 9, 19, 1, 14, 20),
+                            'api': 'android.app.ContextImpl.registerReceiver',
+                            'class': 'android.app.ContextImpl',
+                            'method': 'registerReceiver',
+                            'arguments': OrderedDict([
+                                ('p0', 'moonlight.loader.receiver.MainReceiver@d283e9c'),
+                                ('p1', {'actions': 'java.util.ArrayList$Itr@cc8a888'})
+                            ]),
+                            'thisObject': 'android.app.ContextImpl@49efc2b',
+                            'return_value': None
+                        },
+                        {
+                            'category': 'reflection',
+                            'time': datetime.datetime(2019, 9, 19, 1, 14, 20),
+                            'api': 'java.lang.reflect.Method.invoke',
+                            'class': 'java.lang.reflect.Method',
+                            'method': 'invoke',
+                            'arguments': OrderedDict([
+                                ('p0', None),
+                                ('p1', [])
+                            ]),
+                            'thisObject': {
+                                'class_name': 'android.app.ActivityThread',
+                                'method_name': 'currentActivityThread'
+                            },
+                            'return_value': 'android.app.ActivityThread@d9b0646'
+                        },
+                        {
+                            'category': 'preferences',
+                            'time': datetime.datetime(2019, 9, 19, 1, 14, 20),
+                            'api': 'android.app.SharedPreferencesImpl$EditorImpl.putBoolean',
+                            'class': 'android.app.SharedPreferencesImpl$EditorImpl',
+                            'method': 'putBoolean',
+                            'arguments': OrderedDict([
+                                ('p0', 'FT_START'),
+                                ('p1', False)
+                            ]),
+                            'thisObject': {
+                                'filepath': {
+                                    'path': '/data/user/0/com.taxationtex.giristexation/shared_prefs/prefs30.xml'
+                                }
+                            },
+                            'return_value': {
+                                'filepath': {
+                                    'path': '/data/user/0/com.taxationtex.giristexation/shared_prefs/prefs30.xml'
+                                }
+                            }
+                        }
+                    ],
+                    'command_line': '',
+                    'process_name': 'com.taxationtex.giristexation',
+                    'pid': 3090,
+                    'java_process': True,
+                    'first_seen': datetime.datetime(2019, 9, 19, 1, 14, 17, 917572),
+                    'ppid': 1546,
+                    'type': 'process'
+                }
+            ],
+            'processtree': [
+                {
+                    'track': True,
+                    'pid': 3090,
+                    'process_name':'com.taxationtex.giristexation',
+                    'command_line': '',
+                    'first_seen': datetime.datetime(2019, 9, 19, 1, 14, 17, 917572),
+                    'ppid': 1546,
+                    'children': []
+                }
+            ]
+        }
+
+    def test_filemon_log(self):
+        set_cwd(self.mkdtemp())
+        cuckoo_create()
+        init_yara()
+
+        mkdir(cwd(analysis=1))
+        mkdir(cwd("logs", analysis=1))
+        shutil.copy(
+            "tests/files/log.filemon", cwd("logs", "3090.filemon", analysis=1)
+        )
+
+        ba = BehaviorAnalysis()
+        ba.set_path(cwd(analysis=1))
+        ba.set_task({
+            "id": 1,
+        })
+
+        assert ba.run()["summary"] == {
+            u'file_deleted': [
+                u'/data/user/0/com.taxationtex.giristexation/cache/oat/x86',
+                u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
+                u'/data/user/0/com.taxationtex.giristexation/cache/oat'
+            ],
+            u'file_read': [
+                u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/oat/x86/base.art',
+                u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/base.apk',
+                u'/system/framework/x86/boot.art',
+                u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
+                u'/proc/self/cmdline',
+                u'/data/app/com.taxationtex.giristexation-Xfcgf_PWan7HgTIUjtGv2Q==/lib/x86/libhoter.so',
+                u'/system/lib/libmedia_jni.so',
+                u'/data/data/com.taxationtex.giristexation/cache/oat/x86/xwcnhfc.art',
+                u'/data/dalvik-cache/x86/system@framework@boot.art',
+                u'/data/data/com.taxationtex.giristexation/cache/xwcnhfc.dex'
+            ],
+            u'file_created': [
+                u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
+                u'/data/user/0/com.taxationtex.giristexation/cache/ihzms'
+            ],
+            u'file_written': [
+                u'/data/user/0/com.taxationtex.giristexation/cache/xwcnhfc.dex',
+                u'/data/user/0/com.taxationtex.giristexation/cache/ihzms'
+            ],
+            u'uid': [10060],
+            u'process_name': [u'com.taxationtex.giristexation'],
+            u'first_seen': [u'2019-09-19 01:14:17.917572'],
+            u'ppid': [1546]
+        }
+
 
 class TestPcap(object):
 

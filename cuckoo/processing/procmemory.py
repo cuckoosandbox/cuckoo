@@ -148,6 +148,24 @@ class ProcessMemory(Processing):
 
             yield File(filepath).get_all()
 
+    def dump_dex(self, process):
+        "Dump Android Dex files mapped in memory."
+        buf = open(process["file"], "rb").read()
+
+        for region in process["regions"]:
+            off, size = region["offset"], region["size"]
+
+            if re.match("dex\n[0-9]{3}\0", buf[off:off+8]):
+                dex_data = buf[off:off+size]
+
+                sha1 = hashlib.sha1("".join(dex_data)).hexdigest()
+                filename = "%s-%s.dex" % (process["pid"], sha1[:16]) 
+                filepath = os.path.join(self.pmemory_path, filename)
+
+                open(filepath, "wb").write("".join(dex_data))
+
+                yield File(filepath).get_all()
+
     def run(self):
         """Run analysis.
         @return: structured results.
@@ -185,6 +203,8 @@ class ProcessMemory(Processing):
                     proc["extracted"] = list(self.dump_images(
                         proc, self.options.get("extract_dll")
                     ))
+
+                    proc["extracted"] += list(self.dump_dex(proc))
 
                 if self.options.get("dump_delete"):
                     try:

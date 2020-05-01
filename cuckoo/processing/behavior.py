@@ -15,6 +15,7 @@ from cuckoo.core.extract import ExtractManager
 
 from .platform.windows import WindowsMonitor
 from .platform.linux import LinuxSystemTap
+from .platform.android import AndroidRuntime, AndroidFileMonitor
 
 log = logging.getLogger(__name__)
 
@@ -86,10 +87,6 @@ class ProcessTree(BehaviorHandler):
 
     def handle_event(self, process):
         if process["pid"] in self.processes:
-            log.warning(
-                "Found the same process identifier twice, this "
-                "shouldn't happen!"
-            )
             return
 
         self.processes[process["pid"]] = {
@@ -296,6 +293,8 @@ class BehaviorAnalysis(Processing):
             # platform specific stuff
             WindowsMonitor(self, task_id=self.task["id"]),
             LinuxSystemTap(self),
+            AndroidRuntime(self),
+            AndroidFileMonitor(self),
 
             # Reboot information.
             RebootInformation(self),

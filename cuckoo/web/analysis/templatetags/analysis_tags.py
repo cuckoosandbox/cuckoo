@@ -2,9 +2,12 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import re
+
 from django.template.defaultfilters import register
 
 from cuckoo.common.config import config
+from cuckoo.common.utils import byteify
 
 @register.filter
 def mongo_id(value):
@@ -125,3 +128,15 @@ def pdf_urls(pdf):
         for url in version["urls"]:
             ret.append((url, version["version"]))
     return ret
+
+@register.filter
+def deunderscore(string):
+    return string.replace("_", " ")
+
+@register.filter
+def _byteify(data):
+    return byteify(data)
+
+@register.filter
+def strip_symbols(string):
+    return re.sub("[^\w]", "", string)

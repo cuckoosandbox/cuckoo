@@ -60,7 +60,14 @@ $badge-colors: (
   'device': #ccc5ff,
   'system': #fffcc5,
   'windows': #ffc5ee,
-  'pdf': #ccddbb
+  'pdf': #ccddbb,
+  'intent': #ccddbb,
+  'preferences': #ffc5ee,
+  'dynload': #ffc5c5,
+  'content': #d3ffc5,
+  'crypto': #ccc5ff,
+  'reflection': #fffcc5,
+  'binder': #fffcc5
 );
 
 // responsive hooks (utilized in _mixins.scss)

@@ -1,4 +1,4 @@
-# Copyright (C) 2014-2016 Cuckoo Foundation.
+# Copyright (C) 2014-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
@@ -11,14 +11,9 @@ def choose_package(file_type, file_name):
     if not file_type:
         return None
 
-    file_type = file_type.lower()
-    file_name = file_name.lower()
-
-    if "apk" in file_name:
+    if "JAR" in file_type or \
+            "Zip" in file_type or \
+            "apk" in file_name:
         return "apk"
-    elif "zip" in file_type:
-        return "apk"
-    # elif "DEX" in file_type:
-    #    return "dex"
     else:
-        return "apk"
+        return None

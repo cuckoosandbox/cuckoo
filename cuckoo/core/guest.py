@@ -380,11 +380,15 @@ class GuestManager(object):
     def determine_system_drive(self):
         if self.platform == "windows":
             return "%s/" % self.environ["SYSTEMDRIVE"]
+        elif self.platform == "android":
+            return "/data/local"
         return "/"
 
     def determine_temp_path(self):
         if self.platform == "windows":
             return self.environ["TEMP"]
+        elif self.platform == "android":
+            return self.environ["TMPDIR"]
         return "/tmp"
 
     def upload_analyzer(self, monitor):

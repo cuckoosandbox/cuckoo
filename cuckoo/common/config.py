@@ -341,30 +341,26 @@ class Config(object):
         },
         "avd": {
             "avd": {
-                "mode": String("headless"),
                 "emulator_path": Path(
-                    "/home/cuckoo/android-sdk-linux/tools/emulator",
+                    "/home/cuckoo/Android/Sdk/emulator/emulator",
                     exists=True, writable=False, readable=True
                 ),
                 "adb_path": Path(
-                    "/home/cuckoo/android-sdk-linux/platform-tools/adb",
+                    "/home/cuckoo/Android/Sdk/platform-tools/adb",
                     exists=True, writable=False, readable=True
                 ),
-                "avd_path": Path(
-                    "/home/cuckoo/.android/avd",
-                    exists=True, writable=False, readable=True
-                ),
-                "reference_machine": String("cuckoo-bird"),
+                "interface": String("cuckoo_avd_br"),
                 "machines": List(String, "cuckoo1"),
             },
             "*": {
                 "__section__": "cuckoo1",
                 "label": String("cuckoo1"),
                 "platform": String("android"),
-                "ip": String("127.0.0.1"),
-                "emulator_port": Int(5554),
-                "resultserver_ip": String("10.0.2.2"),
-                "resultserver_port": Int(2042),
+                "ip": String("10.3.2.2"),
+                "snapshot": String("cuckoo_snapshot"),
+                "resultserver_ip": String(),
+                "resultserver_port": Int(),
+                "options": List(String, None, ",\\s"),
                 "osprofile": String(required=False),
             },
             "__star__": ("avd", "machines"),
@@ -533,10 +529,6 @@ class Config(object):
         "processing": {
             "analysisinfo": {
                 "enabled": Boolean(True),
-            },
-            "apkinfo": {
-                "enabled": Boolean(False),
-                "decompilation_threshold": Int(5000000),
             },
             "baseline": {
                 "enabled": Boolean(False),

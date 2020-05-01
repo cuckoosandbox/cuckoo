@@ -1,0 +1,627 @@
+[
+    {
+        "class": "android.telephony.TelephonyManager",
+        "method": "getDeviceSoftwareVersion",
+        "category": "services"
+    },
+    {
+        "class": "android.telephony.TelephonyManager",
+        "method": "getMeid",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ActivityManager",
+        "method": "getRunningAppProcesses",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ActivityManager",
+        "method": "getRunningTasks",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ActivityManager",
+        "method": "getRunningServices",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ActivityManager",
+        "method": "killBackgroundProcesses",
+        "category": "services"
+    },
+    {
+        "class": "android.app.usage.UsageStatsManager",
+        "method": "queryUsageStats",
+        "category": "services"
+    },
+    {
+        "class": "android.accounts.AccountManager",
+        "method": "getAccountsByType",
+        "category": "services"
+    },
+    {
+        "class": "android.accounts.AccountManager",
+        "method": "getAccounts",
+        "category": "services"
+    },
+    {
+        "class": "android.media.AudioRecord",
+        "method": "startRecording",
+        "category": "services"
+    },
+    {
+        "class": "android.media.MediaRecorder",
+        "method": "start",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ApplicationPackageManager",
+        "method": "getInstalledPackages",
+        "category": "services"
+    },
+    {
+        "class": "android.content.pm.PackageInstaller",
+        "method": "uninstall",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ApplicationPackageManager",
+        "method": "getInstalledApplications",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ApplicationPackageManager",
+        "method": "setComponentEnabledSetting",
+        "category": "services"
+    },
+    {
+        "class": "android.location.Location",
+        "method": "getLatitude",
+        "category": "services"
+    },
+    {
+        "class": "android.location.Location",
+        "method": "getLongitude",
+        "category": "services"
+    },
+    {
+        "class": "android.app.NotificationManager",
+        "method": "notify",
+        "category": "services"
+    },
+    {
+        "class": "android.app.AlarmManager",
+        "method": "setAlarmClock",
+        "category": "services"
+    },
+    {
+        "class": "android.app.AlarmManager",
+        "method": "set",
+        "category": "services"
+    },
+    {
+        "class": "android.app.AlarmManager",
+        "method": "setRepeating",
+        "category": "services"
+    },
+    {
+        "class": "android.telephony.SmsManager",
+        "method": "sendDataMessage",
+        "category": "services"
+    },
+    {
+        "class": "android.telephony.SmsManager",
+        "method": "sendTextMessage",
+        "category": "services"
+    },
+    {
+        "class": "android.os.PowerManager",
+        "method": "newWakeLock",
+        "category": "services"
+    },
+    {
+        "class": "android.app.ContextImpl",
+        "method": "getSystemService",
+        "category": "services"
+    },
+    {
+        "class": "android.os.PowerManager$WakeLock",
+        "method": "acquire",
+        "category": "services"
+    },
+    {
+        "class": "android.telephony.TelephonyManager",
+        "method": "listen",
+        "category": "binder"
+    },
+    {
+        "class": "android.content.ContextWrapper",
+        "method": "bindService",
+        "category": "binder"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl",
+        "method": "contains",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl",
+        "method": "getInt",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl",
+        "method": "getFloat",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl",
+        "method": "getLong",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl",
+        "method": "getBoolean",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl",
+        "method": "getString",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl$EditorImpl",
+        "method": "putFloat",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl$EditorImpl",
+        "method": "putBoolean",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl$EditorImpl",
+        "method": "putInt",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl$EditorImpl",
+        "method": "putLong",
+        "category": "preferences"
+    },
+    {
+        "class": "android.app.SharedPreferencesImpl$EditorImpl",
+        "method": "putString",
+        "category": "preferences"
+    },
+    {
+        "class": "android.content.ContentResolver",
+        "method": "query",
+        "category": "content"
+    },
+    {
+        "class": "android.content.ContentResolver",
+        "method": "delete",
+        "category": "content"
+    },
+    {
+        "class": "android.content.ContentResolver",
+        "method": "insert",
+        "category": "content"
+    },
+    {
+        "class": "android.content.ContentResolver",
+        "method": "registerContentObserver",
+        "category": "content"
+    },
+    {
+        "class": "android.content.ContentResolver",
+        "method": "registerContentObserver",
+        "category": "content"
+    },
+    {
+        "class": "android.database.sqlite.SQLiteDatabase",
+        "method": "insert",
+        "category": "content"
+    },
+    {
+        "class": "android.database.sqlite.SQLiteDatabase",
+        "method": "query",
+        "category": "content"
+    },
+    {
+        "class": "android.database.sqlite.SQLiteDatabase",
+        "method": "delete",
+        "category": "content"
+    },
+    {
+        "class": "android.database.sqlite.SQLiteDatabase",
+        "method": "execSQL",
+        "category": "content"
+    },
+    {
+        "class": "android.database.sqlite.SQLiteDatabase",
+        "method": "update",
+        "category": "content"
+    },
+    {
+        "class": "android.database.sqlite.SQLiteDatabase",
+        "method": "openDatabase",
+        "category": "content"
+    },
+    {
+        "class": "android.content.ContentValues",
+        "method": "put",
+        "category": "content"
+    },
+    {
+        "class": "android.provider.Settings$Secure",
+        "method": "getString",
+        "category": "content"
+    },
+    {
+        "class": "android.provider.Settings$Global",
+        "method": "getString",
+        "category": "content"
+    },
+    {
+        "class": "android.provider.Settings$Global",
+        "method": "getInt",
+        "category": "content"
+    },
+    {
+        "class": "android.content.res.AssetManager",
+        "method": "open",
+        "category": "content"
+    },
+    {
+        "class": "android.content.ClipboardManager",
+        "method": "getPrimaryClip",
+        "category": "content"
+    },
+    {
+        "class": "android.content.ClipboardManager",
+        "method": "setPrimaryClip",
+        "category": "content"
+    },
+    {
+        "class": "android.hardware.camera2.CameraManager",
+        "method": "openCamera",
+        "category": "content"
+    },
+    {
+        "class": "android.os.Environment",
+        "method": "getExternalStorageDirectory",
+        "category": "content"
+    },
+    {
+        "class": "android.os.Environment",
+        "method": "getExternalStorageState",
+        "category": "content"
+    },
+    {
+        "class": "dalvik.system.BaseDexClassLoader",
+        "method": "findResource",
+        "category": "dynload"
+    },
+    {
+        "class": "dalvik.system.BaseDexClassLoader",
+        "method": "findResources",
+        "category": "dynload"
+    },
+    {
+        "class": "dalvik.system.BaseDexClassLoader",
+        "method": "findLibrary",
+        "category": "dynload"
+    },
+    {
+        "class": "dalvik.system.DexFile",
+        "method": "loadClass",
+        "category": "dynload"
+    },
+    {
+        "class": "java.lang.Runtime",
+        "method": "load",
+        "category": "dynload"
+    },
+    {
+        "class": "java.lang.Runtime",
+        "method": "loadLibrary",
+        "category": "dynload"
+    },
+    {
+        "class": "java.lang.Runtime",
+        "method": "exec",
+        "category": "dynload"
+    },
+    {
+        "class": "dalvik.system.DexFile",
+        "method": "loadDex",
+        "category": "dynload"
+    },
+    {
+        "class": "dalvik.system.DexFile",
+        "method": "loadClass",
+        "category": "dynload"
+    },
+    {
+        "class": "dalvik.system.DexFile",
+        "method": "$init",
+        "category": "dynload"
+    },
+    {
+        "class": "dalvik.system.DexFile",
+        "method": "openDexFile",
+        "category": "dynload"
+    },
+    {
+        "class": "android.os.Process",
+        "method": "killProcess",
+        "category": "process"
+    },
+    {
+        "class": "android.os.Process",
+        "method": "start",
+        "category": "process"
+    },
+    {
+        "class": "java.lang.ProcessBuilder",
+        "method": "start",
+        "category": "process"
+    },
+    {
+        "class": "android.os.Debug",
+        "method": "isDebuggerConnected",
+        "category": "process"
+    },
+    {
+        "class": "android.util.Log",
+        "method": "d",
+        "category": "process"
+    },
+    {
+        "class": "android.util.Log",
+        "method": "e",
+        "category": "process"
+    },
+    {
+        "class": "java.util.concurrent.ScheduledExecutorService",
+        "method": "scheduleAtFixedRate",
+        "category": "process"
+    },
+    {
+        "class": "java.util.concurrent.ExecutorService",
+        "method": "invokeAll",
+        "category": "process"
+    },
+    {
+        "class": "android.app.Activity",
+        "method": "startActivity",
+        "category": "intent"
+    },
+    {
+        "class": "android.app.Activity",
+        "method": "sendBroadcast",
+        "category": "intent"
+    },
+    {
+        "class": "android.app.Activity",
+        "method": "startService",
+        "category": "intent"
+    },
+    {
+        "class": "android.app.ContextImpl",
+        "method": "startService",
+        "category": "intent"
+    },
+    {
+        "class": "android.app.ContextImpl",
+        "method": "registerReceiver",
+        "category": "intent"
+    },
+    {
+        "class": "android.app.ActivityThread",
+        "method": "handleReceiver",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.BroadcastReceiver",
+        "method": "abortBroadcast",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.ContextWrapper",
+        "method": "startService",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.ContextWrapper",
+        "method": "startActivity",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.ContextWrapper",
+        "method": "sendBroadcast",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.ContextWrapper",
+        "method": "startActivities",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.Intent",
+        "method": "$init",
+        "category": "intent"
+    },
+    {
+        "class": "android.content.Intent",
+        "method": "setAction",
+        "category": "intent"
+    },
+    {
+        "class": "android.util.Base64",
+        "method": "decode",
+        "category": "crypto"
+    },
+    {
+        "class": "android.util.Base64",
+        "method": "encode",
+        "category": "crypto"
+    },
+    {
+        "class": "javax.crypto.Cipher",
+        "method": "doFinal",
+        "category": "crypto"
+    },
+    {
+        "class": "javax.crypto.Cipher",
+        "method": "update",
+        "category": "crypto"
+    },
+    {
+        "class": "javax.crypto.Cipher",
+        "method": "getInstance",
+        "category": "crypto"
+    },
+    {
+        "class": "javax.crypto.Cipher",
+        "method": "init",
+        "category": "crypto"
+    },
+    {
+        "class": "javax.crypto.Mac",
+        "method": "doFinal",
+        "category": "crypto"
+    },
+    {
+        "class": "javax.crypto.Mac",
+        "method": "update",
+        "category": "crypto"
+    },
+    {
+        "class": "javax.crypto.Mac",
+        "method": "getInstance",
+        "category": "crypto"
+    },
+    {
+        "class": "javax.crypto.Mac",
+        "method": "init",
+        "category": "crypto"
+    },
+    {
+        "class": "java.security.MessageDigest",
+        "method": "digest",
+        "category": "crypto"
+    },
+    {
+        "class": "java.security.MessageDigest",
+        "method": "update",
+        "category": "crypto"
+    },
+    {
+        "class": "java.security.SecureRandom",
+        "method": "setSeed",
+        "category": "crypto"
+    },
+    {
+        "class": "java.lang.reflect.Field",
+        "method": "get",
+        "category": "reflection"
+    },
+    {
+        "class": "java.lang.reflect.Field",
+        "method": "set",
+        "category": "reflection"
+    },
+    {
+        "class": "java.lang.reflect.Method",
+        "method": "invoke",
+        "category": "reflection"
+    },
+    {
+        "class": "sun.net.spi.DefaultProxySelector",
+        "method": "select",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "addJavascriptInterface",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "setWebChromeClient",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "setWebViewClient",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "loadUrl",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "loadData",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "loadDataWithBaseURL",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "evaluateJavascript",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "postUrl",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "postWebMessage",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "setHttpAuthUsernamePassword",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebView",
+        "method": "getHttpAuthUsernamePassword",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebViewDatabase",
+        "method": "getHttpAuthUsernamePassword",
+        "category": "network"
+    },
+    {
+        "class": "android.webkit.WebViewDatabase",
+        "method": "setHttpAuthUsernamePassword",
+        "category": "network"
+    },
+    {
+        "class": "android.view.Window",
+        "method": "setFlags",
+        "category": "generic"
+    },
+    {
+        "class": "android.view.Window",
+        "method": "addFlags",
+        "category": "generic"
+    },
+    {
+        "class": "android.view.SurfaceView",
+        "method": "setSecure",
+        "category": "generic"
+    }
+]

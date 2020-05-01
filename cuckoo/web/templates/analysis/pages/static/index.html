@@ -39,6 +39,8 @@
                                         {% include "analysis/pages/static/_office.html" %}
                                     {% elif "pdf" in report.analysis.static %}
                                         {% include "analysis/pages/static/_pdf.html" %}
+                                    {% elif "apkinfo" in report.analysis.static %}
+                                        {% include "analysis/pages/static/_apkinfo.html" %}
                                     {% else %}
                                         No static analysis available.
                                     {% endif %}

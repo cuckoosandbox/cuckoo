@@ -38,3 +38,7 @@ bower_components/
 .sass-cache/
 cuckoo/web/src/package-lock.json
 *.map
+
+# Android build files
+stuff/android/build
+stuff/android/tmp.*

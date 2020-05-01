@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2018 Cuckoo Foundation.
+# Copyright (C) 2016-2019 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
@@ -1196,6 +1196,29 @@ interface = virbr0
     assert cfg["reporting"]["misp"]["tag"] == "Cuckoo"
     assert cfg["reporting"]["misp"]["upload_sample"] is False
 
+def test_migration_207_210():
+    set_cwd(tempfile.mkdtemp())
+    Folders.create(cwd(), "conf")
+
+    Files.create(cwd("conf"), "avd.conf", """
+[avd]
+    """)
+    Files.create(cwd("conf"), "processing.conf", """
+[apkinfo]
+    """)
+
+    cfg = Config.from_confdir(cwd("conf"), loose=True)
+    cfg = migrate(cfg, "2.0.7", "2.1.0")
+
+    assert cfg["avd"]["avd"]["emulator_path"] == "/home/cuckoo/Android/Sdk/emulator/emulator"
+    assert cfg["avd"]["avd"]["adb_path"] == "/home/cuckoo/Android/Sdk/platform-tools/adb"
+    assert cfg["avd"]["avd"]["interface"] == "cuckoo_avd_br"
+    assert cfg["avd"]["avd"]["machines"] == ["cuckoo1"]
+    assert cfg["avd"]["cuckoo1"]["label"] == "cuckoo1"
+    assert cfg["avd"]["cuckoo1"]["platform"] == "android"
+    assert cfg["avd"]["cuckoo1"]["ip"] == "10.3.2.2"
+    assert cfg["avd"]["cuckoo1"]["snapshot"] == "cuckoo_snapshot"
+    assert "apkinfo" not in cfg["processing"]
 
 class FullMigration(object):
     DIRPATH = None
