@@ -34,7 +34,8 @@ BUFSIZE = 16 * 1024
 
 # Directories in which analysis-related files will be stored; also acts as
 # whitelist
-RESULT_UPLOADABLE = ("files", "shots", "buffer",  "extracted", "memory")
+RESULT_UPLOADABLE = ("files", "shots", "buffer",  "extracted", "memory",
+                     "package_files")
 RESULT_DIRECTORIES = RESULT_UPLOADABLE + ("reports", "logs")
 
 # Prevent malicious clients from using potentially dangerous filenames
