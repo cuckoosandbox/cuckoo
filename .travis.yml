@@ -70,6 +70,7 @@ install:
   - pip install -e .
   - pip install pytest==4.1.1 pytest-cov codecov coveralls distorm3 pycrypto
   - pip install flask-testing mock pytest-django pytest-pythonpath responses
+  - pip install werkzeug==0.16.1
 
   # Install Volatility.
   - git clone https://github.com/volatilityfoundation/volatility vol-setup
