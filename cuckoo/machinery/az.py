@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2019 Cuckoo Foundation.
+# Copyright (C) 2015-2020 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 # Originally contributed by Check Point Software Technologies, Ltd.
@@ -28,6 +28,10 @@ from cuckoo.common.abstracts import Machinery
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooMachineError, CuckooDependencyError
 
+# Only log INFO or higher
+logging.getLogger("adal-python").setLevel(logging.INFO)
+logging.getLogger("msrest.universal_http").setLevel(logging.INFO)
+logging.getLogger("msrest.service_client").setLevel(logging.INFO)
 log = logging.getLogger(__name__)
 
 
@@ -344,6 +348,19 @@ class Azure(Machinery):
 
         # There are occasions where Azure fails to create an instance.
         if guest_instance is None:
+            try:
+                nic_name = "nic-01-" + new_machine_name
+                log.debug("Marking instance NIC '%s' to be deleted.", nic_name)
+                self.network_client.network_interfaces.update_tags(
+                    self.options.az.group,
+                    nic_name,
+                    tags={"status": "to_be_deleted"}
+                )
+            except CloudError as exc:
+                log.debug("Failed to mark '%s' due to the Azure error '%s': '%s'.",
+                          "nic-01-"+new_machine_name, exc.error.error, exc.message)
+                raise CuckooMachineError(exc.message)
+
             # Decrementing the count, so that the method caller will try again.
             self.dynamic_machines_count -= 1
             return
