@@ -5,6 +5,12 @@
  # Based on the Systemtap "strace.stp" example, adapted to our needs
  */
 
+%{
+#include <linux/sched.h>
+#include <linux/list.h>
+#include <linux/kernfs.h>
+#include <linux/cgroup-defs.h>
+%}
 /* configuration options; set these with stap -G */
 global timestamp = 1     /* -Gtimestamp=0 means don't print a syscall timestamp */
 
@@ -21,13 +27,14 @@ probe begin  {
 
 probe nd_syscall.* {
     if (pid() == target()) next         # skip our own helper process
-    if (!target_set_pid(pid())) next    # skip unrelated processes
+    containerId= getDockerContainerId()
+    if ((!target_set_pid(pid())) && containerId=="") next    # Skip the process that are not children of the cuckoo agent and that are not running inside a docker container
 
     t = tid()
 
     /* last syscall that could've returned didn't */
     if (thread_argstr[t] != "")
-        report(thread_scname[t], thread_argstr[t], "")
+        report(thread_scname[t], thread_argstr[t], "", containerId)
 
     thread_argstr[t] = argstr
     thread_scname[t] = name
@@ -35,17 +42,18 @@ probe nd_syscall.* {
         thread_time[t] = gettimeofday_us()
 
     if (name in syscalls_nonreturn)
-        report(name, argstr, "")
+        report(name, argstr, "", containerId)
 }
 
 probe nd_syscall.*.return {
-    if (pid() == target()) next         # skip our own helper process
-    if (!target_set_pid(pid())) next    # skip unrelated processes
+    if (pid() == target()) next                                             # Skip if the pid belongs to the cuckoo agent, the stap.io process also has this pid
+    containerId= getDockerContainerId()
+    if ((!target_set_pid(pid())) && containerId=="") next    # Skip the process that are not children of the cuckoo agent and that are not running inside a docker container
 
-    report(name, thread_argstr[tid()], retstr)
+    report(name, thread_argstr[tid()], retstr, containerId)
 }
 
-function report(syscall_name, syscall_argstr, syscall_retstr) {
+function report(syscall_name, syscall_argstr, syscall_retstr, containerId) {
     t = tid()
 
     if (timestamp) {
@@ -57,11 +65,8 @@ function report(syscall_name, syscall_argstr, syscall_retstr) {
         delete thread_time[t]
     }
 
-    /* add a thread-id string in lots of cases, except if
-       stap strace.stp -c SINGLE_THREADED_CMD */
-    if (tid() != target()) {
-        prefix .= sprintf("%s@%x[%d] ", execname(), uaddr(), t)
-    }
+    prefix .= sprintf("%s|%s@%x[%d] ", containerId, execname(), uaddr(), t)
+
 
     syscall_argstr = str_replace(syscall_argstr, "(", "\\x28")
     syscall_argstr = str_replace(syscall_argstr, ")", "\\x29")
@@ -74,3 +79,30 @@ function report(syscall_name, syscall_argstr, syscall_retstr) {
     delete thread_argstr[t]
     delete thread_scname[t]
 }
+
+function getDockerContainerId:string(){
+    for(i=0; i<maxSubsys();i++){
+        cgroup = getCgroup(i)
+        if(cgroup =~ "/docker/.*"){
+            return str_replace(cgroup,"/docker/","")
+        }
+    }
+    return ""
+}
+
+function maxSubsys:long()%{
+    STAP_RETURN (CGROUP_SUBSYS_COUNT);
+%}
+
+function getCgroup:string(i:long)%{
+        struct task_struct *currently_observed_task = current;
+        char fileName[400]; //512 is the limit for the stack frame sze
+        struct css_set *cgroups = currently_observed_task->cgroups;
+        struct cgroup_subsys_state **subsys = cgroups->subsys;
+        struct cgroup_subsys_state *firstSubsys = subsys[(int)STAP_ARG_i];
+        struct cgroup *cgroup = firstSubsys->cgroup;
+        struct kernfs_node *kn = cgroup->kn;
+        int result = kernfs_path_from_node(kn, NULL, fileName, 400*sizeof(char));
+        if (result < 0) STAP_ERROR ("cannot resolve cgroup");
+        snprintf(STAP_RETVALUE, 400, "%s", fileName);
+%}
