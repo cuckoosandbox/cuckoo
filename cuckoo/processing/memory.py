@@ -619,7 +619,7 @@ class VolatilityAPI(object):
         command = self.plugins["apihooks"](self.config)
         for process, module, hook in command.calculate():
             proc_name = str(process.ImageFileName) if process else ''
-            if command.whitelist(hook.hook_mode | hook.hook_type,
+            if command.safelist(hook.hook_mode | hook.hook_type,
                                  proc_name, hook.VictimModule,
                                  hook.HookModule, hook.Function):
                 continue

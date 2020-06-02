@@ -107,11 +107,11 @@ class Sniffer(Auxiliary):
                 "standard output, got: %r." % out
             )
 
-        err_whitelist_start = (
+        err_safelist_start = (
             "tcpdump: listening on ",
         )
 
-        err_whitelist_ends = (
+        err_safelist_ends = (
             "packet captured",
             "packets captured",
             "packet received by filter",
@@ -124,10 +124,10 @@ class Sniffer(Auxiliary):
         )
 
         for line in err.split("\n"):
-            if not line or line.startswith(err_whitelist_start):
+            if not line or line.startswith(err_safelist_start):
                 continue
 
-            if line.endswith(err_whitelist_ends):
+            if line.endswith(err_safelist_ends):
                 continue
 
             raise CuckooOperationalError(

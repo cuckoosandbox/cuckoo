@@ -489,7 +489,7 @@ def _20c1_20c2(c):
         "apikey": None,
         "maxioc": 100,
     }
-    c["processing"]["network"]["whitelist-dns"] = False
+    c["processing"]["network"]["safelist-dns"] = False
     c["processing"]["network"]["allowed-dns"] = None
     c["processing"]["procmemory"]["extract_img"] = True
     c["processing"]["procmemory"]["dump_delete"] = False
@@ -554,9 +554,9 @@ def _20c2_200(c):
         "company": None,
         "email": None,
     }
-    c["processing"]["network"]["whitelist_dns"] = cast(
-        "processing:network:whitelist_dns",
-        c["processing"]["network"].pop("whitelist-dns", None)
+    c["processing"]["network"]["safelist_dns"] = cast(
+        "processing:network:safelist_dns",
+        c["processing"]["network"].pop("safelist-dns", None)
     )
     c["processing"]["network"]["allowed_dns"] = cast(
         "processing:network:allowed_dns",

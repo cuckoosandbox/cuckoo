@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 class CuckooFeedback(object):
     """Contact Cuckoo HQ with feedback & optional analysis dump."""
     endpoint = "https://feedback.cuckoosandbox.org/api/submit/"
-    exc_whitelist = (
+    exc_safelist = (
         CuckooFeedbackError,
     )
 
@@ -41,8 +41,8 @@ class CuckooFeedback(object):
             automated=True, message="Exception encountered: %s" % exception
         )
 
-        if isinstance(exception, self.exc_whitelist):
-            log.debug("A whitelisted exception occurred: %s", exception)
+        if isinstance(exception, self.exc_safelist):
+            log.debug("A safelisted exception occurred: %s", exception)
             return
 
         # Ignore 404 exceptions regarding ".map" development files.

@@ -579,7 +579,7 @@ class Config(object):
             },
             "network": {
                 "enabled": Boolean(True),
-                "whitelist_dns": Boolean(False),
+                "safelist_dns": Boolean(False),
                 "allowed_dns": String(),
             },
             "procmemory": {

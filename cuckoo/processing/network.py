@@ -26,7 +26,7 @@ from cuckoo.common.exceptions import CuckooProcessingError
 from cuckoo.common.irc import ircMessage
 from cuckoo.common.objects import File
 from cuckoo.common.utils import convert_to_printable
-from cuckoo.common.whitelist import is_whitelisted_domain, is_whitelisted_ip
+from cuckoo.common.safelist import is_safelisted_domain, is_safelisted_ip
 from cuckoo.misc import mkdir
 
 # Be less verbose about httpreplay logging messages.
@@ -83,19 +83,19 @@ class Pcap(object):
         self.irc_requests = []
         # Dictionary containing all the results of this processing.
         self.results = {}
-        # List for holding whitelisted IP-s according to DNS responses
-        self.whitelist_ips = []
-        # state of whitelisting
-        self.whitelist_enabled = self.options.get("whitelist_dns")
+        # List for holding safelisted IP-s according to DNS responses
+        self.safelist_ips = []
+        # state of safelisting
+        self.safelist_enabled = self.options.get("safelist_dns")
         # List of known good DNS servers
         self.known_dns = self._build_known_dns()
         # List of all used DNS servers
         self.dns_servers = []
 
-    def _is_whitelisted(self, conn, hostname):
-        """Check if whitelisting conditions are met"""
-        # Is whitelistng enabled?
-        if not self.whitelist_enabled:
+    def _is_safelisted(self, conn, hostname):
+        """Check if safelisting conditions are met"""
+        # Is safelistng enabled?
+        if not self.safelist_enabled:
             return False
 
         # Is DNS recording coming from allowed NS server.
@@ -107,8 +107,8 @@ class Pcap(object):
         else:
             return False
 
-        # Is hostname whitelisted.
-        if not is_whitelisted_domain(hostname):
+        # Is hostname safelisted.
+        if not is_safelisted_domain(hostname):
             return False
 
         return True
@@ -211,7 +211,7 @@ class Pcap(object):
                     # We add external IPs to the list, only the first time
                     # we see them and if they're the destination of the
                     # first packet they appear in.
-                    if not self._is_private_ip(ip) and ip not in self.whitelist_ips:
+                    if not self._is_private_ip(ip) and ip not in self.safelist_ips:
                         self.unique_hosts.append(ip)
         except:
             pass
@@ -397,9 +397,9 @@ class Pcap(object):
                 # TODO: add srv handling
                 query["answers"].append(ans)
 
-            if self._is_whitelisted(conn, q_name):
-                log.debug("DNS target {0} whitelisted. Skipping ...".format(q_name))
-                self.whitelist_ips = self.whitelist_ips + _ip
+            if self._is_safelisted(conn, q_name):
+                log.debug("DNS target {0} safelisted. Skipping ...".format(q_name))
+                self.safelist_ips = self.safelist_ips + _ip
                 return True
 
             self._add_domain(query["request"])
@@ -635,7 +635,7 @@ class Pcap(object):
                     offset = file.tell()
                     continue
 
-                if is_whitelisted_ip(connection["dst"]):
+                if is_safelisted_ip(connection["dst"]):
                     continue
 
                 self._add_hosts(connection)
@@ -768,7 +768,7 @@ class Pcap2(object):
         for s, ts, protocol, sent, recv in l:
             srcip, srcport, dstip, dstport = s
 
-            if is_whitelisted_ip(dstip):
+            if is_safelisted_ip(dstip):
                 continue
 
             if protocol == "smtp":

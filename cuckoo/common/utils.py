@@ -263,7 +263,7 @@ def exception_message():
     ))
     return msg
 
-_jsbeautify_blacklist = [
+_jsbeautify_blocklist = [
     "",
     "error: Unknown p.a.c.k.e.r. encoding.\n",
 ]
@@ -280,7 +280,7 @@ def jsbeautify(javascript):
         except Exception as e:
             log.exception("Unable to beautify javascript: %s", e)
 
-        if sys.stdout.getvalue() not in _jsbeautify_blacklist:
+        if sys.stdout.getvalue() not in _jsbeautify_blocklist:
             log.warning(
                 "jsbeautifier returned error: %s", sys.stdout.getvalue()
             )

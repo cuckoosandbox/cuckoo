@@ -882,7 +882,7 @@ interface = hehe
     assert cfg["processing"]["misp"]["url"] is None
     assert cfg["processing"]["misp"]["apikey"] is None
     assert cfg["processing"]["misp"]["maxioc"] == 100
-    assert cfg["processing"]["network"]["whitelist-dns"] is False
+    assert cfg["processing"]["network"]["safelist-dns"] is False
     assert cfg["processing"]["network"]["allowed-dns"] is None
     assert cfg["processing"]["procmemory"]["extract_img"] is True
     assert cfg["processing"]["procmemory"]["dump_delete"] is False
@@ -927,7 +927,7 @@ analysis_size_limit = 104857600
 """)
     Files.create(cwd("conf"), "processing.conf", """
 [network]
-whitelist-dns = yes
+safelist-dns = yes
 allowed-dns = 8.8.8.8
 [procmemory]
 enabled = yes
@@ -988,7 +988,7 @@ interface = eth0
 """)
     cfg = Config.from_confdir(cwd("conf"), loose=True)
     assert "vpn" in cfg
-    assert "whitelist-dns" in cfg["processing"]["network"]
+    assert "safelist-dns" in cfg["processing"]["network"]
     assert "allowed-dns" in cfg["processing"]["network"]
     cfg = migrate(cfg, "2.0-rc2", "2.0.0")
     assert cfg["auxiliary"]["mitm"]["script"] == "mitm.py"
@@ -1000,9 +1000,9 @@ interface = eth0
     assert cfg["cuckoo"]["feedback"]["email"] is None
     assert cfg["cuckoo"]["processing"]["analysis_size_limit"] == 128*1024*1024
     assert cfg["cuckoo"]["resultserver"]["upload_max_size"] == 128*1024*1024
-    assert "whitelist-dns" not in cfg["processing"]["network"]
+    assert "safelist-dns" not in cfg["processing"]["network"]
     assert "allowed-dns" not in cfg["processing"]["network"]
-    assert cfg["processing"]["network"]["whitelist_dns"] is True
+    assert cfg["processing"]["network"]["safelist_dns"] is True
     assert cfg["processing"]["procmemory"]["extract_dll"] is False
     assert cfg["processing"]["network"]["allowed_dns"] == "8.8.8.8"
     assert cfg["processing"]["virustotal"]["enabled"] is False

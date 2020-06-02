@@ -504,15 +504,15 @@ def migrate_cwd():
     mkdir(cwd("stuff"))
     mkdir(cwd("yara", "office"))
 
-    # Create the new $CWD/whitelist/ directory.
-    if not os.path.exists(cwd("whitelist")):
+    # Create the new $CWD/safelist/ directory.
+    if not os.path.exists(cwd("safelist")):
         shutil.copytree(
-            cwd("..", "data", "whitelist", private=True), cwd("whitelist")
+            cwd("..", "data", "safelist", private=True), cwd("safelist")
         )
     else:
-        data_wl = cwd("..", "data", "whitelist", private=True)
+        data_wl = cwd("..", "data", "safelist", private=True)
         for wl_file in os.listdir(data_wl):
-            cwd_wl = cwd("whitelist", wl_file)
+            cwd_wl = cwd("safelist", wl_file)
             if not os.path.isfile(cwd_wl):
                 shutil.copy(os.path.join(data_wl, wl_file), cwd_wl)
 

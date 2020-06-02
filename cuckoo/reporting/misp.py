@@ -9,9 +9,9 @@ import warnings
 
 from cuckoo.common.abstracts import Report
 from cuckoo.common.exceptions import CuckooProcessingError
-from cuckoo.common.whitelist import (
-    is_whitelisted_mispdomain, is_whitelisted_mispip, is_whitelisted_mispurl,
-    is_whitelisted_misphash
+from cuckoo.common.safelist import (
+    is_safelisted_mispdomain, is_safelisted_mispip, is_safelisted_mispurl,
+    is_safelisted_misphash
 )
 
 log = logging.getLogger(__name__)
@@ -37,15 +37,15 @@ class MISP(Report):
         urls = set()
         for protocol in ("http_ex", "https_ex"):
             for entry in results.get("network", {}).get(protocol, []):
-                if is_whitelisted_mispdomain(entry["host"]):
+                if is_safelisted_mispdomain(entry["host"]):
                     continue
-                if is_whitelisted_mispdomain(entry["host"]):
+                if is_safelisted_mispdomain(entry["host"]):
                     continue
 
                 url = "%s://%s%s" % (
                       entry["protocol"], entry["host"], entry["uri"])
 
-                if not is_whitelisted_mispurl(url):
+                if not is_safelisted_mispurl(url):
                     urls.add(url)
 
         self.misp.add_url(event, sorted(list(urls)))
@@ -53,10 +53,10 @@ class MISP(Report):
     def domain_ipaddr(self, results, event):
         domains, ips = {}, set()
         for domain in results.get("network", {}).get("domains", []):
-            if is_whitelisted_mispip(domain["ip"]):
+            if is_safelisted_mispip(domain["ip"]):
                 continue
 
-            if is_whitelisted_mispdomain(domain["domain"]):
+            if is_safelisted_mispdomain(domain["domain"]):
                 continue
 
             domains[domain["domain"]] = domain["ip"]
@@ -64,7 +64,7 @@ class MISP(Report):
 
         ipaddrs = set()
         for ipaddr in results.get("network", {}).get("hosts", []):
-            if ipaddr not in ips and not is_whitelisted_mispip(ipaddr):
+            if ipaddr not in ips and not is_safelisted_mispip(ipaddr):
                 ipaddrs.add(ipaddr)
 
         self.misp.add_domains_ips(event, domains)
@@ -145,11 +145,11 @@ class MISP(Report):
 
         if results.get("target", {}).get("category") == "file":
             f = results.get("target", {}).get("file", {})
-            hash_whitelisted = is_whitelisted_misphash(f["md5"]) or \
-                               is_whitelisted_misphash(f["sha1"]) or \
-                               is_whitelisted_misphash(f["sha256"])
+            hash_safelisted = is_safelisted_misphash(f["md5"]) or \
+                               is_safelisted_misphash(f["sha1"]) or \
+                               is_safelisted_misphash(f["sha256"])
 
-            if hash_whitelisted:
+            if hash_safelisted:
                 return
 
         if score < self.options.get("min_malscore", 0):

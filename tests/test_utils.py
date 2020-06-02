@@ -18,7 +18,7 @@ from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import (
     Folders, Files, Storage, temppath, open_exclusive
 )
-from cuckoo.common.whitelist import is_whitelisted_domain
+from cuckoo.common.safelist import is_safelisted_domain
 from cuckoo.common import utils
 from cuckoo.main import cuckoo_create
 from cuckoo.misc import set_cwd, getuser
@@ -435,10 +435,10 @@ def test_list_of():
     assert utils.list_of_ints([1, 2]) is True
     assert utils.list_of_ints([lambda x: x]) is False
 
-def test_is_whitelisted_domain():
-    assert is_whitelisted_domain("java.com") is True
-    assert is_whitelisted_domain("java2.com") is False
-    assert is_whitelisted_domain("crl.microsoft.com") is True
+def test_is_safelisted_domain():
+    assert is_safelisted_domain("java.com") is True
+    assert is_safelisted_domain("java2.com") is False
+    assert is_safelisted_domain("crl.microsoft.com") is True
 
 def test_open_exclusive():
     fpath = os.path.join(tempfile.mkdtemp(), "yeet.exclusive")

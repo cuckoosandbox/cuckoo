@@ -65,7 +65,7 @@ cwd_public = os.path.join("cuckoo", "data")
 cwd_private = os.path.join("cuckoo", "private")
 
 hashes_ignore = (
-    "whitelist/domain.txt",
+    "safelist/domain.txt",
 )
 
 def update_hashes():

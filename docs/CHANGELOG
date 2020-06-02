@@ -78,7 +78,7 @@ Cuckoo Sandbox 2.0-rc1 (2016-01-21)
 * Added option to skip calls from JSON report
 * Added option to load the entire process memory dump into IDA Pro
 * Added some process memory dump analysis improvements
-* Added URLs parsing from memory dump and URLs whitelist
+* Added URLs parsing from memory dump and URLs safelist
 * Added tracking and reporting dead IP address/port combinations
 * Added maliciousness scoring system
 * Added option to web interface to submit dropped files for analysis

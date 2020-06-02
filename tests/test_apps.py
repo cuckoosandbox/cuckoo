@@ -714,7 +714,7 @@ class TestMigrateCWD(object):
         shutil.rmtree(cwd("yara", "scripts"))
         shutil.rmtree(cwd("yara", "shellcode"))
         shutil.rmtree(cwd("stuff"))
-        shutil.rmtree(cwd("whitelist"))
+        shutil.rmtree(cwd("safelist"))
         open(cwd("yara", "index_binaries.yar"), "wb").write("hello")
         migrate_cwd()
         # TODO Move this to its own 2.0.2 -> 2.0.3 migration handler.
@@ -722,10 +722,10 @@ class TestMigrateCWD(object):
         assert os.path.exists(cwd("yara", "shellcode", ".gitignore"))
         # TODO Move this to its own 2.0.3 -> 2.0.4 migration handler.
         assert os.path.exists(cwd("stuff"))
-        assert os.path.exists(cwd("whitelist"))
+        assert os.path.exists(cwd("safelist"))
 
-        wl = open(cwd("whitelist", "domain.txt"), "rb").read().split("\n")
-        assert wl[0] == "# You can add whitelisted domains here."
+        wl = open(cwd("safelist", "domain.txt"), "rb").read().split("\n")
+        assert wl[0] == "# You can add safelisted domains here."
         assert os.path.exists(cwd("yara", "dumpmem"))
         assert not os.path.exists(cwd("yara", "index_binaries.yar"))
 

@@ -25,7 +25,7 @@ class Suricata(Processing):
     """Suricata processing module."""
 
     # List of Suricata Signatures IDs that should be ignored.
-    sid_blacklist = [
+    sid_blocklist = [
         # SURICATA FRAG IPv6 Fragmentation overlap
         2200074,
 
@@ -127,7 +127,7 @@ class Suricata(Processing):
             if event["event_type"] == "alert":
                 alert = event["alert"]
 
-                if alert["signature_id"] in self.sid_blacklist:
+                if alert["signature_id"] in self.sid_blocklist:
                     log.debug(
                         "Ignoring alert with sid=%d, signature=%s",
                         alert["signature_id"], alert["signature"]

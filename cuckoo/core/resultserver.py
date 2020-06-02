@@ -33,7 +33,7 @@ MAX_NETLOG_LINE = 4 * 1024
 BUFSIZE = 16 * 1024
 
 # Directories in which analysis-related files will be stored; also acts as
-# whitelist
+# safelist
 RESULT_UPLOADABLE = ("files", "shots", "buffer",  "extracted", "memory")
 RESULT_DIRECTORIES = RESULT_UPLOADABLE + ("reports", "logs")
 

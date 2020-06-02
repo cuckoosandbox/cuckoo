@@ -32,7 +32,7 @@
         "short": "Fallback Channels"
     },
     "T1009": {
-        "long": "Some security tools inspect files with static signatures to determine if they are known malicious. Adversaries may add data to files to increase the size beyond what security tools are capable of handling or to change the file hash to avoid hash-based blacklists.",
+        "long": "Some security tools inspect files with static signatures to determine if they are known malicious. Adversaries may add data to files to increase the size beyond what security tools are capable of handling or to change the file hash to avoid hash-based blocklists.",
         "short": "Binary Padding"
     },
     "T1010": {
@@ -336,7 +336,7 @@
         "short": "Windows Management Instrumentation Event Subscription"
     },
     "T1085": {
-        "long": "The rundll32.exe program can be called to execute an arbitrary binary. Adversaries may take advantage of this functionality to proxy execution of code to avoid triggering security tools that may not monitor execution of the rundll32.exe process because of whitelists or false positives from Windows using rundll32.exe for normal operations.",
+        "long": "The rundll32.exe program can be called to execute an arbitrary binary. Adversaries may take advantage of this functionality to proxy execution of code to avoid triggering security tools that may not monitor execution of the rundll32.exe process because of safelists or false positives from Windows using rundll32.exe for normal operations.",
         "short": "Rundll32"
     },
     "T1086": {
@@ -504,7 +504,7 @@
         "short": "Network Share Connection Removal"
     },
     "T1127": {
-        "long": "There are many utilities used for software development related tasks that can be used to execute code in various forms to assist in development, debugging, and reverse engineering. These utilities may often be signed with legitimate certificates that allow them to execute on a system and proxy execution of malicious code through a trusted process that effectively bypasses application whitelisting defensive solutions.",
+        "long": "There are many utilities used for software development related tasks that can be used to execute code in various forms to assist in development, debugging, and reverse engineering. These utilities may often be signed with legitimate certificates that allow them to execute on a system and proxy execution of malicious code through a trusted process that effectively bypasses application safelisting defensive solutions.",
         "short": "Trusted Developer Utilities"
     },
     "T1128": {
@@ -592,7 +592,7 @@
         "short": "HISTCONTROL"
     },
     "T1149": {
-        "long": "As of OS X 10.8, mach-O binaries introduced a new header called LC_MAIN that points to the binary\u2019s entry point for execution. Previously, there were two headers to achieve this same effect: LC_THREAD and LC_UNIXTHREAD  . The entry point for a binary can be hijacked so that initial execution flows to a malicious addition (either another section or a code cave) and then goes back to the initial entry point so that the victim doesn\u2019t know anything was different  . By modifying a binary in this way, application whitelisting can be bypassed because the file name or application path is still the same.",
+        "long": "As of OS X 10.8, mach-O binaries introduced a new header called LC_MAIN that points to the binary\u2019s entry point for execution. Previously, there were two headers to achieve this same effect: LC_THREAD and LC_UNIXTHREAD  . The entry point for a binary can be hijacked so that initial execution flows to a malicious addition (either another section or a code cave) and then goes back to the initial entry point so that the victim doesn\u2019t know anything was different  . By modifying a binary in this way, application safelisting can be bypassed because the file name or application path is still the same.",
         "short": "LC_MAIN Hijacking"
     },
     "T1150": {
@@ -860,7 +860,7 @@
         "short": "Kernel Modules and Extensions"
     },
     "T1216": {
-        "long": "Scripts signed with trusted certificates can be used to proxy execution of malicious files. This behavior may bypass signature validation restrictions and application whitelisting solutions that do not account for use of these scripts.",
+        "long": "Scripts signed with trusted certificates can be used to proxy execution of malicious files. This behavior may bypass signature validation restrictions and application safelisting solutions that do not account for use of these scripts.",
         "short": "Signed Script Proxy Execution"
     },
     "T1217": {
@@ -868,11 +868,11 @@
         "short": "Browser Bookmark Discovery"
     },
     "T1218": {
-        "long": "Binaries signed with trusted digital certificates can execute on Windows systems protected by digital signature validation. Several Microsoft signed binaries that are default on Windows installations can be used to proxy execution of other files. This behavior may be abused by adversaries to execute malicious files that could bypass application whitelisting and signature validation on systems. This technique accounts for proxy execution methods that are not already accounted for within the existing techniques.",
+        "long": "Binaries signed with trusted digital certificates can execute on Windows systems protected by digital signature validation. Several Microsoft signed binaries that are default on Windows installations can be used to proxy execution of other files. This behavior may be abused by adversaries to execute malicious files that could bypass application safelisting and signature validation on systems. This technique accounts for proxy execution methods that are not already accounted for within the existing techniques.",
         "short": "Signed Binary Proxy Execution"
     },
     "T1219": {
-        "long": "An adversary may use legitimate desktop support and remote access software, such as Team Viewer, Go2Assist, LogMein, AmmyyAdmin, etc, to establish an interactive command and control channel to target systems within networks. These services are commonly used as legitimate technical support software, and may be whitelisted within a target environment. Remote access tools like VNC, Ammy, and Teamviewer are used frequently when compared with other legitimate software commonly used by adversaries.",
+        "long": "An adversary may use legitimate desktop support and remote access software, such as Team Viewer, Go2Assist, LogMein, AmmyyAdmin, etc, to establish an interactive command and control channel to target systems within networks. These services are commonly used as legitimate technical support software, and may be safelisted within a target environment. Remote access tools like VNC, Ammy, and Teamviewer are used frequently when compared with other legitimate software commonly used by adversaries.",
         "short": "Remote Access Tools"
     },
     "T1220": {

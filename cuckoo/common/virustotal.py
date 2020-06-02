@@ -29,7 +29,7 @@ class VirusTotalAPI(object):
     URL_SCAN = "https://www.virustotal.com/vtapi/v2/url/scan"
     HASH_DOWNLOAD = "https://www.virustotal.com/vtapi/v2/file/download"
 
-    VARIANT_BLACKLIST = [
+    VARIANT_BLOCKLIST = [
         "generic", "malware", "trojan", "agent", "win32", "multi", "w32",
         "trojanclicker", "trojware", "win", "a variant of win32", "trj",
         "susp", "dangerousobject", "backdoor", "clicker", "variant", "heur",
@@ -198,7 +198,7 @@ class VirusTotalAPI(object):
             if len(word) < 4:
                 continue
 
-            if word.lower() in self.VARIANT_BLACKLIST:
+            if word.lower() in self.VARIANT_BLOCKLIST:
                 continue
 
             # Random hashes that are specific to this file.
