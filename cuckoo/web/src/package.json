@@ -37,7 +37,7 @@
     "gulp-util": "3.0.7",
     "gulp-watch": "4.3.10",
     "gulp-wrap": "0.13.0",
-    "handlebars": "4.0.5",
+    "handlebars": "4.7.6",
     "vinyl-buffer": "1.0.0",
     "vinyl-source-stream": "1.1.0"
   }
