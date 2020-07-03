@@ -112,6 +112,26 @@ class Azure(Machinery):
             raise CuckooDependencyError("Unable to import Azure packages")
 
         try:
+            log.debug(
+                "Retrieving the subnet '%s'.",
+                self.options.az.cuckoo_subnet
+            )
+            self.subnet_info = self.network_client.subnets.get(
+                self.options.az.group,
+                self.options.az.vnet,
+                self.options.az.cuckoo_subnet
+            )
+        except CloudError as exc:
+            log.debug(
+                "Failed to retrieve subnet '%s' due to the Azure error " +
+                "'%s': '%s'.",
+                self.options.az.cuckoo_subnet,
+                exc.error.error,
+                exc.message
+            )
+            raise CuckooMachineError(exc.message)
+
+        try:
             log.debug("Retrieving all virtual machines in resource group.")
             instances = self.compute_client.virtual_machines.list(
                 self.options.az.group
@@ -125,6 +145,26 @@ class Azure(Machinery):
                 "Failed to retrieve all virtual machines due to the " +
                 "Azure error '%s': '%s'.",
                 exc.error.error, exc.message
+            )
+            raise CuckooMachineError(exc.message)
+
+        try:
+            log.debug(
+                "Retrieving the snapshot '%s' to be used to create " +
+                "victim disks.",
+                self.options.autoscale.guest_snapshot
+            )
+            snapshot = self.compute_client.snapshots.get(
+                self.options.az.group,
+                self.options.autoscale.guest_snapshot
+            )
+            self.snap_id = snapshot.id
+        except CloudError as exc:
+            log.debug(
+                "Failed to retrieve '%s' due to the Azure error '%s': '%s'.",
+                self.options.autoscale.guest_snapshot,
+                exc.error.error,
+                exc.message
             )
             raise CuckooMachineError(exc.message)
 
@@ -554,18 +594,6 @@ class Azure(Machinery):
         @raise CuckooMachineError: if there is a problem with the Azure call
         """
         log.info("Restoring machine: '%s'.", label)
-        vm_info = self.db.view_machine_by_label(label)
-        try:
-            log.debug("Retrieving the snapshot '%s'.", vm_info.snapshot)
-            snapshot = self.compute_client.snapshots.get(
-                self.options.az.group,
-                vm_info.snapshot
-            )
-        except CloudError as exc:
-            log.debug("Failed to get '%s' due to the Azure error '%s': '%s'.",
-                      vm_info.snapshot, exc.error.error, exc.message)
-            raise CuckooMachineError(exc.message)
-        snap_id = snapshot.name
         instance = self.azure_machines[label]
         # We can only perform this hot swap of OS disks if the VM is
         # deallocated fully.
@@ -575,7 +603,7 @@ class Azure(Machinery):
                 "Instance '%s' state '%s' is not poweroff." % (label, state))
 
         # Create a new OS disk from a snapshot.
-        new_disk = self._create_disk_from_snapshot(snap_id, label)
+        new_disk = self._create_disk_from_snapshot(label)
 
         log.debug("Swapping OS disk on VM '%s' and updating the VM.", label)
         # By setting this parameter to the new disk, and using it to update
@@ -634,32 +662,13 @@ class Azure(Machinery):
         @return: a network interface card object
         @raise CuckooMachineError: if there is a problem with the Azure call
         """
-        try:
-            log.debug(
-                "Retrieving the subnet '%s'.",
-                self.options.az.cuckoo_subnet
-            )
-            subnet_info = self.network_client.subnets.get(
-                self.options.az.group,
-                self.options.az.vnet,
-                self.options.az.cuckoo_subnet
-            )
-        except CloudError as exc:
-            log.debug(
-                "Failed to retrieve subnet '%s' due to the Azure error " +
-                "'%s': '%s'.",
-                self.options.az.cuckoo_subnet,
-                exc.error.error,
-                exc.message
-            )
-            raise CuckooMachineError(exc.message)
 
         nic_params = {
             "location": self.options.az.region_name,
             "ip_configurations": [{
                 "name": "myIPConfig",
                 "subnet": {
-                    "id": subnet_info.id
+                    "id": self.subnet_info.id
                 }
             }],
             "dns_settings": {
@@ -702,10 +711,7 @@ class Azure(Machinery):
         autoscale_options = self.options.autoscale
         computer_name = tags["Name"]
 
-        new_disk = self._create_disk_from_snapshot(
-            autoscale_options.guest_snapshot,
-            computer_name
-        )
+        new_disk = self._create_disk_from_snapshot(computer_name)
         os_disk = {
             "create_option": "Attach",
             "managed_disk": {
@@ -755,7 +761,7 @@ class Azure(Machinery):
         log.debug("Created '%s'\n%s.", new_instance.id, repr(new_instance))
         return new_instance
 
-    def _create_disk_from_snapshot(self, snapshot_name, new_computer_name):
+    def _create_disk_from_snapshot(self, new_computer_name):
         """
         Uses a snapshot in the resource group to create a managed OS disk.
         :param snapshot_name: String indicating the name of the snapshot
@@ -764,25 +770,6 @@ class Azure(Machinery):
         @raise CuckooMachineError: if there is a problem with the Azure call
         """
         log.debug("Creating disk which is a copy of a snapshot.")
-        try:
-            log.debug(
-                "Retrieving the snapshot '%s' to be used to create " +
-                "victim disks.",
-                snapshot_name
-            )
-            snapshot = self.compute_client.snapshots.get(
-                self.options.az.group,
-                snapshot_name
-            )
-            snap_id = snapshot.id
-        except CloudError as exc:
-            log.debug(
-                "Failed to retrieve '%s' due to the Azure error '%s': '%s'.",
-                snapshot_name,
-                exc.error.error,
-                exc.message
-            )
-            raise CuckooMachineError(exc.message)
 
         new_disk_name = "osdisk" + new_computer_name
         try:
@@ -797,7 +784,7 @@ class Azure(Machinery):
                     "location": self.options.az.region_name,
                     "creation_data": {
                         "create_option": DiskCreateOption.copy,
-                        "source_uri": snap_id
+                        "source_uri": self.snap_id
                     }
                 }
             )
