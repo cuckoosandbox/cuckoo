@@ -16,15 +16,15 @@ Make sure you check our existing Issues and Pull Requests and that you join
 our `IRC or Slack channel <https://cuckoosandbox.org/discussion>`_.
 
 For setup instructions, please refer
-`to <https://cuckoo.sh/docs/installation/host/requirements.html>`_
-`our <https://cuckoo.sh/docs/installation/host/installation.html>`_
-`documentation <https://cuckoo.sh/docs/index.html>`_.
+`to <https://docs.cuckoosandbox.org/en/latest/installation/host/requirements>`_
+`our <https://docs.cuckoosandbox.org/en/latest/installation/host/installation>`_
+`documentation <https://docs.cuckoosandbox.org/en/latest/>`_.
 
 This is a development version, we do not recommend its use in production; the
 latest stable version may be installed through :code:`pip install -U cuckoo`.
 
 You can find the full documentation of the latest stable release
-`here <https://cuckoo.sh/docs>`_.
+`here <https://docs.cuckoosandbox.org/en/latest/>`_.
 
 .. image:: https://travis-ci.org/cuckoosandbox/cuckoo.png?branch=master
    :alt: Linux Build Status
@@ -42,5 +42,5 @@ You can find the full documentation of the latest stable release
    :alt: Codecov Coverage Status
    :target: https://codecov.io/gh/cuckoosandbox/cuckoo
 
-.. _`community guidelines`: https://cuckoo.sh/docs/introduction/community.html
+.. _`community guidelines`: https://docs.cuckoosandbox.org/en/latest/introduction/community.html
 .. _`contribution requirements`: http://www.cuckoofoundation.org/contribute.html
