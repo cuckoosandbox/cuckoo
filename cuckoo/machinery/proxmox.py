@@ -5,6 +5,7 @@
 import logging
 import time
 
+from requests.exceptions import ConnectionError
 from proxmoxer import ProxmoxAPI, ResourceException
 
 from cuckoo.common.abstracts import Machinery
@@ -44,10 +45,13 @@ class Proxmox(Machinery):
         @param label: the label of the VM to be compared to the VM's name in
                       Proxmox.
         @raise CuckooMachineError: if the VM cannot be found."""
-        proxmox = ProxmoxAPI(self.options.proxmox.hostname,
-                             user=self.options.proxmox.username,
-                             password=self.options.proxmox.password,
-                             verify_ssl=False)
+        try:
+            proxmox = ProxmoxAPI(self.options.proxmox.hostname,
+                                 user=self.options.proxmox.username,
+                                 password=self.options.proxmox.password,
+                                 verify_ssl=False)
+        except (ValueError, ConnectionError) as e:
+            raise CuckooMachineError("Error connecting to Proxmox: %s" % e)
 
         # /cluster/resources[type=vm] will give us all VMs no matter which node
         # they reside on
@@ -57,6 +61,11 @@ class Proxmox(Machinery):
             raise CuckooMachineError("Error enumerating VMs: %s" % e)
 
         for vm in vms:
+            # ignore incomplete entries which apparently can sometimes happen
+            # when Proxmox Cluster nodes reboot
+            if not {"name", "node", "type", "vmid"}.issubset(vm):
+                continue
+
             if vm["name"] == label:
                 # dynamically address
                 # /nodes/<node>/{qemu,lxc,openvz,...}/<vmid> to get handle on
