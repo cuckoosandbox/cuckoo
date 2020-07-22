@@ -281,6 +281,7 @@ class Config(object):
                 "running_machines_gap": Int(1),
                 "vnet": String("cuckoo-vnet"),
                 "cuckoo_subnet": String("cuckoo-subnet"),
+                "environment": String("staging"),
             },
             "autoscale": {
                 "autoscale": Boolean(False),
