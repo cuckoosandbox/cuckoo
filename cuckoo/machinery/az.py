@@ -111,6 +111,8 @@ class Azure(Machinery):
         if not HAVE_AZURE:
             raise CuckooDependencyError("Unable to import Azure packages")
 
+        self.environment = self.options.az.environment
+
         try:
             log.debug(
                 "Retrieving the subnet '%s'.",
@@ -138,7 +140,7 @@ class Azure(Machinery):
             )
             for instance in instances:
                 # Cleaning up autoscaled instances from previous Cuckoo runs.
-                if self._is_autoscaled(instance):
+                if self._is_autoscaled(instance) and self.environment in instance.name:
                     self._delete_instance(instance.name)
         except CloudError as exc:
             log.debug(
@@ -353,7 +355,7 @@ class Azure(Machinery):
             resultserver_port = ResultServer().port
 
         self.dynamic_machines_sequence += 1
-        new_machine_name = "vmcuckooguest%03d" % self.dynamic_machines_sequence
+        new_machine_name = "%scuckoo%03d" % (self.environment, self.dynamic_machines_sequence)
 
         # Avoiding collision on machine name if machine is still deleting.
         instance_names = self._list()
@@ -361,8 +363,7 @@ class Azure(Machinery):
             while instance == new_machine_name:
                 self.dynamic_machines_sequence = \
                     self.dynamic_machines_sequence + 1
-                new_machine_name = "vmcuckooguest%03d" % \
-                                   self.dynamic_machines_sequence
+                new_machine_name = "%scuckoo%03d" % (self.environment, self.dynamic_machines_sequence)
 
         # Create network interface card (NIC).
         new_machine_nic = self._create_nic(
@@ -559,7 +560,7 @@ class Azure(Machinery):
                 "Trying to stop an already stopped VM: '%s'." % label
             )
 
-        if self._is_autoscaled(self.azure_machines[label]):
+        if self._is_autoscaled(self.azure_machines[label]) and self.environment in label:
             self._delete_instance(label)
         else:
             try:
@@ -957,7 +958,7 @@ class Azure(Machinery):
                       exc.error.error, exc.message)
             raise CuckooMachineError(exc.message)
         for instance in instances:
-            if instance.provisioning_state == "Failed":
+            if instance.provisioning_state == "Failed" and self.environment in instance.name:
                 log.debug(
                     "Deleting instance that failed to deploy '%s'.",
                     instance.name
