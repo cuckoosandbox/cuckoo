@@ -105,9 +105,6 @@ class Azure(Machinery):
         in az.conf
         @raise CuckooMachineError: if there is a problem with the Azure call
         """
-        # Base checks.
-        super(Azure, self)._initialize_check()
-
         if not HAVE_AZURE:
             raise CuckooDependencyError("Unable to import Azure packages")
 
@@ -150,25 +147,27 @@ class Azure(Machinery):
             )
             raise CuckooMachineError(exc.message)
 
-        try:
-            log.debug(
-                "Retrieving the snapshot '%s' to be used to create " +
-                "victim disks.",
-                self.options.autoscale.guest_snapshot
-            )
-            snapshot = self.compute_client.snapshots.get(
-                self.options.az.group,
-                self.options.autoscale.guest_snapshot
-            )
-            self.snap_id = snapshot.id
-        except CloudError as exc:
-            log.debug(
-                "Failed to retrieve '%s' due to the Azure error '%s': '%s'.",
-                self.options.autoscale.guest_snapshot,
-                exc.error.error,
-                exc.message
-            )
-            raise CuckooMachineError(exc.message)
+        self.snap_ids = []
+        for snapshot in self.options.autoscale.guest_snapshot:
+            try:
+                log.debug(
+                    "Retrieving the snapshot '%s' to be used to create " +
+                    "victim disks.",
+                    snapshot
+                )
+                snapshot_resource = self.compute_client.snapshots.get(
+                    self.options.az.group,
+                    snapshot
+                )
+                self.snap_ids.append(snapshot_resource.id)
+            except CloudError as exc:
+                log.debug(
+                    "Failed to retrieve '%s' due to the Azure error '%s': '%s'.",
+                    snapshot,
+                    exc.error.error,
+                    exc.message
+                )
+                raise CuckooMachineError(exc.message)
 
         log.info("Deleting leftover network interface cards, managed disks " +
                  "and failed instances.")
@@ -202,10 +201,15 @@ class Azure(Machinery):
             if self._status(machine.label) != Azure.POWEROFF:
                 self.stop(label=machine.label)
 
-        # Start or create the required amount of instances as specified in
-        # az.conf.
-        self._start_or_create_machines()
+        for snap_id in self.snap_ids:
+            self.snap_id = snap_id
+            log.debug("Starting or creating machines for snapshot: %s" % self.snap_id)
+            # Start or create the required amount of instances as specified in
+            # az.conf for each snapshot id.
+            self._start_or_create_machines()
 
+        # We don't want a lingering snap_id field
+        self.snap_id = None
         # The system is now no longer in the initializing phase.
         self.initializing = False
 
@@ -251,14 +255,16 @@ class Azure(Machinery):
         machinery_options = self.options.az
         autoscale_options = self.options.autoscale
 
-        current_available_machines = self.db.count_machines_available()
+        available_machines = self.db.get_available_machines()
+        tag = "win10" if "win10" in self.snap_id else "win7"
+        relevant_available_machines = len([machine for machine in available_machines if tag in machine.label])
         running_machines_gap = machinery_options.get("running_machines_gap", 0)
         dynamic_machines_limit = autoscale_options["dynamic_machines_limit"]
 
         # Start preconfigured machines that are stopped.
         self._start_next_machines(
             num_of_machines_to_start=min(
-                current_available_machines,
+                relevant_available_machines,
                 running_machines_gap
             )
         )
@@ -266,7 +272,7 @@ class Azure(Machinery):
         #  If there are no available machines left  -> launch a new machine.
         threads = []
         while autoscale_options.autoscale and \
-                current_available_machines < running_machines_gap:
+                relevant_available_machines < running_machines_gap:
             # Sleeping for a couple because Azure takes a while
             time.sleep(2)
             if self.dynamic_machines_count >= dynamic_machines_limit:
@@ -281,7 +287,7 @@ class Azure(Machinery):
                 thr = threading.Thread(target=self._allocate_new_machine)
                 threads.append(thr)
                 thr.start()
-                current_available_machines += 1
+                relevant_available_machines += 1
 
         # Waiting for all machines to finish being created,
         # depending on the system state.
@@ -355,7 +361,9 @@ class Azure(Machinery):
             resultserver_port = ResultServer().port
 
         self.dynamic_machines_sequence += 1
-        new_machine_name = "%scuckoo%03d" % (self.environment, self.dynamic_machines_sequence)
+        # Adding the appropriate tag if multiple snapshots
+        tag = "win10" if "win10" in self.snap_id else "win7"
+        new_machine_name = "%scuckoo%s%03d" % (self.environment, tag, self.dynamic_machines_sequence)
 
         # Avoiding collision on machine name if machine is still deleting.
         instance_names = self._list()
@@ -363,7 +371,7 @@ class Azure(Machinery):
             while instance == new_machine_name:
                 self.dynamic_machines_sequence = \
                     self.dynamic_machines_sequence + 1
-                new_machine_name = "%scuckoo%03d" % (self.environment, self.dynamic_machines_sequence)
+                new_machine_name = "%scuckoo%s%03d" % (self.environment, tag, self.dynamic_machines_sequence)
 
         # Create network interface card (NIC).
         new_machine_nic = self._create_nic(
@@ -430,7 +438,7 @@ class Azure(Machinery):
         )
         return
 
-    def acquire(self, machine_id=None, platform=None, tags=None):
+    def acquire(self, machine_id=None, platform=None, tags="win7"):
         """
         Override Machinery method to utilize the auto scale option
         as well as a FIFO queue for machines.
@@ -438,15 +446,26 @@ class Azure(Machinery):
         @param platform: the platform of the machine's operating system
         @param tags: any tags that are associated with the machine
         """
+        if type(tags) == list and len(tags) > 0:
+            tags = tags[0]
+        elif type(tags) == list and len(tags) == 0:
+            tags = "unknown_guest_image"
         if self.machine_queue:
             # Used to minimize wait times as VMs are starting up and some might
-            # not ready to listen yet.
-            machine_id = self.machine_queue.pop(0)
+            # not be ready to listen yet.
+            first_index_of_correct_machine = next((x for x, val in enumerate(self.machine_queue) if tags in val), None)
+            if not first_index_of_correct_machine:
+                machine_id = self.machine_queue.pop(0)
+            else:
+                machine_id = self.machine_queue.pop(first_index_of_correct_machine)
+        # Note that tags are ignored in future because machine_id is used
         base_class_return_value = super(Azure, self).acquire(
-            machine_id,
-            platform,
-            tags
+            machine_id=machine_id,
+            platform=platform,
+            tags=tags
         )
+        tag = "win10" if "win10" in base_class_return_value.label else "win7"
+        self.snap_id = next(snap_id for snap_id in self.snap_ids if tag in snap_id)  # This has to return something
         self._start_or_create_machines()  # Prepare another machine
         return base_class_return_value
 
@@ -458,6 +477,9 @@ class Azure(Machinery):
         @param label: machine label.
         """
         super(Azure, self).release(label)
+        # Hopefully this doesn't create race conditions. Whatever machine is about to be deleted, replace it
+        tag = "win10" if "win10" in label else "win7"
+        self.snap_id = next(snap_id for snap_id in self.snap_ids if tag in snap_id)  # This has to return something
         self._start_or_create_machines()
 
     def _status(self, label):
@@ -770,8 +792,6 @@ class Azure(Machinery):
         :return: an Azure Managed OS Disk object
         @raise CuckooMachineError: if there is a problem with the Azure call
         """
-        log.debug("Creating disk which is a copy of a snapshot.")
-
         new_disk_name = "osdisk" + new_computer_name
         try:
             log.debug(
