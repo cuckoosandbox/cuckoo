@@ -293,7 +293,7 @@ class Config(object):
                 "tags": String(),
                 "resultserver_ip": String("192.168.54.111"),
                 "resultserver_port": Int(2042),
-                "guest_snapshot": String("cuckoo-snapshot"),
+                "guest_snapshot": List(String, None, ",\\s"),
                 "storage_account_type": String("sample-type")
             },
             "*": {
