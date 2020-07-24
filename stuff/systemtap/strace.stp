@@ -21,7 +21,7 @@ probe begin  {
 
 probe nd_syscall.* {
     if (pid() == target()) next         # skip our own helper process
-    if (!target_set_pid(pid())) next    # skip unrelated processes
+    if (ppid() == target()) next        # skip unrelated processes
 
     t = tid()
 
@@ -40,7 +40,7 @@ probe nd_syscall.* {
 
 probe nd_syscall.*.return {
     if (pid() == target()) next         # skip our own helper process
-    if (!target_set_pid(pid())) next    # skip unrelated processes
+    if (ppid() == target()) next        # skip unrelated processes
 
     report(name, thread_argstr[tid()], retstr)
 }

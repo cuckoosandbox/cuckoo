@@ -1,0 +1,35 @@
+  GNU nano 4.8                                                          hello.stp
+
+%{
+#include <linux/sched.h>
+#include <linux/list.h>
+#include <linux/kernfs.h>
+#include <linux/cgroup-defs.h>
+%}
+
+
+probe begin{
+        print ("Starting...\n")
+}
+
+probe nd_syscall.* {
+        if(target() != pid()) next
+        printf("%d;%s\n", pid(), getCgroup())
+}
+
+function getCgroup:string()%{
+        struct task_struct *currently_observed_task = current;
+        char fileName[200];
+        struct css_set *cgroups = currently_observed_task->cgroups;
+        struct cgroup_subsys_state **subsys = cgroups->subsys;
+        struct cgroup_subsys_state *firstSubsys = subsys[0];
+        struct cgroup *cgroup = firstSubsys->cgroup;
+        struct kernfs_node *kn = cgroup->kn;
+        int result = kernfs_path_from_node(kn, NULL, fileName, 200*sizeof(char));
+        if (result < 0) STAP_ERROR ("cannot resolve cgroup");
+        snprintf(STAP_RETVALUE, 200, "%s", fileName);
+%}
+
+
+
+
