@@ -142,7 +142,7 @@ class Macalyzer(object):
         # Check whether we've already dumped this file - in that case skip it
         try:
             hashsum = hash_file(hashlib.sha256, filepath)
-            if sha256 in self.uploaded_hashes:
+            if hashsum in self.uploaded_hashes:
                 return
         except IOError as e:
             self.log.info("Error dumping file from path \"%s\": %s", filepath, e)
