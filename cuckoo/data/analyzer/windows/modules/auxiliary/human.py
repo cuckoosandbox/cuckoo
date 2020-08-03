@@ -177,7 +177,7 @@ class Human(threading.Thread, Auxiliary):
             self.do_click_buttons = int(self.options["human.click_buttons"])
 
         while self.do_run:
-            if seconds and not seconds % 60:
+            if (self.do_click_buttons or self.do_click_mouse) and  seconds and seconds != 0 and not seconds % 60 :
                 USER32.EnumWindows(EnumWindowsProc(get_office_window), 0)
 
             if self.do_click_mouse:
