@@ -19,7 +19,7 @@ Cuckoo to install and run properly::
 
     $ sudo apt-get install python python-pip python-dev libffi-dev libssl-dev
     $ sudo apt-get install python-virtualenv python-setuptools
-    $ sudo apt-get install libjpeg-dev zlib1g-dev swig
+    $ sudo apt-get install libjpeg-dev zlib1g-dev
 
 In order to use the Django-based Web Interface, MongoDB is required::
 
@@ -182,19 +182,13 @@ See the volatility documentation for detailed instructions on how to install it.
 
 .. _official repository: https://github.com/volatilityfoundation
 
-Installing M2Crypto
+Installing Cryptography
 ===================
 
-Currently the ``M2Crypto`` library is only supported when `SWIG`_ has been
-installed. On Ubuntu/Debian-like systems this may be done as follows::
 
-    $ sudo apt-get install swig
+Python cryptography library is required::
 
-If ``SWIG`` is present on the system one may install ``M2Crypto`` as follows::
-
-    $ sudo pip install m2crypto==0.24.0
-
-.. _SWIG: http://www.swig.org/
+    $ sudo pip install cryptography
 
 Installing guacd
 ================
