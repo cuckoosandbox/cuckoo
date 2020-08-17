@@ -65,7 +65,7 @@ cwd_public = os.path.join("cuckoo", "data")
 cwd_private = os.path.join("cuckoo", "private")
 
 hashes_ignore = (
-    "safelist/domain.txt",
+    "whitelist/domain.txt",
 )
 
 def update_hashes():
@@ -190,6 +190,7 @@ do_setup(
         "beautifulsoup4==4.5.3",
         "chardet==2.3.0",
         "click==6.6",
+        "cryptography",
         "django==1.8.4",
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
