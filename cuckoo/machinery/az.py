@@ -256,7 +256,15 @@ class Azure(Machinery):
         autoscale_options = self.options.autoscale
 
         available_machines = self.db.get_available_machines()
-        tag = "win10" if "win10" in self.snap_id else "win7"
+        if "win10" in self.snap_id:
+            tag = "win10"
+        elif "win7" in self.snap_id:
+            tag = "win7"
+        elif "ub1804" in self.snap_id:
+            tag = "ub1804"
+        else:
+            tag = "win7"
+
         relevant_available_machines = len([machine for machine in available_machines if tag in machine.label])
         running_machines_gap = machinery_options.get("running_machines_gap", 0)
         dynamic_machines_limit = autoscale_options["dynamic_machines_limit"]
@@ -362,7 +370,16 @@ class Azure(Machinery):
 
         self.dynamic_machines_sequence += 1
         # Adding the appropriate tag if multiple snapshots
-        tag = "win10" if "win10" in self.snap_id else "win7"
+        platform = "windows"
+        if "win10" in self.snap_id:
+            tag = "win10"
+        elif "win7" in self.snap_id:
+            tag = "win7"
+        elif "ub1804" in self.snap_id:
+            tag = "ub1804"
+            platform = "linux"
+        else:
+            tag = "win7"
         new_machine_name = "%scuckoo%s%03d" % (self.environment, tag, self.dynamic_machines_sequence)
 
         # Avoiding collision on machine name if machine is still deleting.
@@ -392,7 +409,8 @@ class Azure(Machinery):
         # Create Azure VM, tagged as autoscaled and with the new NIC.
         guest_instance = self._create_instance(
             new_machine_nic,
-            tags={"Name": new_machine_name, self.AUTOSCALE_CUCKOO: True}
+            tags={"Name": new_machine_name, self.AUTOSCALE_CUCKOO: True},
+            platform=platform
         )
 
         # There are occasions where Azure fails to create an instance.
@@ -428,7 +446,7 @@ class Azure(Machinery):
             name=new_machine_name,
             label=new_machine_name,
             ip=nic_private_ip,
-            platform=autoscale_options.platform,
+            platform=platform,
             options=autoscale_options.options,
             tags=autoscale_options.tags,
             interface=interface,
@@ -464,7 +482,14 @@ class Azure(Machinery):
             platform=platform,
             tags=tags
         )
-        tag = "win10" if "win10" in base_class_return_value.label else "win7"
+        if "win10" in base_class_return_value.label:
+            tag = "win10"
+        elif "win7" in base_class_return_value.label:
+            tag = "win7"
+        elif "ub1804" in base_class_return_value.label:
+            tag = "ub1804"
+        else:
+            tag = "win7"
         self.snap_id = next(snap_id for snap_id in self.snap_ids if tag in snap_id)  # This has to return something
         self._start_or_create_machines()  # Prepare another machine
         return base_class_return_value
@@ -478,7 +503,14 @@ class Azure(Machinery):
         """
         super(Azure, self).release(label)
         # Hopefully this doesn't create race conditions. Whatever machine is about to be deleted, replace it
-        tag = "win10" if "win10" in label else "win7"
+        if "win10" in label:
+            tag = "win10"
+        elif "win7" in label:
+            tag = "win7"
+        elif "ub1804" in label:
+            tag = "ub1804"
+        else:
+            tag = "win7"
         self.snap_id = next(snap_id for snap_id in self.snap_ids if tag in snap_id)  # This has to return something
         self._start_or_create_machines()
 
@@ -720,7 +752,7 @@ class Azure(Machinery):
             )
             return None
 
-    def _create_instance(self, nic, tags):
+    def _create_instance(self, nic, tags, platform):
         """
         Create a new instance consists of the following process:
         - Create an OS disk from a snapshot
@@ -728,6 +760,7 @@ class Azure(Machinery):
         - Create instance using these parameters
         @param nic: network interface card to be attached to guest VM
         @param tags: tags to attach to instance
+        @param platform: general platform type
         @return: the new instance
         """
         # Read configuration file.
@@ -741,7 +774,7 @@ class Azure(Machinery):
                 "id": new_disk.id,
                 "storage_account_type": autoscale_options.storage_account_type
             },
-            "osType": autoscale_options.platform
+            "osType": platform
         }
 
         vm_parameters = {

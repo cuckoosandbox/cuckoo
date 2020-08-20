@@ -287,7 +287,6 @@ class Config(object):
                 "autoscale": Boolean(False),
                 "dynamic_machines_limit": Int(10),
                 "instance_type": String("average"),
-                "platform": String("windows"),
                 "interface": String("eth1"),
                 "options": List(String, None, ",\\s"),
                 "tags": String(),
@@ -299,7 +298,6 @@ class Config(object):
             "*": {
                 "__section__": "cuckoo1",
                 "label": String("cuckoo1"),
-                "platform": String("windows"),
                 "ip": String(),
                 "snapshot": String(),
                 "interface": String("eth1"),
