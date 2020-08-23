@@ -23,7 +23,7 @@ class ObservableObject:
     def __eq__(self, other):
         if isinstance(other, list):
             return False
-        if self.name != other.name or self.containerid != other.containerid:
+        if self.name != other.name or self.container_id != other.container_id:
             return False
         return True
 
@@ -92,7 +92,7 @@ def main():
             for regex in classifier["regexes"]:
                 if re.search(regex, line):
                     new_ob = ObservableObject(
-                        classifier["prepare"](line), get_containerid(line), line[:31]
+                        classifier["prepare"](line), get_container_id(line), line[:31]
                     )
                     if new_ob not in observables[name] and not is_on_whitelist(
                         new_ob.name
@@ -105,7 +105,7 @@ def main():
     parse_to_stix(observables)
 
 
-def get_containerid(observable):
+def get_container_id(observable):
     regex = r"([0-9a-z]{4,30})[|]"
     if re.search(regex, observable):
         return re.search(regex, observable).group(1)
@@ -161,7 +161,7 @@ def parse_observables_to_files(observables):
             type="file",
             name=file.name,
             custom_properties={
-                "containerid": file.containerid,
+                "container_id": file.container_id,
                 "timestamp": file.timestamp,
             },
         )
@@ -185,7 +185,7 @@ def parse_hosts_to_ip_mac_addresses(observables):
                 type="ipv4-addr",
                 value=host.name,
                 custom_properties={
-                    "containerid": host.containerid,
+                    "container_id": host.container_id,
                     "timestamp": host.timestamp,
                 },
             )
@@ -194,7 +194,7 @@ def parse_hosts_to_ip_mac_addresses(observables):
                 type="ipv6-addr",
                 value=host.name,
                 custom_properties={
-                    "containerid": host.containerid,
+                    "container_id": host.container_id,
                     "timestamp": host.timestamp,
                 },
             )
@@ -214,7 +214,7 @@ def parse_observables_to_processes(observables):
             type="process",
             command_line=process.name,
             custom_properties={
-                "containerid": process.containerid,
+                "container_id": process.container_id,
                 "timestamp": process.timestamp,
             },
         )
@@ -234,7 +234,7 @@ def parse_observables_to_domains(observables):
             type="domain-name",
             value=domain.name,
             custom_properties={
-                "containerid": domain.containerid,
+                "container_id": domain.container_id,
                 "timestamp": domain.timestamp,
             },
         )
