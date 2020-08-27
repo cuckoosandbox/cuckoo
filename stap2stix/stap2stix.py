@@ -3,10 +3,9 @@
 import argparse
 import re
 import socket
-from pathlib import Path
 from uuid import uuid1
-
-from stix2 import File, Process, DomainName, Bundle, IPv4Address, IPv6Address
+import os
+from stix2 import File, Process, DomainName, Bundle, IPv4Address, IPv6Address, FileSystemSink
 
 
 class ObservableObject:
@@ -23,7 +22,7 @@ class ObservableObject:
     def __eq__(self, other):
         if isinstance(other, list):
             return False
-        if self.name != other.name or self.container_id != other.container_id:
+        if self.name != other.name or self.containerid != other.containerid:
             return False
         return True
 
@@ -37,12 +36,12 @@ CLASSIFIERS = [
             r"unlinkat\(.*?\"(.*?)\"",
             r"rmdir\(\"(.*?)\"",
         ],
-        "prepare": lambda ob: ob if ob.startswith("/") else f"{CWD}/{ob}",
+        "prepare": lambda ob: ob if ob.startswith("/") else CWD + "/" + str(ob),
     },
     {
         "name": "files_read",
         "regexes": [r"openat\(.*?\"(?P<filename>.*?)\".*?(?:O_RDWR|O_RDONLY).*?\)"],
-        "prepare": lambda ob: ob if ob.startswith("/") else f"{CWD}/{ob}",
+        "prepare": lambda ob: ob if ob.startswith("/") else CWD + "/" + str(ob),
     },
     {
         "name": "files_written",
@@ -51,12 +50,12 @@ CLASSIFIERS = [
             r"(?:link|rename)\(\".*?\", \"(.*?)\"\)",
             r"mkdir\(\"(.*?)\"",
         ],
-        "prepare": lambda ob: ob if ob.startswith("/") else f"{CWD}/{ob}",
+        "prepare": lambda ob: ob if ob.startswith("/") else CWD + "/" + str(ob),
     },
     {
         "name": "hosts_connected",
         "regexes": [r"connect\(.*?{AF_INET(?:6) i?, (.*?), (.*?)},"],
-        "prepare": lambda ob: f"{ob[0]}:{ob[1]}",
+        "prepare": lambda ob: str(ob[0]) + ":" + str(ob[1]),
     },
     {
         "name": "processes_created",
@@ -92,7 +91,7 @@ def main():
             for regex in classifier["regexes"]:
                 if re.search(regex, line):
                     new_ob = ObservableObject(
-                        classifier["prepare"](line), get_container_id(line), line[:31]
+                        classifier["prepare"](line), get_containerid(line), line[:31]
                     )
                     if new_ob not in observables[name] and not is_on_whitelist(
                         new_ob.name
@@ -105,7 +104,7 @@ def main():
     parse_to_stix(observables)
 
 
-def get_container_id(observable):
+def get_containerid(observable):
     regex = r"([0-9a-z]{4,30})[|]"
     if re.search(regex, observable):
         return re.search(regex, observable).group(1)
@@ -142,38 +141,34 @@ def ip2domain(ip):
 
 
 def parse_to_stix(observables):
+    os.mkdir("stixoutput")
+    sink = FileSystemSink("stixoutput")
     for key, data in observables.items():
         if key.startswith("files"):
-            stix_bundle = parse_observables_to_files(data)
+            list_of_stix_oberservables = parse_observables_to_files(data, key)
         elif key == "hosts_connected":
-            stix_bundle = parse_hosts_to_ip_mac_addresses(data)
+            list_of_stix_oberservables = parse_hosts_to_ip_mac_addresses(data)
         elif key == "processes_created":
-            stix_bundle = parse_observables_to_processes(data)
+            list_of_stix_oberservables = parse_observables_to_processes(data)
         elif key == "domains":
-            stix_bundle = parse_observables_to_domains(data)
-        output_file = Path(__file__).with_name(f"{key}.stix")
-        output_file.write_text(str(stix_bundle))
+            list_of_stix_oberservables = parse_observables_to_domains(data)
+        sink.add(list_of_stix_oberservables)
 
 
-def parse_observables_to_files(observables):
-    list_of_stix_files = [
+def parse_observables_to_files(observables, key):
+    return [
         File(
             type="file",
+            id="file--" + str(uuid1()),
             name=file.name,
             custom_properties={
-                "container_id": file.container_id,
+                "container_id": file.containerid,
                 "timestamp": file.timestamp,
+                "action": key,
             },
         )
         for file in observables
     ]
-    stix_bundle = Bundle(
-        type="bundle",
-        id=f"bundle--{uuid1()}",
-        objects=list_of_stix_files,
-        allow_custom=True,
-    )
-    return stix_bundle
 
 
 def parse_hosts_to_ip_mac_addresses(observables):
@@ -185,7 +180,7 @@ def parse_hosts_to_ip_mac_addresses(observables):
                 type="ipv4-addr",
                 value=host.name,
                 custom_properties={
-                    "container_id": host.container_id,
+                    "container_id": host.containerid,
                     "timestamp": host.timestamp,
                 },
             )
@@ -194,58 +189,40 @@ def parse_hosts_to_ip_mac_addresses(observables):
                 type="ipv6-addr",
                 value=host.name,
                 custom_properties={
-                    "container_id": host.container_id,
+                    "container_id": host.containerid,
                     "timestamp": host.timestamp,
                 },
             )
         list_of_stix_hosts.append(stix_ip)
-    stix_bundle = Bundle(
-        type="bundle",
-        id=f"bundle--{uuid1()}",
-        objects=list_of_stix_hosts,
-        allow_custom=True,
-    )
-    return stix_bundle
+    return list_of_stix_hosts
 
 
 def parse_observables_to_processes(observables):
-    list_of_stix_process = [
+    return [
         Process(
             type="process",
             command_line=process.name,
             custom_properties={
-                "container_id": process.container_id,
+                "container_id": process.containerid,
                 "timestamp": process.timestamp,
             },
         )
         for process in observables
     ]
-    return Bundle(
-        type="bundle",
-        id=f"bundle--{uuid1()}",
-        objects=list_of_stix_process,
-        allow_custom=True,
-    )
 
 
 def parse_observables_to_domains(observables):
-    list_of_stix_domains = [
+    return [
         DomainName(
             type="domain-name",
             value=domain.name,
             custom_properties={
-                "container_id": domain.container_id,
+                "container_id": domain.containerid,
                 "timestamp": domain.timestamp,
             },
         )
         for domain in observables
     ]
-    return Bundle(
-        type="bundle",
-        id=f"bundle--{uuid1()}",
-        objects=list_of_stix_domains,
-        allow_custom=True,
-    )
 
 
 if __name__ == "__main__":
