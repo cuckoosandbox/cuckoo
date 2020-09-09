@@ -734,6 +734,9 @@ class Config(object):
             "__star__": ("qemu", "machines"),
         },
         "reporting": {
+            "stix2-reporter": {
+                "enabled": Boolean(True),
+            },
             "feedback": {
                 "enabled": Boolean(False),
             },
