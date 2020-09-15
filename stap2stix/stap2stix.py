@@ -3,6 +3,7 @@
 import argparse
 import re
 import socket
+import time
 from uuid import uuid1
 
 from stix2 import File, Process, DomainName, Bundle, IPv4Address, IPv6Address
@@ -55,16 +56,21 @@ CLASSIFIERS = [
 def ip2domain(ip):
     try:
         return ".".join(socket.gethostbyaddr(ip)[0].split(".")[-2:])
-    except BaseException as e:
-        return str(e)
+    except Exception:
+        return ""
 
 
 def main():
     global CWD
+    start = time.time()
+
     args = parse_arguments()
     syscalls, CWD = get_syscalls_and_cwd(args.stapfile)
     observables = parse_syscalls_to_observable_objects(syscalls)
     parse_to_stix(observables)
+
+    end = time.time()
+    print("Took {} seconds".format(end - start))
 
 
 def parse_arguments():
@@ -85,12 +91,16 @@ def parse_syscalls_to_observable_objects(syscalls):
         for classifier in CLASSIFIERS:
             name = classifier["name"]
             for regex in classifier["regexes"]:
-                if re.search(regex, line):
+                matched_string = re.search(regex, line)
+                if matched_string:
+                    matched_groups = matched_string.groups()
+                    result_to_be_prepared = matched_groups[0] if len(matched_groups) == 1 else matched_groups
                     new_ob = ObservableObject(
-                        get_name(line, name), get_containerid(line), classifier["prepare"](line), line[:31]
+                        classifier["prepare"](result_to_be_prepared), get_containerid(line), line,
+                        line[:31]
                     )
-                    if new_ob not in observables[name] and not is_on_whitelist(
-                            new_ob.command
+                    if new_ob.full_command and new_ob not in observables[name] and not is_on_whitelist(
+                            new_ob.full_command
                     ):
                         observables[name].append(new_ob)
     for key in observables.keys():
@@ -103,20 +113,6 @@ def get_syscalls_and_cwd(stapfile):
         syscalls = stapfile.read()
     CWD = re.findall(r"execve\(.*?\"-c\", \"(.*?)\/.build", syscalls)[0]
     return syscalls.split("\n"), CWD
-
-
-def get_name(line, classifier):
-    if classifier == "processes_created" or classifier == "domains":
-        start = line.find("|") + 1
-        end = line.find("@")
-        return line[start:end]
-    elif "files" in classifier:
-        start = line.find('"') + 1
-        end = line[start:].find('"') + start
-        return line[start:end]
-    else:
-        return line
-
 
 def get_containerid(observable):
     regex = r"([0-9a-z]{4,30})[|]"
@@ -151,7 +147,7 @@ def parse_to_stix(observables):
             stix_bundle = parse_observables_to_domains(data)
         output_file = open(key + ".stix", "w")
         print("Writing " + key)
-        output_file.write(str(stix_bundle))
+        output_file.write(stix_bundle.serialize(True))
         output_file.close()
 
 
@@ -160,21 +156,21 @@ def parse_observables_to_files(observables):
         File(
             type="file",
             id="file--" + str(uuid1()),
-            name=file.name,
+            name=file.prepared_data,
             custom_properties={
                 "container_id": file.containerid,
                 "timestamp": file.timestamp,
-                "full_output": file.command,
+                "full_output": file.full_command,
             },
         )
         for file in observables
     ]
-    return str(Bundle(
+    return Bundle(
         type="bundle",
         id="bundle--" + str(uuid1()),
         objects=list_of_stix_files,
         allow_custom=True,
-    ))
+    )
 
 
 def parse_hosts_to_ip_mac_addresses(observables):
@@ -184,64 +180,63 @@ def parse_hosts_to_ip_mac_addresses(observables):
         if re.search(ip_regex, host):
             stix_ip = IPv4Address(
                 type="ipv4-addr",
-                value=host.name,
+                value=host.prepared_data,
                 custom_properties={
                     "container_id": host.containerid,
                     "timestamp": host.timestamp,
+                    "full_output": host.full_command
                 },
             )
         else:
             stix_ip = IPv6Address(
                 type="ipv6-addr",
-                value=host.name,
+                value=host.prepared_data,
                 custom_properties={
                     "container_id": host.containerid,
                     "timestamp": host.timestamp,
+                    "full_output": host.full_command
                 },
             )
         list_of_stix_hosts.append(stix_ip)
-    return str(Bundle(
+    return Bundle(
         type="bundle",
         id="bundle--" + str(uuid1()),
         objects=list_of_stix_hosts,
         allow_custom=True,
-    ))
+    )
 
 
 def parse_observables_to_processes(observables):
     list_of_stix_processes = [
         Process(
             type="process",
-            command_line=prepare_process_cmd_line(process),
+            command_line=process.prepared_data,
             custom_properties={
                 "container_id": process.containerid,
                 "timestamp": process.timestamp,
-                "name": process.name,
+                "full_output": process.full_command
             },
         )
         for process in observables
     ]
-    return str(Bundle(
+    return Bundle(
         type="bundle",
         id="bundle--" + str(uuid1()),
         objects=list_of_stix_processes,
         allow_custom=True,
-    ))
-
-
-def prepare_process_cmd_line(process):
-    return process.command.replace(process.timestamp, "").replace(process.containerid, "").replace(process.name, "").replace("|", "")[21:]
+    )
 
 
 def parse_observables_to_domains(observables):
     list_of_stix_domains = [
         DomainName(
             type="domain-name",
-            value=domain.command,
+            value=domain.full_command,
             custom_properties={
                 "container_id": domain.containerid,
                 "timestamp": domain.timestamp,
-                "process": domain.name,
+                "process": domain.prepared_data,
+                "full_output": domain.full_command
             },
         )
         for domain in observables
@@ -256,5 +251,3 @@ def parse_observables_to_domains(observables):
 
 if __name__ == "__main__":
     main()
-
-
