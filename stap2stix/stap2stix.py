@@ -151,7 +151,7 @@ def parse_to_stix(observables):
             stix_bundle = parse_observables_to_domains(data)
         output_file = open(key + ".stix", "w")
         print("Writing " + key)
-        output_file.write(stix_bundle)
+        output_file.write(str(stix_bundle))
         output_file.close()
 
 
