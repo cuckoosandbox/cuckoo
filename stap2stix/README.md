@@ -1,5 +1,5 @@
 # STAB2STIX
-- use python3
+- use python2.7
 
 ```
 usage: stap2stix.py [-h] --stap STAP [--output OUTPUT]
