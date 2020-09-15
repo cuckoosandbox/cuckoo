@@ -1,2 +1,0 @@
-Wed Mar  4 10:57:01 2020.057387 containerid|python2.7@7efde9781e37[1351] execve("/usr/local/bin/sh", ["sh", "-c", "/tmp4jmNPr/.buildwatch.sh"], ["LANG=en_US", "SHELL=/bin/sh", "LANGUAGE=en_US:", "PWD=/root", "LOGNAME=root", "HOME=/root", "PATH=/usr/local/bin:/usr/bin:/bin"]) = -2 (ENOENT)
-Wed Mar  4 10:57:01 2020.059064 |sh@7f3dee9baf43[1351] mmap2(0x0, 26882, PROT_READ, MAP_PRIVATE, 6, 0) = 0x7f3deebbe000
