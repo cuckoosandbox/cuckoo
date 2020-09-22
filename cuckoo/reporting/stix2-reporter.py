@@ -40,46 +40,48 @@ class Stix2(Report):
 			return str(e)
 
 	CWD = ""
-	CLASSIFIERS = [
-		{
-			"name": "files_removed",
-			"regexes": [
-				r"unlink\(\"(.*?)\"",
-				r"unlinkat\(.*?\"(.*?)\"",
-				r"rmdir\(\"(.*?)\"",
-			],
-			"prepare": lambda ob: ob if ob.startswith("/") else CWD + "/" + str(ob),
-		},
-		{
-			"name": "files_read",
-			"regexes": [r"openat\(.*?\"(?P<filename>.*?)\".*?(?:O_RDWR|O_RDONLY).*?\)"],
-			"prepare": lambda ob: ob if ob.startswith("/") else CWD + "/" + str(ob),
-		},
-		{
-			"name": "files_written",
-			"regexes": [
-				r"openat\(.*?\"(.*?)\".*?(?:O_RDWR|O_WRONLY|O_CREAT|O_APPEND)",
-				r"(?:link|rename)\(\".*?\", \"(.*?)\"\)",
-				r"mkdir\(\"(.*?)\"",
-			],
-			"prepare": lambda ob: ob if ob.startswith("/") else CWD + "/" + str(ob),
-		},
-		{
-			"name": "hosts_connected",
-			"regexes": [r"connect\(.*?{AF_INET(?:6) i?, (.*?), (.*?)},"],
-			"prepare": lambda ob: str(ob[0]) + ":" + str(ob[1]),
-		},
-		{
-			"name": "processes_created",
-			"regexes": [r"execve\(.*?\[(.*?)\]"],
-			"prepare": lambda ob: ob.replace('"', "").replace(",", ""),
-		},
-		{
-			"name": "domains",
-			"regexes": [r"connect\(.*?{AF_INET(?:6)?, (.*?),"],
-			"prepare": lambda ob: Stix2.ip2domain(ob),
-		},
-	]
+	
+	def get_classifiers(self):
+		return [
+			{
+				"name": "files_removed",
+				"regexes": [
+					r"unlink\(\"(.*?)\"",
+					r"unlinkat\(.*?\"(.*?)\"",
+					r"rmdir\(\"(.*?)\"",
+				],
+				"prepare": lambda ob: ob if ob.startswith("/") else self.CWD + "/" + str(ob),
+			},
+			{
+				"name": "files_read",
+				"regexes": [r"openat\(.*?\"(?P<filename>.*?)\".*?(?:O_RDWR|O_RDONLY).*?\)"],
+				"prepare": lambda ob: ob if ob.startswith("/") else self.CWD + "/" + str(ob),
+			},
+			{
+				"name": "files_written",
+				"regexes": [
+					r"openat\(.*?\"(.*?)\".*?(?:O_RDWR|O_WRONLY|O_CREAT|O_APPEND)",
+					r"(?:link|rename)\(\".*?\", \"(.*?)\"\)",
+					r"mkdir\(\"(.*?)\"",
+				],
+				"prepare": lambda ob: ob if ob.startswith("/") else self.CWD + "/" + str(ob),
+			},
+			{
+				"name": "hosts_connected",
+				"regexes": [r"connect\(.*?{AF_INET(?:6) i?, (.*?), (.*?)},"],
+				"prepare": lambda ob: str(ob[0]) + ":" + str(ob[1]),
+			},
+			{
+				"name": "processes_created",
+				"regexes": [r"execve\(.*?\[(.*?)\]"],
+				"prepare": lambda ob: ob.replace('"', "").replace(",", ""),
+			},
+			{
+				"name": "domains",
+				"regexes": [r"connect\(.*?{AF_INET(?:6)?, (.*?),"],
+				"prepare": lambda ob: Stix2.ip2domain(ob),
+			},
+		]
 
 	@staticmethod
 	def get_containerid(observable):
@@ -214,12 +216,12 @@ class Stix2(Report):
 
 		final = {}
 		stix = {}
-		for classifier in self.CLASSIFIERS:
+		for classifier in self.get_classifiers():
 			final[classifier['name']] = set()
 			stix[classifier['name']] = set()
 
 		for line in syscalls.splitlines():
-			for classifier in self.CLASSIFIERS:
+			for classifier in self.get_classifiers():
 				name = classifier['name']
 				for regex in classifier['regexes']:
 					for observable in re.findall(regex, line):
@@ -228,7 +230,7 @@ class Stix2(Report):
 						if new_ob.name and not Stix2.is_on_whitelist(new_ob.name):
 							final[name].add(new_ob)
 
-		for classifier in self.CLASSIFIERS:
+		for classifier in self.get_classifiers():
 			final[classifier["name"]] = sorted(list(final[classifier["name"]]))
 
 		all_stix_groupings = []
