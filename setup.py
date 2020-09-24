@@ -216,6 +216,7 @@ do_setup(
         "python-magic==0.4.12",
         "roach>=0.1.2, <0.2",
         "sflock>=0.3.10, <0.4",
+        "stix2=2.0.2",
         "sqlalchemy==1.3.3",
         "unicorn==1.0.1",
         "wakeonlan==0.2.2",
