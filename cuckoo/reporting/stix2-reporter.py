@@ -136,6 +136,7 @@ class Stix2(Report):
 					custom_properties={
 						"container_id": host.containerid,
 						"timestamp": host.timestamp,
+						"full_output": host.command,
 					},
 					allow_custom=True,
 				)
@@ -146,6 +147,7 @@ class Stix2(Report):
 					custom_properties={
 						"container_id": host.containerid,
 						"timestamp": host.timestamp,
+						"full_output": host.command
 					},
 					allow_custom=True,
 				)
@@ -160,7 +162,7 @@ class Stix2(Report):
 	@staticmethod
 	def is_known_process(known_processes, process):
 		for known in known_processes:
-			if process.name == known.name:
+			if process.name == known.command_line:
 				return True
 		return False
 
@@ -175,7 +177,8 @@ class Stix2(Report):
 					custom_properties={
 						"container_id": process.containerid,
 						"timestamp": process.timestamp,
-						"name": process.name.split(" ")[-1],
+						"full_output": process.command,
+						"executable_path": Stix2.get_executable_path(process)
 					},
 					allow_custom=True,
 				))
@@ -187,6 +190,14 @@ class Stix2(Report):
 		), list_of_stix_processes
 
 	@staticmethod
+	def get_executable_path(process):
+		regex_for_executable_name = r"execve\(\"([^\"]*)\""
+		search_result = re.search(regex_for_executable_name, process.command)
+		if not search_result:
+			return ""
+		return search_result.group(1)
+
+	@staticmethod
 	def parse_observables_to_domains(key, observables):
 		list_of_stix_domains = [
 			DomainName(
@@ -195,7 +206,7 @@ class Stix2(Report):
 				custom_properties={
 					"container_id": domain.containerid,
 					"timestamp": domain.timestamp,
-					"process": domain.command,
+					"full_output": domain.command,
 				},
 				allow_custom=True,
 			)
