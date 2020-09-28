@@ -212,11 +212,7 @@ class Stix2(Report):
 		
 		syscalls = open(self.analysis_path + "/logs/all.stap", "r").read()
 
-		find_execution_of_build_script = re.findall(r"execve\(.*?\"-c\", \"(.*?)\/.build", syscalls)
-		# FIXME: This only works with buildwatch scripts cause it assumes the name of the script executed
-		if len(find_execution_of_build_script) < 1:
-			raise Exception("Only buildwatch scripts are supported")
-
+		find_execution_of_build_script = re.findall(r"execve\(.*?\"-c\", \"(.*?)\/[^\"\/]+\"", syscalls)
 		CWD = find_execution_of_build_script[0]
 
 		final = {}
