@@ -962,7 +962,7 @@ $(function () {
                 // populate cpu load unit
                 var cpu_load = createChart($("#cpu-stat > canvas"), {
                     total: cores * 100,
-                    used: avgload,
+                    used: avgload * cores,
                     free: 100 - avgload
                 });
             } else {
