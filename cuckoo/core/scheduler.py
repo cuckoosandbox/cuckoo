@@ -965,11 +965,18 @@ class Scheduler(object):
                 cleaned.add(am)
         return cleaned
 
+    def _thr_periodic_log(self):
+        log.debug("# Tasks: %d; # Available Machines: %d; # Locked Machines: %d; # Total Machines: %d;",
+                  self.db.count_tasks(status="pending"), self.db.count_machines_available(),
+                  len(self.db.list_machines(locked=True)), len(self.db.list_machines()))
+        threading.Timer(10, self._thr_periodic_log).start()
+
     def start(self):
         """Start scheduler."""
         self.initialize()
 
         log.info("Waiting for analysis tasks.")
+        self._thr_periodic_log()
 
         # Message queue with threads to transmit exceptions (used as IPC).
         errors = Queue.Queue()
@@ -978,9 +985,12 @@ class Scheduler(object):
         if self.maxcount is None:
             self.maxcount = self.cfg.cuckoo.max_analysis_count
 
+        launched_analysis = True
         # This loop runs forever.
         while self.running:
-            time.sleep(1)
+            if not launched_analysis:
+                time.sleep(1)
+            launched_analysis = False
 
             # Run cleanup on finished analysis managers and untrack them
             for am in self._cleanup_managers():
@@ -1086,7 +1096,8 @@ class Scheduler(object):
                 task = self.db.fetch(service=False)
 
             if task:
-                log.debug("Processing task #%s", task.id)
+                start = time.time()
+                #log.debug("Processing task #%s", task.id)
                 self.total_analysis_count += 1
 
                 # Initialize and start the analysis manager.
@@ -1094,7 +1105,8 @@ class Scheduler(object):
                 analysis.daemon = True
                 analysis.start()
                 self.analysis_managers.add(analysis)
-
+                launched_analysis = True
+                log.debug("Processing task #%s Call Duration %9.3fs", task.id, time.time() - start)
             # Deal with errors.
             try:
                 raise errors.get(block=False)

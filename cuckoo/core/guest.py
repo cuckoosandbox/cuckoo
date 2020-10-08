@@ -341,7 +341,7 @@ class GuestManager(object):
 
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
-        end = time.time() + self.timeout
+        end = time.time() + config("cuckoo:timeouts:vm_state")
 
         while db.guest_get_status(self.task_id) == "starting" and self.do_run:
             try:
@@ -351,7 +351,7 @@ class GuestManager(object):
                 log.debug("%s: not ready yet", self.vmid)
             except socket.error:
                 log.debug("%s: not ready yet", self.vmid)
-                time.sleep(1)
+            time.sleep(10)
 
             if time.time() > end:
                 raise CuckooGuestCriticalTimeout(

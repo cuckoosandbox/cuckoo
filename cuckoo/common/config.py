@@ -278,37 +278,20 @@ class Config(object):
                 "tenant": String("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"),
                 "machines": List(String, "cuckoo1"),
                 "interface": String("eth1"),
-                "running_machines_gap": Int(1),
+                "running_machines_gap": Int(110),
                 "vnet": String("cuckoo-vnet"),
                 "cuckoo_subnet": String("cuckoo-subnet"),
                 "environment": String("staging"),
-            },
-            "autoscale": {
-                "autoscale": Boolean(False),
                 "dynamic_machines_limit": Int(10),
                 "instance_type": String("average"),
-                "platform": String("windows"),
-                "interface": String("eth1"),
                 "options": List(String, None, ",\\s"),
                 "tags": String(),
                 "resultserver_ip": String("192.168.54.111"),
                 "resultserver_port": Int(2042),
                 "guest_snapshot": List(String, None, ",\\s"),
-                "storage_account_type": String("sample-type")
+                "storage_account_type": String("sample-type"),
+                "initial_pool_size": Int(1)
             },
-            "*": {
-                "__section__": "cuckoo1",
-                "label": String("cuckoo1"),
-                "platform": String("windows"),
-                "ip": String(),
-                "snapshot": String(),
-                "interface": String("eth1"),
-                "resultserver_ip": String(),
-                "resultserver_port": Int(),
-                "options": List(String, None, ",\\s"),
-                "tags": String(),
-            },
-            "__star__": ("az", "machines")
         },
         "virtualbox": {
             "virtualbox": {
