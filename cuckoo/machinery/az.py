@@ -11,10 +11,12 @@ import sys
 from datetime import datetime
 import time
 import socket
+import operator
 
 from sqlalchemy.exc import SQLAlchemyError
 
 try:
+    # Azure specific imports
     from azure.common.credentials import ServicePrincipalCredentials
     from azure.mgmt.compute import ComputeManagementClient
     from azure.mgmt.network import NetworkManagementClient
@@ -47,29 +49,11 @@ number_of_ub1804_machines_being_created = 0
 # Variable representing how many machines have been created
 dynamic_machines_sequence = 0
 
-vmlistcountinlist = 0
-vmlistcountininitializecheck = 0
-vmlistcountindeleteleftoverresources = 0
-niclistcount = 0
-disklistcount = 0
-vmcreatecount = 0
-niccreatecount = 0
-diskcreatecount = 0
-vnetcheckipcount = 0
-vmdeletecount = 0
-nicdeletecount = 0
-diskdeletecount = 0
-nicupdatetagcount = 0
-subnetgetcount = 0
-snapshotgetcount = 0
-vminstanceviewcount = 0
-
-
 
 class Azure(Machinery):
     """Virtualization layer for Azure."""
 
-    # VM states.
+    # machine states.
     PENDING = "pending"
     STOPPING = "stopping"
     RUNNING = "running"
@@ -78,7 +62,7 @@ class Azure(Machinery):
     ABORTED = "failed"
     ERROR = "machete"
 
-    # VM tag that indicates autoscaling.
+    # machine tag that indicates autoscaling.
     AUTOSCALE_CUCKOO = "AUTOSCALE_CUCKOO"
 
     # Arbitrary value for very large JSON results.
@@ -88,25 +72,33 @@ class Azure(Machinery):
     def _initialize(self, module_name):
         """
         Overloading abstracts.py:_initialize()
-        Initializing instance parameters.
-        @param module_name: module name
+        Initializing machine parameters.
+        @param module_name: module name, currently not used be required
+        @raise CuckooDependencyError: if there is a problem with the dependencies call
         """
         if not HAVE_AZURE:
             raise CuckooDependencyError("Unable to import Azure packages")
 
+        # Setting the class attributes
         self.azure_machines = {}
+        # TODO: use a Queue instead of a list for machine_queue?
         self.machine_queue = []
         self.dynamic_machines_count = 0
         self.initializing = True
         self.dynamic_machines_limit = self.options.az.dynamic_machines_limit
         self.running_machines_gap = float(self.options.az.running_machines_gap/100.0)
+
+        # Starting the thread that sets API clients periodically
         self._thr_refresh_clients()
 
     def _get_credentials(self):
         """
-        Used to create the Azure Credentials object.
+        Used to instantiate the Azure ServicePrincipalCredentials object.
         @return: an Azure ServicePrincipalCredentials object
         """
+
+        # Instantiates the ServicePrincipalCredentials object using
+        # Azure client ID, secret and Azure tenant ID
         credentials = ServicePrincipalCredentials(
             client_id=self.options.az.client_id,
             secret=self.options.az.secret,
@@ -115,19 +107,33 @@ class Azure(Machinery):
         return credentials
 
     def _thr_refresh_clients(self):
+        """
+        A thread on a 30 minute timer that refreshes the network
+        and compute clients using an updated ServicePrincipalCredentials
+        object.
+        """
         log.debug(
             "Connecting to Azure for the region '%s'.",
             self.options.az.region_name
         )
+
+        # Getting an updated ServicePrincipalCredentials
         credentials = self._get_credentials()
+
+        # Instantiates an Azure NetworkManagementClient using
+        # ServicePrincipalCredentials and subscription ID
         self.network_client = NetworkManagementClient(
             credentials,
             self.options.az.subscription_id
         )
+
+        # Instantiates an Azure ComputeManagementClient using
+        # ServicePrincipalCredentials and subscription ID
         self.compute_client = ComputeManagementClient(
             credentials,
             self.options.az.subscription_id
         )
+
         # Refresh clients every half hour
         threading.Timer(1800, self._thr_refresh_clients).start()
 
@@ -135,39 +141,40 @@ class Azure(Machinery):
         """
         Overloading abstracts.py:_initialize_check()
         Setting up the Azure resource group by doing the following:
-        - Cleaning up autoscaled instances from previous Cuckoo runs
-        - Cleaning up resources related to those instances
-        - Stopping instances that we want to keep
-        - Looking for all machines that match the specific machines in az.conf
-        and load them into azure_machines dictionary
-        - Start or create the required amount of instances as specified
+        - Cleaning up auto-scaled machines from previous Cuckoo runs
+        - Cleaning up resources related to those machines
+        - Create the required amount of machines as specified
         in az.conf
-        @raise CuckooMachineError: if there is a problem with the Azure call
         """
-        global subnetgetcount, vmlistcountininitializecheck, snapshotgetcount
         self.environment = self.options.az.environment
-        subnetgetcount += 1
-        self.subnet_info = _azure_api_call(
+
+        # Retrieving the subnet ID where we will be creating victim machines,
+        # using the Azure resource group, virtual network and subnet name
+        self.subnet_id = _azure_api_call(
             self.options.az.group,
             self.options.az.vnet,
             self.options.az.cuckoo_subnet,
             operation=self.network_client.subnets.get,
-        )
+        ).id  # note the id attribute here
 
-        vmlistcountininitializecheck += 1
-        instances = _azure_api_call(
+        # Retrieving all virtual machines in the Azure resource group
+        machines = _azure_api_call(
             self.options.az.group,
             operation=self.compute_client.virtual_machines.list
         )
 
-        for instance in instances:
-            # Cleaning up autoscaled instances from previous Cuckoo runs.
-            if self._is_autoscaled(instance) and self.environment in instance.name:
-                self._delete_instance(instance.name)
+        # Cleaning up auto-scaled machines from previous Cuckoo runs...
+        # Check if any machines in Azure resource group are auto-scaled
+        # (created by this az.py program), and if so delete them
+        # TODO: Instead of putting the environment in the machine name, although this is good for identification, it may be cleaner to tag the machine with the environment instead?
+        for machine in machines:
+            self._delete_auto_scaled_machine(machine.tags, machine.name)
 
+        # Allowing multiple snapshots to be used when creating machines, such as a Windows 7 and a Windows 10
         self.snap_ids = []
+        # TODO: Consider renaming guest_snapshot to guest_snapshots or creating a separate config value to represent when multiple snapshots are used
         for snapshot in self.options.az.guest_snapshot:
-            snapshotgetcount += 1
+            # Retrieving snapshots in the Azure resource group by name
             snapshot_resource = _azure_api_call(
                 self.options.az.group,
                 snapshot,
@@ -176,67 +183,48 @@ class Azure(Machinery):
             self.snap_ids.append(snapshot_resource.id)
 
         log.info("Deleting leftover network interface cards, managed disks " +
-                 "and failed instances.")
-        # Cleaning up resources related to those instances.
+                 "and failed machines.")
+        # Azure resource garbage collection is not inherited, as in when you delete an machine,
+        # you have to delete the machine's NIC and disk separately.
+        # This method cleans up resources related to those machines.
         self._delete_leftover_resources()
 
-        create_vms_per_snap_threads = []
+        # This section here creates separate machine pools for each snapshot in parallel,
+        # to make system startup time faster
+        create_machines_per_snapshot_threads = []
         for snap_id in self.snap_ids:
-            log.debug("Starting or creating machines for snapshot: %s" % snap_id)
             thr = threading.Thread(target=self._create_machines, args=(snap_id,))
-            create_vms_per_snap_threads.append(thr)
+            create_machines_per_snapshot_threads.append(thr)
             thr.start()
 
-        for thr in create_vms_per_snap_threads:
+        # Wait for the threads to finish before continuing
+        for thr in create_machines_per_snapshot_threads:
             thr.join()
+
         # The system is now no longer in the initializing phase.
         self.initializing = False
 
-    def _is_autoscaled(self, instance):
+    def _is_auto_scaled(self, machine_tags):
         """
-        Checks if the instance has a tag that indicates that it was created as
+        Checks if the machine tags contain a tag that indicates that it was created as
         a result of autoscaling.
-        @param instance: instance object
-        @return: Boolean indicating if the instance in autoscaled
+        @param machine_tags: machine tags object
+        @return: Boolean indicating if the machine tags contain an auto-scaled tag
         """
-        if instance.tags and instance.tags.get(self.AUTOSCALE_CUCKOO) == "True":
+        if machine_tags and machine_tags.get(self.AUTOSCALE_CUCKOO) == "True":
             return True
         return False
 
-    def _delete_machine_from_db(self, label):
-        """
-        Implementing machine deletion from Cuckoo's database.
-        @param label: the machine label
-        """
-        session = self.db.Session()
-        try:
-            from cuckoo.core.database import Machine
-            machine = session.query(Machine).filter_by(label=label).first()
-            if machine:
-                session.delete(machine)
-                session.commit()
-        except SQLAlchemyError as exc:
-            log.debug("Database error removing machine: '%s'.", exc)
-            session.rollback()
-            return
-        finally:
-            session.close()
-
     def _create_machines(self, snap_id):
         """
-        Start preconfigured machines that are stopped, then allocate new
-        machines if the autoscaled option has been selected in the
-        configurations.
-        Based on the "gap" in az.conf, ensure that there are x machines to be
-        created if there are less available machines than the gap.
+        Allocate new machines
+        Based on the "running_machines_gap" in az.conf, ensure that there are x machines to be
+        created if there are less available machines than the running_machines_gap.
+        @param snap_id: the id of the snapshot to use for creating machines
+        @return: Ends method call
         """
-        log.debug("vmlistcountinlist %d; vmlistcountindeleteleftoverresources %d; vmlistcountininitializecheck %d; niclistcount %d; disklistcount %d; vmcreatecount %d;"
-                  " niccreatecount %d; diskcreatecount %d; vnetcheckipcount %d; vmdeletecount %d;"
-                  " nicdeletecount %d; diskdeletecount %d; nicupdatetagcount %d; subnetgetcount %d; "
-                  "snapshotgetcount %d; vminstanceviewcount %d;",
-            vmlistcountinlist, vmlistcountindeleteleftoverresources, vmlistcountininitializecheck, niclistcount, disklistcount, vmcreatecount, niccreatecount,
-            diskcreatecount, vnetcheckipcount, vmdeletecount, nicdeletecount, diskdeletecount,
-            nicupdatetagcount, subnetgetcount, snapshotgetcount, vminstanceviewcount)
+        log.debug("Creating machines for snapshot: %s" % snap_id)
+
         global number_of_win7_machines_being_created
         global number_of_win10_machines_being_created
         global number_of_ub1804_machines_being_created
@@ -244,25 +232,33 @@ class Azure(Machinery):
         # We are getting a list of all available (unlocked) machines
         available_machines = self.db.get_available_machines()
 
-        # Assigning the appropriate tag based on snapshot ID
+        # Getting details of the image based on snapshot ID
         tag, os_type, platform = _get_image_details(snap_id)
-        # The number of relevant available machines are those from the list that have the correct tag in their name
+
+        # The number of relevant available machines are those from the available list that
+        # have the correct tag in their name
         relevant_available_machines = len([machine for machine in available_machines if tag in machine.label])
 
-        #  If there are no available machines left  -> launch a new machine.
-        threads = []
-        # The task queue will be relative to the virtual machine os type that is targeted
+        # Getting all tasks in the queue
         tasks = self.db.list_tasks(status="pending")
+
+        # The task queue that will be used to prepare machines will be relative to the virtual
+        # machine tag that is targeted in the task (win7, win10, etc)
         relevant_task_queue = 0
         for task in tasks:
             for t in task.tags:
                 if t.name == tag:
                     relevant_task_queue += 1
 
+        # If there are no relevant tasks in the queue, create the bare minimum pool size
         if relevant_task_queue == 0:
-            relevant_task_queue = self.options.az.initial_pool_size  # We want a minimum of X machines * running_machines_gap% running at rest for each snapshot id
+            relevant_task_queue = self.options.az.initial_pool_size
+
+        # We want a minimum of X relevant machines * running_machines_gap% running at rest
         number_of_relevant_available_machines_required = int(round(relevant_task_queue*self.running_machines_gap)) - relevant_available_machines
 
+        # Based on the tag related to the snapshot id, we are using the global count of number of
+        # relevant machines currently being created to factor into our calculations for how many machines to create
         if tag == "win10":
             number_of_relevant_machines_being_created = number_of_win10_machines_being_created
         elif tag == "ub1804":
@@ -270,11 +266,24 @@ class Azure(Machinery):
         else:
             number_of_relevant_machines_being_created = number_of_win7_machines_being_created
 
+        # No more machines are required if they are currently being spun up
         if number_of_relevant_machines_being_created >= number_of_relevant_available_machines_required:
             return
+
         number_of_machines_to_create = number_of_relevant_available_machines_required - number_of_relevant_machines_being_created
-        log.debug("Machines being created: %d; Machines to create: %d; Need %d available machines;", number_of_relevant_machines_being_created, number_of_machines_to_create, number_of_relevant_available_machines_required)
-        for vm_to_be_created in range(number_of_machines_to_create):
+
+        log.debug(
+            "Need %d available machines; Machines being created: %d; Machines to create: %d;",
+            number_of_relevant_available_machines_required,
+            number_of_relevant_machines_being_created,
+            number_of_machines_to_create,
+        )
+
+        # This will house the threads that create machines, only really used in system startup
+        threads = []
+
+        for machine_to_be_created in range(number_of_machines_to_create):
+            # self.machines() returns all machines, locked or unlocked, in DB
             if len(self.machines()) >= self.dynamic_machines_limit:
                 log.debug(
                     "Reached dynamic machines limit - %d machines.",
@@ -283,7 +292,7 @@ class Azure(Machinery):
                 break
             else:
                 # Using threads to create machines in parallel.
-                thr = threading.Thread(target=self._thr_allocate_new_machine, args=(tag, snap_id,))
+                thr = threading.Thread(target=self._thr_allocate_new_machine, args=(snap_id,))
                 threads.append(thr)
                 thr.start()
 
@@ -293,30 +302,30 @@ class Azure(Machinery):
             for thr in threads:
                 thr.join()
 
-    def _thr_allocate_new_machine(self, tag, snap_id):
+    def _thr_allocate_new_machine(self, snap_id):
         """
-        Creating new Azure VM, if the autoscale option is selected.
+        Creating new Azure machine.
         The process is as follows:
         - Create network interface card for subnet
-        - Create instance with network interface card
-        - If all goes well, add machine to database
-        @return: Signals to thread that method is finished
+        - Create disk using snapshot
+        - Create machine with network interface card and disk
+        - Add machine to database
+        @param snap_id: the id of the snapshot to use for creating machines
+        @raise CuckooGuestCriticalTimeout: if there is a problem with
+        connecting to the guest
+        @return: Ends method call
         """
-        global vnetcheckipcount, nicupdatetagcount
         # Read configuration file.
         machinery_options = self.options.az
 
-        global number_of_win7_machines_being_created
-        global number_of_ub1804_machines_being_created
-        global number_of_win10_machines_being_created
         global dynamic_machines_sequence
 
-        if tag == "win10":
-            number_of_win10_machines_being_created += 1
-        elif tag == "ub1804":
-            number_of_ub1804_machines_being_created += 1
-        else:
-            number_of_win7_machines_being_created += 1
+        # Getting details of the image based on snapshot ID
+        tag, os_type, platform = _get_image_details(snap_id)
+
+        # Depending on the tag, increment the global count of a certain type
+        # of machine being created
+        _resize_machines_being_created(tag, "+")
 
         # If configured, use specific network interface,
         # resultserver_ip for this machine, else use the default value.
@@ -338,78 +347,75 @@ class Azure(Machinery):
             from cuckoo.core.resultserver import ResultServer
             resultserver_port = ResultServer().port
 
+        # This value will be used for naming machines in a unique way
+        # TODO: find a better way to name machines uniquely
         dynamic_machines_sequence += 1
-
-        # Adding the appropriate tag if multiple snapshots
-        tag, os_type, platform = _get_image_details(snap_id)
 
         new_machine_name = "cuckoo-%s-%03d-%s" % (self.environment, dynamic_machines_sequence, tag)
 
-        # dict for thread results
-        results = {"nic": None, "disk": None}
-
-        # Create two child threads, one for creating the NIC and one for creating the disk
-        nic_thr = threading.Thread(target=self._thr_create_nic, args=("nic-01", new_machine_name, resultserver_ip, results,))
-
-        # Start 'em up!
-        nic_thr.start()
-
-        # Wait for 'em to finish
-        nic_thr.join()
-        new_nic = results["nic"]
-        if new_nic == "SubnetIsFull":
-            # Bail!
+        # Creating the network interface card that will be used for new machine
+        new_nic_id, new_nic_ip = self._thr_create_nic(new_machine_name, resultserver_ip)
+        if new_nic_id == "SubnetIsFull":
+            _resize_machines_being_created(tag, "-")
+            # Bail! We cannot add any more NICs to this subnet... for now
             return
 
-        if not new_nic:
+        if not new_nic_id or not new_nic_ip:
+            _resize_machines_being_created(tag, "-")
             # Bail!
-            log.debug("Failed to create NIC.")
+            log.debug("Failed to create NIC. Look for a CuckooMachineError that may indicate why this happened.")
+            # TODO: Handle this error better
             return
 
-        disk_thr = threading.Thread(target=self._thr_create_disk_from_snapshot, args=(new_machine_name, results, snap_id,))
-        disk_thr.start()
-        disk_thr.join()
+        # If all has gone well so far, create the disk that will be used for new machine
+        new_disk_id = self._thr_create_disk_from_snapshot(new_machine_name, snap_id)
 
-        new_disk = results["disk"]
+        if not new_disk_id:
+            _resize_machines_being_created(tag, "-")
+            log.debug("Failed to create disk. Look for a CuckooMachineError that may indicate why this happened.")
+            # TODO: Handle this error better
+            return
 
-        if not new_disk:
-            log.debug("Failed to create disk.")
-            raise CuckooMachineError("Problems!")
+        # This time will be used for debugging. From experience, a Windows 10 machine is created in around
+        # 160s and Windows 7 in 220s once the NIC and the disk are created
+        machine_creation_time = time.time()
 
-        vm_creation_time = time.time()
-        # Create Azure VM, tagged as autoscaled and with the new NIC.
-        guest_instance = self._create_instance(
-            new_nic,
+        # Create Azure machine with new NIC and disk, tagging as auto-scaled.
+        new_machine = self._create_machine(
+            nic_id=new_nic_id,
             tags={"Name": new_machine_name, self.AUTOSCALE_CUCKOO: True},
             platform=platform,
-            disk_id=new_disk.id
+            disk_id=new_disk_id
         )
 
-        # There are occasions where Azure fails to create an instance.
-        if guest_instance is None:
-            nic_name = "nic-01-" + new_machine_name
-            log.debug("Marking instance NIC '%s' to be deleted.", nic_name)
-            nicupdatetagcount += 1
-            _azure_api_call(
-                self.options.az.group,
-                nic_name,
-                tags={"status": "to_be_deleted"},
-                operation=self.network_client.network_interfaces.update_tags
-            )
+        # There are occasions where Azure fails to create an machine.
+        # When this happens, just mark the NIC for deletion and move on
+        if new_machine is None:
+            log.debug("Failed to create machine. Look for a CuckooMachineError that may indicate why this happened.")
+            self._mark_nic_for_deletion(new_machine_name)
+            # TODO: Handle this error better
             return
 
+        # This list will be used for acquiring machines, you'll see, you'll see
+        # TODO: use a Queue instead of a list?
         self.machine_queue.append(new_machine_name)
-        self.azure_machines[new_machine_name] = guest_instance
+
+        # A dict that holds machine name: machine details key value pairs
+        self.azure_machines[new_machine_name] = new_machine
+
         # Sets "new_machine" object in configuration object to
         # avoid raising an exception.
         setattr(self.options, new_machine_name, {})
+
+        # Add the os type to the tags
         tags = os_type + ", " + machinery_options.tags
-        ip = new_nic.ip_configurations[0].private_ip_address
+
         # Add machine to DB.
+        # What is the point of name vs label?
         self.db.add_machine(
             name=new_machine_name,
             label=new_machine_name,
-            ip=ip,
+            ip=new_nic_ip,
             platform=platform,
             options=machinery_options.options,
             tags=tags,
@@ -418,20 +424,15 @@ class Azure(Machinery):
             resultserver_ip=resultserver_ip,
             resultserver_port=resultserver_port
         )
-        # Setting the status of the machine, it's been created, but it's not ready to be set to available yet
-        self.db.set_machine_status(new_machine_name, "initializing")
-        machine = self.db.view_machine(new_machine_name)
-        # Now we're going to wait for the machine to be have the agent all set up
+        # When we aren't initializing the system, the machine will immediately become available in DB
+        # When we are initializing, we're going to wait for the machine to be have the agent all set up
         if self.initializing:
-            """
-                Wait until the Virtual Machine is available for usage. 
-                Majority of this code is copied from cuckoo/core/guest.py:GuestManager.wait_available()
-            """
+            # Majority of this code is copied from cuckoo/core/guest.py:GuestManager.wait_available()
             end = time.time() + config("cuckoo:timeouts:vm_state")
-            while machine.status == "initializing":
+            while True:
                 try:
-                    socket.create_connection((ip, CUCKOO_GUEST_PORT), 1).close()
-                    self.db.set_machine_status(new_machine_name, "available")
+                    socket.create_connection((new_nic_ip, CUCKOO_GUEST_PORT), 1).close()
+                    # We did it!
                     break
                 except socket.timeout:
                     log.debug("%s: Initializing...", new_machine_name)
@@ -440,80 +441,82 @@ class Azure(Machinery):
                 time.sleep(10)
 
                 if time.time() > end:
+                    # We didn't do it :(
                     raise CuckooGuestCriticalTimeout(
                         "Machine %s: the guest initialization hit the critical "
                         "timeout, analysis aborted." % new_machine_name
                     )
-            log.debug("Machine %s was created and available in %9.3fs", new_machine_name, time.time() - vm_creation_time)
+            log.debug("Machine %s was created and available in %9.3fs", new_machine_name, time.time() - machine_creation_time)
 
-        if tag == "win10":
-            number_of_win10_machines_being_created -= 1
-        elif tag == "ub1804":
-            number_of_ub1804_machines_being_created -= 1
-        else:
-            number_of_win7_machines_being_created -= 1
-        return
+        # Depending on the tag, decrement the global count of a certain type
+        # of machine being created
+        _resize_machines_being_created(tag, "-")
 
     def acquire(self, machine_id=None, platform=None, tags="win7"):
         """
-        Override Machinery method to utilize the auto scale option
-        as well as a FIFO queue for machines.
+        Overloading abstracts.py:acquire() to utilize the auto-scale option
+        as well as a FIFO queue (list) for machines.
         @param machine_id: the name of the machine to be acquired
-        @param platform: the platform of the machine's operating system
-        @param tags: any tags that are associated with the machine
+        @param platform: the platform of the machine's operating system to be acquired
+        @param tags: any tags that are associated with the machine to be acquired
+        @return: dict representing machine object from DB
         """
+        # This will be used to indicate what type of machine the user wants to acquire
         requested_type = None
+
+        # Depending on setup, tags could be a list or a string. If tags is a list, do the following:
         if type(tags) == list and len(tags) > 0:
             requested_type = tags[0]
         elif type(tags) == list and len(tags) == 0:
             requested_type = "unknown_guest_image"
+
         if self.machine_queue:
-            # Used to minimize wait times as VMs are starting up and some might
+            # Used to minimize wait times as machines are starting up and some might
             # not be ready to listen yet.
-            first_index_of_correct_machine = next((x for x, val in enumerate(self.machine_queue) if requested_type in val), None)
-            if not first_index_of_correct_machine:
-                machine_id = self.machine_queue.pop(0)
-            else:
-                machine_id = self.machine_queue.pop(first_index_of_correct_machine)
-        # Note that tags are ignored in future because machine_id is used
+            first_index_of_relevant_machine = next((x for x, val in enumerate(self.machine_queue) if requested_type in val), 0)
+            # If there are no relevant machines available based on what the user wants, pop the item at the 0 index
+            machine_id = self.machine_queue.pop(first_index_of_relevant_machine)
+        # Note that tags are ignored in future because machine_id is always used (hopefully)
         base_class_return_value = super(Azure, self).acquire(
             machine_id=machine_id,
             platform=platform,
             tags=tags
         )
+        # Get details regarding the machine that was acquired
         tag, os_type, platform = _get_image_details(base_class_return_value.label)
-        self._delete_leftover_resources()  # Delete leftover NICs and disks
+        self._delete_leftover_resources()
+        # If we acquired a machine due to it being the oldest but it was of the wrong requested type,
+        # we want to replace the used machine in the pool while also preparing the pool for
+        # the requested type
         if tag != requested_type:
-            # If we acquired a vm due to it being the oldest but of the wrong requested type,
-            # we want to replace the vm in the pool while also preparing the pool for
-            # the requested type
             used_snap_id = next(snap_id for snap_id in self.snap_ids if tag in snap_id)
             self._create_machines(used_snap_id)
 
-        requested_snap_id = next(snap_id for snap_id in self.snap_ids if requested_type in snap_id)  # This has to return something
-        self._create_machines(requested_snap_id)  # Prepare another machine
+        requested_snap_id = next(snap_id for snap_id in self.snap_ids if requested_type in snap_id)
+        self._create_machines(requested_snap_id)
         return base_class_return_value
 
+    # This method is only used for testing currently
     def _status(self, label):
         """
-        Gets current status of a VM.
+        Gets current status of a machine.
         @param label: virtual machine label.
-        @return: VM state string.
-        @raise CuckooMachineError: if there is a problem with the Azure call
+        @return: machine state string.
         """
-        instance_view = _azure_api_call(
+        # Get the machine details for a machine given the resource group and label
+        machine_details = _azure_api_call(
             self.options.az.group,
             label,
             operation=self.compute_client.virtual_machines.instance_view
         )
 
         state = None
-        for status in instance_view.statuses:
+        for status in machine_details.statuses:
             # Ideally, we're looking for the PowerState status.
             if "PowerState" in status.code:
                 state = status.code
                 break
-            # If the PowerState status doesn't exist, then the VM is
+            # If the PowerState status doesn't exist, then the machine is
             # deleting, or has failed.
             elif "ProvisioningState" in status.code:
                 state = status.code
@@ -546,138 +549,86 @@ class Azure(Machinery):
 
     def stop(self, label=None):
         """
-        If the machine is an autoscaled instance,
+        If the machine is an auto-scaled machine,
         then terminate it.
-        Then clean up resources.
         @param label: virtual machine label
-        @raise CuckooMachineError: if there is a problem with the Azure call
+        @return: End method call
         """
-        log.debug("Deleting the machine '%s'.", label)
         if not label:
             return
+        self._delete_auto_scaled_machine(self.azure_machines[label].tags, label)
 
-        if self._is_autoscaled(self.azure_machines[label]) and self.environment in label:
-            self._delete_instance(label)
-
+    # This method is only used for testing currently
     def _list(self):
         """
         Retrieves all virtual machines in resource group.
-        @return: A list of all instance names within resource group
-        @raise CuckooMachineError: if there is a problem with the Azure call
+        @return: A list of all machine names within resource group
         """
-        instances = _azure_api_call(
+        machines = _azure_api_call(
             self.options.az.group,
             operation=self.compute_client.virtual_machines.list
         )
 
-        return [instance.name for instance in instances]
+        # TODO: only add the machines to the list that have the AUTOSCALED tag
+        return [machine.name for machine in machines]
 
-    def _thr_create_nic(self, nic_name, computer_name, dns_server, results):
+    def _thr_create_nic(self, computer_name, dns_server):
         """
         Used to create the Azure network interface card.
-        @param nic_name: name of the new nic
-        @param computer_name: name of VM that nic is going to be attached to
+        @param computer_name: name of machine that NIC is going to be attached to
         @param dns_server: name of server that DNS resolution will take place
-        @return: a network interface card object
+        @return: a network interface card object ID string, the IP of the NIC string
         @raise CuckooMachineError: if there is a problem with the Azure call
         """
-        global niccreatecount
-        nic_params = {
+        # Setting up the NIC details
+        nic_setup = {
             "location": self.options.az.region_name,
             "ip_configurations": [{
                 "name": "myIPConfig",
                 "subnet": {
-                    "id": self.subnet_info.id
+                    "id": self.subnet_id
                 }
             }],
             "dns_settings": {
                 "dns_servers": [dns_server]
             }
         }
-        nic_name = nic_name + "-" + computer_name
+        # Setting up the name of the NIC
+        new_nic_name = "nic-01-" + computer_name
         try:
-            niccreatecount += 1
+            # Async call to create a network interface card using the
+            # resource group, the name of the NIC and the details of
+            # to-be-created NIC
             async_nic_creation = _azure_api_call(
                 self.options.az.group,
-                nic_name,
-                nic_params,
+                new_nic_name,
+                nic_setup,
                 operation=self.network_client.network_interfaces.create_or_update
             )
         except CuckooMachineError as exc:
+            # If the exception contains the term SubnetIsFull, this is an edge
+            # case where we do not raise the CuckooMachineError
             if "SubnetIsFull" in exc:
-                results["nic"] = "SubnetIsFull"
-                return
+                return "SubnetIsFull", None
             else:
                 raise
         async_nic_creation.wait()
         nic = async_nic_creation.result()
-        results["nic"] = nic
 
-    def _create_instance(self, nic, tags, platform, disk_id):
-        """
-        Create a new instance consists of the following process:
-        - Create an OS disk from a snapshot
-        - Setup parameters to be used in client API calls
-        - Create instance using these parameters
-        @param nic: network interface card to be attached to guest VM
-        @param tags: tags to attach to instance
-        @param platform: general platform type
-        @return: the new instance
-        """
-        global vmcreatecount
-        # Read configuration file.
-        machinery_options = self.options.az
-        computer_name = tags["Name"]
+        nic_ip = None
+        if nic:
+            nic_ip = nic.ip_configurations[0].private_ip_address
 
-        os_disk = {
-            "create_option": "Attach",
-            "managed_disk": {
-                "id": disk_id,
-                "storage_account_type": machinery_options.storage_account_type
-            },
-            "osType": platform
-        }
+        return nic.id, nic_ip
 
-        vm_parameters = {
-            "location": self.options.az.region_name,
-            "tags": tags,
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": machinery_options.instance_type
-                },
-                "storageProfile": {
-                    "osDisk": os_disk
-                }
-            },
-            "networkProfile": {
-                "networkInterfaces": [{
-                    "id": nic.id,
-                    "properties": {"primary": True}
-                }]
-            }
-        }
-        vmcreatecount += 1
-        async_vm_creation = _azure_api_call(
-            self.options.az.group,
-            computer_name,
-            vm_parameters,
-            operation=self.compute_client.virtual_machines.create_or_update
-        )
-
-        # Wait for asynchronous call to finish, then return instance.
-        new_instance = async_vm_creation.result()
-        return new_instance
-
-    def _thr_create_disk_from_snapshot(self, new_computer_name, results, snap_id):
+    def _thr_create_disk_from_snapshot(self, new_computer_name, snap_id):
         """
         Uses a snapshot in the resource group to create a managed OS disk.
-        :param snapshot_name: String indicating the name of the snapshot
-        :param new_computer_name: String indicating the name of the VM to be created
-        :return: an Azure Managed OS Disk object
-        @raise CuckooMachineError: if there is a problem with the Azure call
+        :param new_computer_name: String indicating the name of the machine to be created
+        :param snap_id: String indicating the ID of the snapshot
+        :return: an Azure Managed OS Disk object ID string
         """
-        global diskcreatecount
-        new_disk_name = "osdisk" + new_computer_name
+        # Setting up the disk details
         disk_setup = {
             "location": self.options.az.region_name,
             "creation_data": {
@@ -685,7 +636,11 @@ class Azure(Machinery):
                 "source_uri": snap_id
             }
         }
-        diskcreatecount += 1
+        # Setting up the name of the disk
+        new_disk_name = "osdisk-" + new_computer_name
+        # Async call to create a disk using the
+        # resource group, the name of the disk and the details of
+        # to-be-created disk
         async_disk_creation = _azure_api_call(
             self.options.az.group,
             new_disk_name,
@@ -694,19 +649,98 @@ class Azure(Machinery):
         )
         async_disk_creation.wait()
         disk = async_disk_creation.result()
-        results["disk"] = disk
+        return disk.id
 
-    def _delete_instance(self, instance_name):
+    def _create_machine(self, nic_id=None, tags=None, platform=None, disk_id=None):
         """
-        Deletes an instance by marking the instance's NIC for deletion,
-        and then deleting the VM
-        :param instance_name: String indicating the name of the VM to be deleted
-        @raise CuckooMachineError: if there is a problem with the Azure call
+        Creating a new machine.
+        @param nic_id: NIC ID of the NIC to be attached to new machine
+        @param tags: tags to attach to machine
+        @param platform: general platform type (windows, linux)
+        @param disk_id: disk ID of the disk to be attached to new machine
+        @return: the new machine dict
         """
-        global nicupdatetagcount, vmdeletecount
-        nic_name = "nic-01-" + instance_name
+        computer_name = tags["Name"]
+        # Setting up how disk will be attached to machine
+        os_disk = {
+            "create_option": "Attach",
+            "managed_disk": {
+                "id": disk_id,
+                "storage_account_type": self.options.az.storage_account_type
+            },
+            "osType": platform
+        }
+        # Setting up machine details
+        machine_setup = {
+            "location": self.options.az.region_name,
+            "tags": tags,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": self.options.az.instance_type
+                },
+                "storageProfile": {
+                    "osDisk": os_disk
+                }
+            },
+            "networkProfile": {
+                "networkInterfaces": [{
+                    "id": nic_id,
+                    "properties": {"primary": True}
+                }]
+            }
+        }
+        # Async call to create a new machine, using the resource group,
+        # the computer name, and the machine details
+        async_machine_creation = _azure_api_call(
+            self.options.az.group,
+            computer_name,
+            machine_setup,
+            operation=self.compute_client.virtual_machines.create_or_update
+        )
 
-        nicupdatetagcount += 1
+        # Wait for asynchronous call to finish, then return machine details.
+        new_machine = async_machine_creation.result()
+        return new_machine
+
+    def _delete_auto_scaled_machine(self, machine_tags, machine_name):
+        """
+        Check if machine is auto-scaled (created by this az.py program),
+        then check if the detonation environment
+        is found in the machine name. If both criteria are met, delete machine
+        @param machine_tags: the tags of an Azure machine
+        @param machine_name: the name of an Azure machine
+        """
+        if self._is_auto_scaled(machine_tags) and self.environment in machine_name:
+            self._delete_machine(machine_name)
+
+    def _delete_machine(self, machine_name):
+        """
+        Deletes an machine by marking the machine's NIC for deletion,
+        and then deleting the machine
+        :param machine_name: String indicating the name of the machine to be deleted
+        """
+        self._mark_nic_for_deletion(machine_name)
+
+        # Deletes a machine, using the resource group and the machine name
+        _azure_api_call(
+            self.options.az.group,
+            machine_name,
+            operation=self.compute_client.virtual_machines.delete
+        )
+
+        # If the state of the system is past being initialized,
+        # then delete the machine entry from the DB. Otherwise, it wouldn't be in the DB.
+        if not self.initializing:
+            self._delete_machine_from_db(machine_name)
+
+    def _mark_nic_for_deletion(self, machine_name):
+        """
+        Updates the NIC tags so as to act as an identifier for
+        NICs that are ready to be deleted.
+        @param machine_name: the name of an Azure machine
+        """
+        nic_name = "nic-01-" + machine_name
+        # Tags a NIC, using the resource group, the machine name and the tag
         _azure_api_call(
             self.options.az.group,
             nic_name,
@@ -714,120 +748,158 @@ class Azure(Machinery):
             operation=self.network_client.network_interfaces.update_tags,
         )
 
-        vmdeletecount += 1
-        _azure_api_call(
-            self.options.az.group,
-            instance_name,
-            operation=self.compute_client.virtual_machines.delete
-        )
-
-        # If the state of the system is past being initialized,
-        # then delete the VM entry from the DB. Otherwise, it wouldn't be in the DB.
-        if not self.initializing:
-            self._delete_machine_from_db(instance_name)
+    def _delete_machine_from_db(self, label):
+        """
+        Implementing machine deletion from Cuckoo's database.
+        This was not implemented in database.py, so implemented here in the machinery
+        TODO: move this method to database.py
+        @param label: the machine label
+        @return: End method call
+        """
+        session = self.db.Session()
+        try:
+            from cuckoo.core.database import Machine
+            machine = session.query(Machine).filter_by(label=label).first()
+            if machine:
+                session.delete(machine)
+                session.commit()
+        except SQLAlchemyError as exc:
+            log.debug("Database error removing machine: '%s'.", exc)
+            session.rollback()
+            return
+        finally:
+            session.close()
 
     def _delete_leftover_resources(self):
         """
-        Used to clean up the resources that aren't cleaned up when a VM is
+        Used to clean up the resources that aren't cleaned up when a machine is
         deleted.
-        @raise CuckooMachineError: if there is a problem with the Azure call
         """
-        global niclistcount, disklistcount, vmlistcountindeleteleftoverresources
-        niclistcount += 1
+        # Lists NICs, using the resource group
         nics = _azure_api_call(
             self.options.az.group,
             operation=self.network_client.network_interfaces.list
         )
 
-        disklistcount += 1
+        # Lists disks, using the resource group
         disks = _azure_api_call(
             self.options.az.group,
             operation=self.compute_client.disks.list_by_resource_group
         )
 
-        # Iterate over all instances to check if their deployment
-        # state is Failed.
-        vmlistcountindeleteleftoverresources += 1
-        instances = _azure_api_call(
+        # Lists machines, using the resource group
+        machines = _azure_api_call(
             self.options.az.group,
             operation=self.compute_client.virtual_machines.list
         )
 
         # Create three child threads, one for deleting NICs, one for deleting disks,
-        # and one for deleting instances
+        # and one for deleting machines
         nics_thr = threading.Thread(target=self._thr_delete_nics, args=(nics,))
         disks_thr = threading.Thread(target=self._thr_delete_disks, args=(disks,))
-        instances_thr = threading.Thread(target=self._thr_delete_instances, args=(instances,))
+        machines_thr = threading.Thread(target=self._thr_delete_machines, args=(machines,))
 
         # Start 'em up!
         nics_thr.start()
         disks_thr.start()
-        instances_thr.start()
+        machines_thr.start()
 
     def _thr_delete_nics(self, nics):
-        global nicdeletecount
-        threads = []
+        """
+        Used to delete leftover NICs
+        @param nics: a list of network interface cards
+        """
+        if self.initializing:
+            threads = []
         # Iterate over all network interface cards to check if any are not
-        # associated to a VM.
+        # associated to a machine.
         for nic in nics:
+
+            # Three indicators that a NIC is detached from a machine
             nic_is_detached = nic.virtual_machine is None and \
                               nic.primary is None and \
                               nic.provisioning_state == "Succeeded"
+
+            # One indicator that a NIC has been marked to be deleted
             nic_is_to_be_deleted = \
                 nic.tags and nic.tags.get("status", "") == "to_be_deleted"
+
+            # If four indicators pass, delete NIC
             if nic_is_detached and nic_is_to_be_deleted:
-                nicdeletecount += 1
+                # Async call to delete NIC using the resource group and the NIC name
                 async_delete_nic = _azure_api_call(
                     self.options.az.group,
                     nic.name,
                     operation=self.network_client.network_interfaces.delete
                 )
-                # only wait if we are initializing
+                # only wait for async call to be done if we are initializing, but do so in parallel
+                # The reason we wait is because...?
+                # TODO: why did I do this?
                 if self.initializing:
                     thr = threading.Thread(target=async_delete_nic.wait)
                     threads.append(thr)
                     thr.start()
 
+        # Need to wait for each network interface card to delete
+        # during initialization.
         if self.initializing:
             for thr in threads:
-                # Need to wait for each network interface card to delete
-                # during initialization.
                 thr.join()
 
     def _thr_delete_disks(self, disks):
-        global diskdeletecount
-        # Iterate over all OS disks to check if any are not associated to a VM.
+        """
+        Used to delete leftover disks
+        @param disks: a list of disks
+        """
+        # Iterate over all OS disks to check if any are not associated to a machine.
         for disk in disks:
             timestamp = time.mktime(disk.time_created.timetuple())
             time_delta = datetime.now() - datetime.fromtimestamp(timestamp)
-            # If the disk is unattached and has been around for three minutes,
-            # then the disk can be deleted.
-            if disk.disk_state == "Unattached" and \
-                    time_delta.total_seconds() > 180:
-                diskdeletecount += 1
+            # If the disk is unattached and has been around for four minutes,
+            # then it can be assumed that the disk can be deleted.
+            # TODO: is this the best way to confirm if a disk can be deleted?
+            if disk.disk_state == "Unattached" and time_delta.total_seconds() > 240:
+                # Async call to delete NIC using the resource group and the disk name
                 _azure_api_call(
                     self.options.az.group,
                     disk.name,
                     operation=self.compute_client.disks.delete
                 )
 
-    def _thr_delete_instances(self, instances):
-        for instance in instances:
-            if instance.provisioning_state == "Failed" and self.environment in instance.name:
+    def _thr_delete_machines(self, machines):
+        """
+        Used to delete failed machines
+        @param disks: a list of disks
+        """
+        # Iterate over all machines to check if their deployment state is Failed.
+        for machine in machines:
+            if machine.provisioning_state == "Failed" and self.environment in machine.name:
                 log.debug(
-                    "Deleting instance that failed to deploy '%s'.",
-                    instance.name
+                    "Deleting machine that failed to deploy '%s'.",
+                    machine.name
                 )
-                self._delete_instance(instance.name)
+                self._delete_machine(machine.name)
 
 
 def _azure_api_call(*args, **kwargs):
+    """
+    This method is used as a common place for all Azure API calls
+    @param args: any argument that an Azure API call takes
+    @param kwargs: the API call operation, and sometimes tags
+    @raise CuckooMachineError: if there is a problem with the Azure call
+    @return: dict containing results of API call
+    """
+    # I figured this was the most concrete way to guarantee that an API method was being passed
     if not kwargs["operation"]:
         raise CuckooMachineError("kwargs in _azure_api_call requires 'operation' parameter.")
+    operation = kwargs["operation"]
+
     # Note that tags is a special keyword parameter in some operations
     tags = kwargs.get("tags", None)
-    operation = kwargs["operation"]
+
+    # This is used for logging
     api_call = "%s(%s)" % (operation, args)
+
     try:
         log.debug("Trying %s", api_call)
         results = operation(*args, tags=tags)
@@ -839,6 +911,11 @@ def _azure_api_call(*args, **kwargs):
 
 
 def _get_image_details(label):
+    """
+    Returns specific values used for a variety of reasons
+    @param label: Sometimes the machine name/label, sometimes the snapshot name
+    @return: tag string, os_type string, platform string
+    """
     platform = "windows"
     if "win10" in label:
         tag = "win10"
@@ -853,3 +930,30 @@ def _get_image_details(label):
         tag = "win7"
         os_type = "Windows7x64"
     return tag, os_type, platform
+
+
+def _resize_machines_being_created(tag, direction):
+    """
+    Increments or decrements global count indicating value
+    of machines being created
+    @param tag: String that represents type of machine to create
+    @param direction: String that represents direction in which to resize count
+    """
+    global number_of_ub1804_machines_being_created
+    global number_of_win10_machines_being_created
+    global number_of_win7_machines_being_created
+
+    operator_lookup = {
+        "+": operator.add,
+        "-": operator.sub
+    }
+    operation = operator_lookup.get(direction)
+
+    # Depending on the tag, resize the global count of a certain type
+    # of machine being created
+    if tag == "win10":
+        number_of_win10_machines_being_created = operation(number_of_win10_machines_being_created, 1)
+    elif tag == "ub1804":
+        number_of_ub1804_machines_being_created = operation(number_of_ub1804_machines_being_created, 1)
+    else:
+        number_of_win7_machines_being_created = operation(number_of_win7_machines_being_created, 1)
