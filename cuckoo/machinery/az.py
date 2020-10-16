@@ -193,7 +193,7 @@ class Azure(Machinery):
         # to make system startup time faster
         create_machines_per_snapshot_threads = []
         for snap_id in self.snap_ids:
-            thr = threading.Thread(target=self._create_machines, args=(snap_id,))
+            thr = threading.Thread(target=self._thr_create_machines, args=(snap_id,))
             create_machines_per_snapshot_threads.append(thr)
             thr.start()
 
@@ -215,7 +215,7 @@ class Azure(Machinery):
             return True
         return False
 
-    def _create_machines(self, snap_id):
+    def _thr_create_machines(self, snap_id):
         """
         Allocate new machines
         Based on the "running_machines_gap" in az.conf, ensure that there are x machines to be
@@ -354,7 +354,7 @@ class Azure(Machinery):
         new_machine_name = "cuckoo-%s-%03d-%s" % (self.environment, dynamic_machines_sequence, tag)
 
         # Creating the network interface card that will be used for new machine
-        new_nic_id, new_nic_ip = self._thr_create_nic(new_machine_name, resultserver_ip)
+        new_nic_id, new_nic_ip = self._create_nic(new_machine_name, resultserver_ip)
         if new_nic_id == "SubnetIsFull":
             _resize_machines_being_created(tag, "-")
             # Bail! We cannot add any more NICs to this subnet... for now
@@ -368,7 +368,7 @@ class Azure(Machinery):
             return
 
         # If all has gone well so far, create the disk that will be used for new machine
-        new_disk_id = self._thr_create_disk_from_snapshot(new_machine_name, snap_id)
+        new_disk_id = self._create_disk_from_snapshot(new_machine_name, snap_id)
 
         if not new_disk_id:
             _resize_machines_being_created(tag, "-")
@@ -492,7 +492,8 @@ class Azure(Machinery):
             used_snap_id = next(snap_id for snap_id in self.snap_ids if tag in snap_id)
             self._create_machines(used_snap_id)
 
-        requested_snap_id = next(snap_id for snap_id in self.snap_ids if requested_type in snap_id)
+        # If user requests snap_id that doesn't exist, return first snap id
+        requested_snap_id = next((snap_id for snap_id in self.snap_ids if requested_type in snap_id), self.snap_ids[0])
         self._create_machines(requested_snap_id)
         return base_class_return_value
 
@@ -572,7 +573,7 @@ class Azure(Machinery):
         # TODO: only add the machines to the list that have the AUTOSCALED tag
         return [machine.name for machine in machines]
 
-    def _thr_create_nic(self, computer_name, dns_server):
+    def _create_nic(self, computer_name, dns_server):
         """
         Used to create the Azure network interface card.
         @param computer_name: name of machine that NIC is going to be attached to
@@ -621,7 +622,7 @@ class Azure(Machinery):
 
         return nic.id, nic_ip
 
-    def _thr_create_disk_from_snapshot(self, new_computer_name, snap_id):
+    def _create_disk_from_snapshot(self, new_computer_name, snap_id):
         """
         Uses a snapshot in the resource group to create a managed OS disk.
         :param new_computer_name: String indicating the name of the machine to be created
