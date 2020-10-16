@@ -215,7 +215,7 @@ class Azure(Machinery):
             return True
         return False
 
-    def _thr_create_machines(self, snap_id):
+    def _create_machines(self, snap_id):
         """
         Allocate new machines
         Based on the "running_machines_gap" in az.conf, ensure that there are x machines to be
