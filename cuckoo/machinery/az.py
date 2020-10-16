@@ -353,6 +353,14 @@ class Azure(Machinery):
 
         new_machine_name = "cuckoo-%s-%03d-%s" % (self.environment, dynamic_machines_sequence, tag)
 
+        # Avoiding collision on machine name if machine is still deleting.
+        # TODO: this is only applicable to instances, but what about NICs and disks?
+        machine_names = self._list()
+        for machine in machine_names:
+            while machine == new_machine_name:
+                dynamic_machines_sequence = dynamic_machines_sequence + 1
+                new_machine_name = "cuckoo-%s-%03d-%s" % (self.environment, dynamic_machines_sequence, tag)
+
         # Creating the network interface card that will be used for new machine
         new_nic_id, new_nic_ip = self._create_nic(new_machine_name, resultserver_ip)
         if new_nic_id == "SubnetIsFull":
