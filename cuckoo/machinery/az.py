@@ -215,7 +215,7 @@ class Azure(Machinery):
             return True
         return False
 
-    def _create_machines(self, snap_id):
+    def _thr_create_machines(self, snap_id):
         """
         Allocate new machines
         Based on the "running_machines_gap" in az.conf, ensure that there are x machines to be
@@ -490,11 +490,11 @@ class Azure(Machinery):
         # the requested type
         if tag != requested_type:
             used_snap_id = next(snap_id for snap_id in self.snap_ids if tag in snap_id)
-            self._create_machines(used_snap_id)
+            self._thr_create_machines(used_snap_id)
 
         # If user requests snap_id that doesn't exist, return first snap id
         requested_snap_id = next((snap_id for snap_id in self.snap_ids if requested_type in snap_id), self.snap_ids[0])
-        self._create_machines(requested_snap_id)
+        self._thr_create_machines(requested_snap_id)
         return base_class_return_value
 
     # This method is only used for testing currently
