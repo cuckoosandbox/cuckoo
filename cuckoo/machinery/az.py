@@ -935,6 +935,7 @@ def _get_image_details(label):
     elif "ub1804" in label:
         tag = "ub1804"
         os_type = "Ubuntu18.04x64"
+        platform = "ubuntu"
     else:
         tag = "win7"
         os_type = "Windows7x64"
