@@ -460,7 +460,7 @@ class Azure(Machinery):
         # of machine being created
         _resize_machines_being_created(tag, "-")
 
-    def acquire(self, machine_id=None, platform=None, tags="win7"):
+    def acquire(self, machine_id=None, platform=None, tags=None):
         """
         Overloading abstracts.py:acquire() to utilize the auto-scale option
         as well as a FIFO queue (list) for machines.
@@ -485,6 +485,10 @@ class Azure(Machinery):
             # If there are no relevant machines available based on what the user wants, pop the item at the 0 index
             machine_id = self.machine_queue.pop(first_index_of_relevant_machine)
         # Note that tags are ignored in future because machine_id is always used (hopefully)
+        # We just want the first machine if no machines in machine_queue (which is scary that it is not synced
+        # which database, but whatever)
+        if not machine_id:
+            tags = None
         log.debug("Acquiring machine based on the following criteria: machine_id - %s; platform - %s; tags - %s"
                   % (machine_id, platform, tags))
         base_class_return_value = super(Azure, self).acquire(
