@@ -485,6 +485,8 @@ class Azure(Machinery):
             # If there are no relevant machines available based on what the user wants, pop the item at the 0 index
             machine_id = self.machine_queue.pop(first_index_of_relevant_machine)
         # Note that tags are ignored in future because machine_id is always used (hopefully)
+        log.debug("Acquiring machine based on the following criteria: machine_id - %s; platform - %s; tags - %s"
+                  % (machine_id, platform, tags))
         base_class_return_value = super(Azure, self).acquire(
             machine_id=machine_id,
             platform=platform,

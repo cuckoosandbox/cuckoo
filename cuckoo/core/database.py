@@ -848,10 +848,7 @@ class Database(object):
             # Check if there are any machines that satisfy the
             # selection requirements.
             if not machines.count():
-                raise CuckooOperationalError(
-                    "No machines match selection criteria: label - %s; platform - %s; tags - %s."
-                    % label, platform, tags
-                )
+                raise CuckooOperationalError("No machines match selection criteria.")
 
             # Get the first free machine.
             machine = machines.filter_by(locked=False).first()
