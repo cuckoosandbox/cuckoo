@@ -7,14 +7,19 @@ import logging
 import os
 import random
 import uuid
+try:
+    from win32com.client import Dispatch
+    HAVE_PYWIN32 = True
+except ImportError:
+    HAVE_PYWIN32 = False
 
 from lib.common.abstracts import Auxiliary
 from lib.common.defines import SHELL32, SHARD_PATHA, PWSTR
-from lib.common.exceptions import CuckooError
 from lib.common.rand import random_string
 from lib.common.registry import set_regkey_full
 
 log = logging.getLogger(__name__)
+
 
 class RecentFiles(Auxiliary):
     """Populate the Desktop with recent files in order to combat recent
@@ -29,6 +34,8 @@ class RecentFiles(Auxiliary):
         "documents": "{FDD39AD0-238F-46AF-ADB4-6C85480369C7}",
         "downloads": "{374DE290-123F-4565-9164-39C4925E467B}",
     }
+
+    recent_doc_directory = "AppData\\Roaming\\Microsoft\\Office\\Recent"
 
     def get_path(self):
         location = self.options.get("recentfiles", "documents")
@@ -53,6 +60,10 @@ class RecentFiles(Auxiliary):
 
     def start(self):
         dirpath = self.get_path()
+        if HAVE_PYWIN32:
+            user_dir = os.path.expanduser("~")
+            recent_doc_dir = os.path.join(user_dir, self.recent_doc_directory)
+
         if not dirpath:
             return
 
@@ -65,7 +76,15 @@ class RecentFiles(Auxiliary):
             SHELL32.SHAddToRecentDocs(SHARD_PATHA, filepath)
 
             set_regkey_full(
-                "HKEY_CURRENT_USER\\Software\\Microsoft\\Office\\12.0\\"
+                "HKEY_CURRENT_USER\\Software\\Microsoft\\Office\\14.0\\"
                 "Word\\File MRU\\Item %d" % (idx + 1),
                 "REG_SZ", "[F00000000][T01D1C40000000000]*%s" % filepath,
             )
+
+            if HAVE_PYWIN32:
+                # Add the shortcut file
+                recent_filepath = os.path.join(recent_doc_dir, "%s.lnk" % filename)
+                shell = Dispatch("WScript.Shell")
+                shortcut = shell.CreateShortCut(recent_filepath)
+                shortcut.Targetpath = filepath
+                shortcut.save()
