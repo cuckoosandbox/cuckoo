@@ -496,6 +496,10 @@ class Azure(Machinery):
             platform=platform,
             tags=tags
         )
+        # This way, the scheduler will sleep and try again
+        if not base_class_return_value:
+            return None
+
         # Get details regarding the machine that was acquired
         tag, os_type, platform = _get_image_details(base_class_return_value.label)
         self._delete_leftover_resources()
