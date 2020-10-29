@@ -484,17 +484,11 @@ class Azure(Machinery):
             first_index_of_relevant_machine = next((x for x, val in enumerate(self.machine_queue) if requested_type in val), 0)
             # If there are no relevant machines available based on what the user wants, pop the item at the 0 index
             machine_id = self.machine_queue.pop(first_index_of_relevant_machine)
-        # Note that tags are ignored in future because machine_id is always used (hopefully)
-        # We just want the first machine if no machines in machine_queue (which is scary that it is not synced
-        # which database, but whatever)
-        if not machine_id:
-            tags = None
-        log.debug("Acquiring machine based on the following criteria: machine_id - %s; platform - %s; tags - %s"
-                  % (machine_id, platform, tags))
+        # We are machine_id or bust
         base_class_return_value = super(Azure, self).acquire(
             machine_id=machine_id,
-            platform=platform,
-            tags=tags
+            platform=None,
+            tags=None
         )
         # This way, the scheduler will sleep and try again
         if not base_class_return_value:
