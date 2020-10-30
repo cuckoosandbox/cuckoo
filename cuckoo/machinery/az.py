@@ -61,9 +61,20 @@ class Azure(Machinery):
     DELETING = "deleting"
     ABORTED = "failed"
     ERROR = "machete"
+    SUCCEEDED = "Succeeded"
+    TO_BE_DELETED = "to_be_deleted"
 
     # machine tag that indicates autoscaling.
     AUTOSCALE_CUCKOO = "AUTOSCALE_CUCKOO"
+
+    # Resource name formats
+    nic_name_format = "nic-01-%s"
+    disk_name_format = "osdisk-%s"
+    machine_name_format = "cuckoo-%s-%03d-%s"
+
+    # Peak Throughput which will be used to regulate how many
+    # times delete_leftover_resources is called.
+    peak_throughput = 50
 
     # Arbitrary value for very large JSON results.
     # Relative to Python environment of machine.
@@ -351,7 +362,7 @@ class Azure(Machinery):
         # TODO: find a better way to name machines uniquely
         dynamic_machines_sequence += 1
 
-        new_machine_name = "cuckoo-%s-%03d-%s" % (self.environment, dynamic_machines_sequence, tag)
+        new_machine_name = self.machine_name_format % (self.environment, dynamic_machines_sequence, tag)
 
         # Avoiding collision on machine name if machine is still deleting.
         # TODO: this is only applicable to instances, but what about NICs and disks?
@@ -359,7 +370,7 @@ class Azure(Machinery):
         for machine in machine_names:
             while machine == new_machine_name:
                 dynamic_machines_sequence = dynamic_machines_sequence + 1
-                new_machine_name = "cuckoo-%s-%03d-%s" % (self.environment, dynamic_machines_sequence, tag)
+                new_machine_name = self.machine_name_format % (self.environment, dynamic_machines_sequence, tag)
 
         # Creating the network interface card that will be used for new machine
         new_nic_id, new_nic_ip = self._create_nic(new_machine_name, resultserver_ip)
@@ -496,7 +507,15 @@ class Azure(Machinery):
 
         # Get details regarding the machine that was acquired
         tag, os_type, platform = _get_image_details(base_class_return_value.label)
-        self._delete_leftover_resources()
+
+        # This should only be called intermittently when peak throughput is occurring.
+        # because it has the tendency to use a ton of API calls and can hit the API rate limit
+        greater_than_peak_throughput = len(self.db.list_machines(locked=True)) > self.peak_throughput
+        every_x_tasks = self.db.count_tasks() % self.peak_throughput == 0
+        if greater_than_peak_throughput and every_x_tasks:
+            self._delete_leftover_resources()
+        else:
+            self._delete_leftover_resources()
         # If we acquired a machine due to it being the oldest but it was of the wrong requested type,
         # we want to replace the used machine in the pool while also preparing the pool for
         # the requested type
@@ -607,7 +626,7 @@ class Azure(Machinery):
             }
         }
         # Setting up the name of the NIC
-        new_nic_name = "nic-01-" + computer_name
+        new_nic_name = self.nic_name_format % computer_name
         try:
             # Async call to create a network interface card using the
             # resource group, the name of the NIC and the details of
@@ -650,7 +669,7 @@ class Azure(Machinery):
             }
         }
         # Setting up the name of the disk
-        new_disk_name = "osdisk-" + new_computer_name
+        new_disk_name = self.disk_name_format % new_computer_name
         # Async call to create a disk using the
         # resource group, the name of the disk and the details of
         # to-be-created disk
@@ -728,11 +747,12 @@ class Azure(Machinery):
 
     def _delete_machine(self, machine_name):
         """
-        Deletes an machine by marking the machine's NIC for deletion,
+        Deletes an machine by marking the machine's NIC and disk for deletion,
         and then deleting the machine
         :param machine_name: String indicating the name of the machine to be deleted
         """
         self._mark_nic_for_deletion(machine_name)
+        self._mark_disk_for_deletion(machine_name)
 
         # Deletes a machine, using the resource group and the machine name
         _azure_api_call(
@@ -752,13 +772,37 @@ class Azure(Machinery):
         NICs that are ready to be deleted.
         @param machine_name: the name of an Azure machine
         """
-        nic_name = "nic-01-" + machine_name
+        nic_name = self.nic_name_format % machine_name
         # Tags a NIC, using the resource group, the machine name and the tag
         _azure_api_call(
             self.options.az.group,
             nic_name,
-            tags={"status": "to_be_deleted"},
+            tags={"status": Azure.TO_BE_DELETED},
             operation=self.network_client.network_interfaces.update_tags,
+        )
+
+    def _mark_disk_for_deletion(self, machine_name):
+        """
+        Updates the disk tags so as to act as an identifier for
+        disks that are ready to be deleted. Disks do not have a convenient
+        method to do this.
+        @param machine_name: the name of an Azure machine
+        """
+        disk_name = self.disk_name_format % machine_name
+        # First get the disk
+        disk = _azure_api_call(
+            self.options.az.group,
+            disk_name,
+            operation=self.compute_client.disks.get,
+        )
+        # Then change the tag to "mark" it for deletion
+        disk.tags["status"] = Azure.TO_BE_DELETED
+        # Updates a disk, using the resource group, the disk name and the disk object
+        _azure_api_call(
+            self.options.az.group,
+            disk_name,
+            disk,
+            operation=self.compute_client.disks.create_or_update,
         )
 
     def _delete_machine_from_db(self, label):
@@ -831,11 +875,11 @@ class Azure(Machinery):
             # Three indicators that a NIC is detached from a machine
             nic_is_detached = nic.virtual_machine is None and \
                               nic.primary is None and \
-                              nic.provisioning_state == "Succeeded"
+                              nic.provisioning_state == Azure.SUCCEEDED
 
             # One indicator that a NIC has been marked to be deleted
             nic_is_to_be_deleted = \
-                nic.tags and nic.tags.get("status", "") == "to_be_deleted"
+                nic.tags and nic.tags.get("status", "") == Azure.TO_BE_DELETED
 
             # If four indicators pass, delete NIC
             if nic_is_detached and nic_is_to_be_deleted:
@@ -866,12 +910,10 @@ class Azure(Machinery):
         """
         # Iterate over all OS disks to check if any are not associated to a machine.
         for disk in disks:
-            timestamp = time.mktime(disk.time_created.timetuple())
-            time_delta = datetime.now() - datetime.fromtimestamp(timestamp)
-            # If the disk is unattached and has been around for four minutes,
+            # If the disk is unattached and has the tag that indicates that it can be deleted,
             # then it can be assumed that the disk can be deleted.
             # TODO: is this the best way to confirm if a disk can be deleted?
-            if disk.disk_state == "Unattached" and time_delta.total_seconds() > 240:
+            if disk.disk_state == "Unattached" and disk.tags.get("status", "") == Azure.TO_BE_DELETED:
                 # Async call to delete NIC using the resource group and the disk name
                 _azure_api_call(
                     self.options.az.group,
