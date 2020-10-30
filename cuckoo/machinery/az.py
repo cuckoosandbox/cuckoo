@@ -795,15 +795,16 @@ class Azure(Machinery):
             disk_name,
             operation=self.compute_client.disks.get,
         )
-        # Then change the tag to "mark" it for deletion
-        disk.tags["status"] = Azure.TO_BE_DELETED
-        # Updates a disk, using the resource group, the disk name and the disk object
-        _azure_api_call(
-            self.options.az.group,
-            disk_name,
-            disk,
-            operation=self.compute_client.disks.create_or_update,
-        )
+        if disk and disk.tags:
+            # Then change the tag to "mark" it for deletion
+            disk.tags["status"] = Azure.TO_BE_DELETED
+            # Updates a disk, using the resource group, the disk name and the disk object
+            _azure_api_call(
+                self.options.az.group,
+                disk_name,
+                disk,
+                operation=self.compute_client.disks.create_or_update,
+            )
 
     def _delete_machine_from_db(self, label):
         """
