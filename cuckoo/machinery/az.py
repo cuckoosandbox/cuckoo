@@ -795,9 +795,13 @@ class Azure(Machinery):
             disk_name,
             operation=self.compute_client.disks.get,
         )
-        if disk and disk.tags:
+        if disk:
             # Then change the tag to "mark" it for deletion
-            disk.tags["status"] = Azure.TO_BE_DELETED
+            if disk.tags:
+                disk.tags["status"] = Azure.TO_BE_DELETED
+            else:
+                setattr(disk, "tags", {})
+                disk.tags["status"] = Azure.TO_BE_DELETED
             # Updates a disk, using the resource group, the disk name and the disk object
             _azure_api_call(
                 self.options.az.group,
