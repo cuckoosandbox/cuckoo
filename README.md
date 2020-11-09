@@ -24,6 +24,9 @@ stap -p4 -r $(uname -r) strace.stp -m stap_ -v -g
 ```
 Notice that you just download the script from a different location and that you have to add the `-g` flag.
 
+The Reporting Module "JSONDump" is disabled since it's been replace by the Stix2 Reporting Module.
+If you want to reactivate it go to cuckoo/common/config.py 
+
 ### Some notes on setup
 Host:
 ```shell

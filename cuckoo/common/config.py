@@ -741,7 +741,7 @@ class Config(object):
                 "enabled": Boolean(False),
             },
             "jsondump": {
-                "enabled": Boolean(True),
+                "enabled": Boolean(False),
                 "indent": Int(4),
                 "calls": Boolean(True),
             },
