@@ -86,9 +86,9 @@ class Stix2(Report):
     @staticmethod
     def ip2domain(ip):
         try:
-            return ".".join(socket.gethostbyaddr(ip)[0].split(".")[-2:])
+            return socket.gethostbyaddr(ip)[0]
         except BaseException as e:
-            return str(e)
+            return ip
 
     def line_is_relevant(self, line):
         for word in self.key_words:
