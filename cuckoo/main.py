@@ -817,3 +817,7 @@ def dist_migrate():
         exit(1)
 
     print yellow(">>> Your database migration was successful!")
+
+
+if __name__ == "__main__":
+    main()
