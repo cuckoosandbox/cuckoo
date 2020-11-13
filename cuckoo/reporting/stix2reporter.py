@@ -203,7 +203,7 @@ class Stix2(Report):
                 domain = DomainName(
                     type="domain-name",
                     value=classifier["prepare"](re.search(regex, line).group(1)),
-                    resolves_to_refs=[],
+                    resolves_to_refs=[Stix2.get_ip_stix_object_for_domain(line)],
                     custom_properties={
                         "container_id": Stix2.get_containerid(line),
                         "timestamp": line[:31],
@@ -213,6 +213,32 @@ class Stix2(Report):
                 )
                 self.domains.append(domain)
                 self.all_stix_objects.append(domain)
+
+    @staticmethod
+    def get_ip_stix_object_for_domain(line):
+        ip_regex = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
+        if re.search(ip_regex, line):
+            return IPv4Address(
+                type="ipv4-addr",
+                value=re.search(ip_regex, line),
+                custom_properties={
+                    "container_id": Stix2.get_containerid(line),
+                    "timestamp": line[:31],
+                    "full_output": line,
+                },
+                allow_custom=True,
+            )
+        else:
+            return IPv6Address(
+                type="ipv6-addr",
+                value=re.search(ip_regex, line),
+                custom_properties={
+                    "container_id": Stix2.get_containerid(line),
+                    "timestamp": line[:31],
+                    "full_output": line,
+                },
+                allow_custom=True,
+            )
 
     @staticmethod
     def is_on_whitelist(name):
