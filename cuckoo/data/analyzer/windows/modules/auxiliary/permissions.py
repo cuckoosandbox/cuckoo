@@ -17,12 +17,12 @@ class Permissions(Auxiliary):
         for location in locations:
 
             # First add a non-inherited permission for Admin Read+Execute
-            # icacls <location> /remove:g "BUILTIN\Users" "CREATOR OWNER" /grant:r "BUILTIN\Administrators:(OI)(CI)(RX)" "BUILTIN\\Administrators:(RX)" /t /c /q
+            # icacls <location> /grant:r "BUILTIN\Administrators:(OI)(CI)(RX)" "BUILTIN\\Administrators:(RX)" /t /c /q
             modify_admin_params = ["icacls", location, "/grant:r", "BUILTIN\\Administrators:(OI)(CI)(RX)", "BUILTIN\\Administrators:(RX)", "/t", "/c", "/q"]
             call(modify_admin_params, startupinfo=self.startupinfo)
 
             # Then remove all inherited permissions so that only SYSTEM has Write access
-            # icacls <location> /inheritancelevel:d /t /c /q
+            # icacls <location> /inheritancelevel:r /t /c /q
             inheritance_params = ["icacls", location, "/inheritancelevel:r", "/t", "/c", "/q"]
             call(inheritance_params, startupinfo=self.startupinfo)
 
