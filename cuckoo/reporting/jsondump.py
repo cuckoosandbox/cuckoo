@@ -43,7 +43,7 @@ class JsonDump(Report):
                     # If the number of calls according to apistats is too high,
                     # then start a counter
                     if call_count > self.call_limit:
-                        calls_to_be_limited[pid][str(call_count)] = 0
+                        calls_to_be_limited[pid][str(call)] = 0
 
             # Now that we have the pid + api call to limit relationship, we can apply it to processes
             for process in behaviour.get("processes", []):
