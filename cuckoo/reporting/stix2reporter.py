@@ -1,6 +1,7 @@
 import re
 import socket
 from uuid import uuid1
+from datetime import datetime
 
 from stix2 import (
     File,
@@ -32,10 +33,14 @@ class Stix2(Report):
 
     def run(self, results):
         self.init()
+
+        print "start " + str(datetime.now().time())
         syscalls = open(self.analysis_path + "/logs/all.stap", "r").read()
         self.CWD = self.find_execution_dir_of_build_script(syscalls)
-
+        print "execution dir gefunden " + str(datetime.now().time())
         self.parse_syscalls_to_stix(syscalls)
+
+        print "syscalls zu stix geparsed" + str(datetime.now().time())
         stix_malware_analysis = MalwareAnalysis(
             type="malware-analysis",
             product="cuckoo-sandbox",
@@ -43,6 +48,7 @@ class Stix2(Report):
         )
         self.all_stix_objects.append(stix_malware_analysis)
 
+        print "stix groupings " + str(datetime.now().time())
         self.add_stix_groupings()
 
         stix_bundle = Bundle(
@@ -51,6 +57,8 @@ class Stix2(Report):
             objects=self.all_stix_objects,
             allow_custom=True,
         )
+
+        print "Write report" + str(datetime.now().time())
         self.write_report(stix_bundle)
 
     def init(self):
@@ -171,6 +179,7 @@ class Stix2(Report):
                 self.files_read.append(file)
         if classifier["name"] == "hosts_connected":
             ip_regex = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
+            
             if re.search(ip_regex, line):
                 ipv4 = IPv4Address(
                     type="ipv4-addr",
@@ -203,7 +212,7 @@ class Stix2(Report):
                 domain = DomainName(
                     type="domain-name",
                     value=classifier["prepare"](re.search(regex, line).group(1)),
-                    resolves_to_refs=[Stix2.get_ip_stix_object_for_domain(line)],
+                    resolves_to_refs=[self.get_ip_stix_object_for_domain(line, re.search(regex, line).group(1))],
                     custom_properties={
                         "container_id": Stix2.get_containerid(line),
                         "timestamp": line[:31],
@@ -214,13 +223,12 @@ class Stix2(Report):
                 self.domains.append(domain)
                 self.all_stix_objects.append(domain)
 
-    @staticmethod
-    def get_ip_stix_object_for_domain(line):
-        ip_regex = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
-        if re.search(ip_regex, line):
-            return IPv4Address(
+    def get_ip_stix_object_for_domain(self, line, ip):
+        ipv4_regex = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
+        if re.search(ipv4_regex, line):
+            ip = IPv4Address(
                 type="ipv4-addr",
-                value=re.search(ip_regex, line),
+                value=ip,
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
                     "timestamp": line[:31],
@@ -228,10 +236,12 @@ class Stix2(Report):
                 },
                 allow_custom=True,
             )
+            self.ipv4.append(ip)
+            self.all_stix_objects.append(ip)
         else:
-            return IPv6Address(
+            ip = IPv6Address(
                 type="ipv6-addr",
-                value=re.search(ip_regex, line),
+                value=ip,
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
                     "timestamp": line[:31],
@@ -239,6 +249,9 @@ class Stix2(Report):
                 },
                 allow_custom=True,
             )
+            self.ipv6.append(ip)
+            self.all_stix_objects.append(ip)
+        return ip
 
     @staticmethod
     def is_on_whitelist(name):
@@ -311,12 +324,13 @@ class Stix2(Report):
                 )
             )
         if self.ipv4 or self.ipv6:
+            self.ipv4.extend(self.ipv6)
             self.all_stix_objects.append(
                 Grouping(
                     type="grouping",
                     name="hosts_connected",
                     context="suspicious-activity",
-                    object_refs=self.ipv4.extend(self.ipv6),
+                    object_refs=self.ipv4,
                 )
             )
         if self.domains:
@@ -334,3 +348,8 @@ class Stix2(Report):
         str_bundle = stix_bundle.serialize(pretty=False, indent=4)
         output_file.writelines(str_bundle)
         output_file.close()
+
+
+if __name__ == "__main__":
+    reporter = Stix2()
+    reporter.run(None)
