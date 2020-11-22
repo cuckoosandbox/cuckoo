@@ -1,4 +1,5 @@
 import re
+import logging
 import socket
 from uuid import uuid1
 from datetime import datetime
@@ -16,6 +17,7 @@ from stix2 import (
 
 from cuckoo.common.abstracts import Report
 
+log = logging.getLogger(__name__)
 
 class Stix2(Report):
     CWD = ""
@@ -34,13 +36,13 @@ class Stix2(Report):
     def run(self, results):
         self.init()
 
-        print "start " + str(datetime.now().time())
+        log.debug("start stix reporter")
         syscalls = open(self.analysis_path + "/logs/all.stap", "r").read()
         self.CWD = self.find_execution_dir_of_build_script(syscalls)
-        print "execution dir gefunden " + str(datetime.now().time())
+        log.debug("found execution dir")
         self.parse_syscalls_to_stix(syscalls)
+        log.debug("parsed syscalls to stix objects")
 
-        print "syscalls zu stix geparsed" + str(datetime.now().time())
         stix_malware_analysis = MalwareAnalysis(
             type="malware-analysis",
             product="cuckoo-sandbox",
@@ -48,8 +50,8 @@ class Stix2(Report):
         )
         self.all_stix_objects.append(stix_malware_analysis)
 
-        print "stix groupings " + str(datetime.now().time())
         self.add_stix_groupings()
+        log.debug("created stix groupings")
 
         stix_bundle = Bundle(
             type="bundle",
@@ -58,7 +60,7 @@ class Stix2(Report):
             allow_custom=True,
         )
 
-        print "Write report" + str(datetime.now().time())
+        log.debug("writing report to disk and serializing it")
         self.write_report(stix_bundle)
 
     def init(self):
