@@ -28,6 +28,7 @@ probe begin  {
 probe nd_syscall.* {
     if (pid() == target()) next         # skip our own helper process
     containerId= getDockerContainerId()
+    if (! isNameOnWhiteList(name)) next
     if ((!target_set_pid(pid())) && containerId=="") next    # Skip the process that are not children of the cuckoo agent and that are not running inside a docker container
 
     t = tid()
@@ -48,9 +49,24 @@ probe nd_syscall.* {
 probe nd_syscall.*.return {
     if (pid() == target()) next                                             # Skip if the pid belongs to the cuckoo agent, the stap.io process also has this pid
     containerId= getDockerContainerId()
+    if (! isNameOnWhiteList(name)) next
     if ((!target_set_pid(pid())) && containerId=="") next    # Skip the process that are not children of the cuckoo agent and that are not running inside a docker container
 
     report(name, thread_argstr[tid()], retstr, containerId)
+}
+
+# unlink unlinkat rmdir openat rename link mkdir connect execve
+function isNameOnWhiteList:long(name){
+    if(name == "openat") return 1
+    if(name == "unlink") return 1
+    if(name == "unlinkat") return 1
+    if(name == "rmdir") return 1
+    if(name == "rename") return 1
+    if(name == "link") return 1
+    if(name == "mkdir") return 1
+    if(name == "connect") return 1
+    if(name == "execve") return 1
+    return 0
 }
 
 function report(syscall_name, syscall_argstr, syscall_retstr, containerId) {
