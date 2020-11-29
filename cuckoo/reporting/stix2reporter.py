@@ -45,6 +45,7 @@ class Stix2(Report):
 
         stix_malware_analysis = MalwareAnalysis(
             type="malware-analysis",
+            id="malware-analysis--" + str(uuid1()),
             product="cuckoo-sandbox",
             analysis_sco_refs=self.all_stix_objects,
         )
@@ -149,6 +150,7 @@ class Stix2(Report):
         if classifier["name"] == "processes_created":
             process = Process(
                 type="process",
+                id="process--" + str(uuid1()),
                 command_line=classifier["prepare"](re.search(regex, line).group(1)),
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
@@ -185,6 +187,7 @@ class Stix2(Report):
             if re.search(ip_regex, line):
                 ipv4 = IPv4Address(
                     type="ipv4-addr",
+                    id="ipv4-addr--" + str(uuid1()),
                     value=classifier["prepare"](re.search(regex, line).group(1)),
                     custom_properties={
                         "container_id": Stix2.get_containerid(line),
@@ -198,6 +201,7 @@ class Stix2(Report):
             else:
                 ipv6 = IPv6Address(
                     type="ipv6-addr",
+                    id="ipv6-addr--" + str(uuid1()),
                     value=classifier["prepare"](re.search(regex, line).group(1)),
                     custom_properties={
                         "container_id": Stix2.get_containerid(line),
@@ -213,6 +217,7 @@ class Stix2(Report):
             if domain_name:
                 domain = DomainName(
                     type="domain-name",
+                    id="domain-name--" + str(uuid1()),
                     value=classifier["prepare"](re.search(regex, line).group(1)),
                     resolves_to_refs=[self.get_ip_stix_object_for_domain(line, re.search(regex, line).group(1))],
                     custom_properties={
@@ -230,6 +235,7 @@ class Stix2(Report):
         if re.search(ipv4_regex, line):
             ip = IPv4Address(
                 type="ipv4-addr",
+                id="ipv4-addr--" + str(uuid1()),
                 value=ip,
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
@@ -243,6 +249,7 @@ class Stix2(Report):
         else:
             ip = IPv6Address(
                 type="ipv6-addr",
+                id="ipv6-addr--" + str(uuid1()),
                 value=ip,
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
@@ -293,6 +300,7 @@ class Stix2(Report):
             self.all_stix_objects.append(
                 Grouping(
                     type="grouping",
+                    id="grouping--" + str(uuid1()),
                     name="processes_created",
                     context="suspicious-activity",
                     object_refs=self.processes,
@@ -302,6 +310,7 @@ class Stix2(Report):
             self.all_stix_objects.append(
                 Grouping(
                     type="grouping",
+                    id="grouping--" + str(uuid1()),
                     name="files_read",
                     context="suspicious-activity",
                     object_refs=self.files_read,
@@ -311,6 +320,7 @@ class Stix2(Report):
             self.all_stix_objects.append(
                 Grouping(
                     type="grouping",
+                    id="grouping--" + str(uuid1()),
                     name="files_written",
                     context="suspicious-activity",
                     object_refs=self.files_written,
@@ -320,6 +330,7 @@ class Stix2(Report):
             self.all_stix_objects.append(
                 Grouping(
                     type="grouping",
+                    id="grouping--" + str(uuid1()),
                     name="files_removed",
                     context="suspicious-activity",
                     object_refs=self.files_removed,
@@ -330,6 +341,7 @@ class Stix2(Report):
             self.all_stix_objects.append(
                 Grouping(
                     type="grouping",
+                    id="grouping--" + str(uuid1()),
                     name="hosts_connected",
                     context="suspicious-activity",
                     object_refs=self.ipv4,
@@ -339,6 +351,7 @@ class Stix2(Report):
             self.all_stix_objects.append(
                 Grouping(
                     type="grouping",
+                    id="grouping--" + str(uuid1()),
                     name="domains",
                     context="suspicious-activity",
                     object_refs=self.domains,
