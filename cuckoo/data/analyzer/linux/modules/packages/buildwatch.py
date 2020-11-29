@@ -4,6 +4,7 @@ import os
 from zipfile import ZipFile
 
 from lib.common.abstracts import Package
+from lib.common.results import NetlogFile
 from lib.common.exceptions import CuckooPackageError
 
 log = logging.getLogger(__name__)
@@ -30,4 +31,17 @@ class Buildwatch(Package):
         self.unzip(path)
         instructions = os.path.join(os.getcwd(), ".buildwatch.sh")
         os.chmod(instructions, 0o755)
-        return self.execute(["sh", "-c", instructions])
+        log.info("Starting .buildwatch.sh")
+        return self.execute(["sh", "-c", instructions, ">", "program.log"])
+
+    @staticmethod
+    def _upload_file(local, remote):
+        if os.path.exists(local):
+            nf = NetlogFile(remote)
+            with open(local, "rb") as f:
+                for chunk in f:
+                    nf.sock.sendall(chunk)  # dirty direct send, no reconnecting
+            nf.close()
+
+    def finish(self):
+        self._upload_file("program.log", "logs/program.log")
