@@ -156,7 +156,7 @@ class Stix2(Report):
                 command_line=classifier["prepare"](re.search(regex, line).group(1)),
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
-                    "timestamp": line[:31],
+                    "timestamp": line[:24],
                     "full_output": line,
                     "executable_path": Stix2.get_executable_path(line),
                 },
@@ -169,10 +169,10 @@ class Stix2(Report):
                 type="file",
                 id="file--" + str(uuid1()),
                 name=classifier["prepare"](re.search(regex, line).group(1)).split("/")[-1],
-                parent_directory_ref=self.get_parent_dir(classifier["prepare"](re.search(regex, line).group(1))),
+                parent_directory_ref=self.get_parent_dir(classifier["prepare"](re.search(regex, line).group(1)), line[:24]),
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
-                    "timestamp": line[:31],
+                    "timestamp": line[:24],
                     "full_output": line,
                 },
                 allow_custom=True,
@@ -194,7 +194,7 @@ class Stix2(Report):
                     value=classifier["prepare"](re.search(regex, line).group(1)),
                     custom_properties={
                         "container_id": Stix2.get_containerid(line),
-                        "timestamp": line[:31],
+                        "timestamp": line[:24],
                         "full_output": line,
                     },
                     allow_custom=True,
@@ -208,7 +208,7 @@ class Stix2(Report):
                     value=classifier["prepare"](re.search(regex, line).group(1)),
                     custom_properties={
                         "container_id": Stix2.get_containerid(line),
-                        "timestamp": line[:31],
+                        "timestamp": line[:24],
                         "full_output": line,
                     },
                     allow_custom=True,
@@ -225,7 +225,7 @@ class Stix2(Report):
                     resolves_to_refs=[self.get_ip_stix_object_for_domain(line, re.search(regex, line).group(1))],
                     custom_properties={
                         "container_id": Stix2.get_containerid(line),
-                        "timestamp": line[:31],
+                        "timestamp": line[:24],
                         "full_output": line,
                     },
                     allow_custom=True,
@@ -233,7 +233,7 @@ class Stix2(Report):
                 self.domains.append(domain)
                 self.all_stix_objects.append(domain)
 
-    def get_parent_dir(self, filepath):
+    def get_parent_dir(self, filepath, timestamp):
         path = filepath.split("/")[:-1]
         text_path = ""
         for p in path:
@@ -246,7 +246,10 @@ class Stix2(Report):
         dir = Directory(
             type="directory",
             path=text_path,
-            id="directory--" + str(uuid1())
+            id="directory--" + str(uuid1()),
+            custom_properties={
+                "timestamp": timestamp
+            }
         )
         self.directories.append(dir)
         self.all_stix_objects.append(dir)
@@ -261,7 +264,7 @@ class Stix2(Report):
                 value=ip,
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
-                    "timestamp": line[:31],
+                    "timestamp": line[:24],
                     "full_output": line,
                 },
                 allow_custom=True,
@@ -275,7 +278,7 @@ class Stix2(Report):
                 value=ip,
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
-                    "timestamp": line[:31],
+                    "timestamp": line[:24],
                     "full_output": line,
                 },
                 allow_custom=True,
