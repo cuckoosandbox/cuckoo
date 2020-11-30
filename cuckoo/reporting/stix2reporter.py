@@ -168,7 +168,7 @@ class Stix2(Report):
             file = File(
                 type="file",
                 id="file--" + str(uuid1()),
-                name=classifier["prepare"](re.search(regex, line).group(1)),
+                name=classifier["prepare"](re.search(regex, line).group(1)).split("/")[-1],
                 parent_directory_ref=self.get_parent_dir(classifier["prepare"](re.search(regex, line).group(1))),
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
