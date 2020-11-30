@@ -13,6 +13,7 @@ from stix2 import (
     DomainName,
     Grouping,
     MalwareAnalysis,
+    Directory,
 )
 
 from cuckoo.common.abstracts import Report
@@ -32,6 +33,7 @@ class Stix2(Report):
     domains = []
     classifiers = []
     key_words = []
+    directories = []
 
     def run(self, results):
         self.init()
@@ -167,6 +169,7 @@ class Stix2(Report):
                 type="file",
                 id="file--" + str(uuid1()),
                 name=classifier["prepare"](re.search(regex, line).group(1)),
+                parent_directory_ref=self.get_parent_dir(classifier["prepare"](re.search(regex, line).group(1))),
                 custom_properties={
                     "container_id": Stix2.get_containerid(line),
                     "timestamp": line[:31],
@@ -229,6 +232,25 @@ class Stix2(Report):
                 )
                 self.domains.append(domain)
                 self.all_stix_objects.append(domain)
+
+    def get_parent_dir(self, filepath):
+        path = filepath.split("/")[:-1]
+        text_path = ""
+        for p in path:
+            text_path = text_path + p + "/"
+
+        for dir in self.directories:
+            if text_path == dir.path:
+                return dir
+
+        dir = Directory(
+            type="directory",
+            path=text_path,
+            id="directory--" + str(uuid1())
+        )
+        self.directories.append(dir)
+        self.all_stix_objects.append(dir)
+        return dir
 
     def get_ip_stix_object_for_domain(self, line, ip):
         ipv4_regex = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
@@ -355,6 +377,16 @@ class Stix2(Report):
                     name="domains",
                     context="suspicious-activity",
                     object_refs=self.domains,
+                )
+            )
+        if self.directories:
+            self.all_stix_objects.append(
+                Grouping(
+                    type="grouping",
+                    id="grouping--" + str(uuid1()),
+                    name="directories",
+                    context="suspicious-activity",
+                    object_refs=self.directories,
                 )
             )
 
