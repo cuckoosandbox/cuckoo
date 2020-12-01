@@ -171,6 +171,7 @@ class Stix2(Report):
                 name=classifier["prepare"](re.search(regex, line).group(1)).split("/")[-1],
                 parent_directory_ref=self.get_parent_dir(classifier["prepare"](re.search(regex, line).group(1)), line[:24]),
                 custom_properties={
+                    "parent_directory_str": "/".join(classifier["prepare"](re.search(regex, line).group(1)).split("/")[:-1]),
                     "container_id": Stix2.get_containerid(line),
                     "timestamp": line[:24],
                     "full_output": line,
