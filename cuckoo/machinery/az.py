@@ -8,10 +8,10 @@
 import logging
 import threading
 import sys
-from datetime import datetime
 import time
 import socket
 import operator
+import inspect
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -48,6 +48,8 @@ number_of_win10_machines_being_created = 0
 number_of_ub1804_machines_being_created = 0
 # Variable representing how many machines have been created
 dynamic_machines_sequence = 0
+
+api_call_counts = {}
 
 
 class Azure(Machinery):
@@ -949,6 +951,7 @@ def _azure_api_call(*args, **kwargs):
     @raise CuckooMachineError: if there is a problem with the Azure call
     @return: dict containing results of API call
     """
+    global api_call_counts
     # I figured this was the most concrete way to guarantee that an API method was being passed
     if not kwargs["operation"]:
         raise CuckooMachineError("kwargs in _azure_api_call requires 'operation' parameter.")
@@ -956,6 +959,19 @@ def _azure_api_call(*args, **kwargs):
 
     # Note that tags is a special keyword parameter in some operations
     tags = kwargs.get("tags", None)
+
+    curframe = inspect.currentframe()
+    calframe = inspect.getouterframes(curframe, 2)
+    caller_name = calframe[1][3]
+    operation_string = str(operation)
+    operation_items = operation_string.split(" ")
+    method = operation_items[2]
+    api_count_key = "%s:%s" % (caller_name, method)
+    if api_call_counts.get(api_count_key):
+        api_call_counts[api_count_key] += 1
+    else:
+        api_call_counts[api_count_key] = 1
+    log.debug("API call counts: %s", api_call_counts)
 
     # This is used for logging
     api_call = "%s(%s)" % (operation, args)
