@@ -21,8 +21,6 @@ try:
     from azure.mgmt.compute import ComputeManagementClient
     from azure.mgmt.network import NetworkManagementClient
     from azure.mgmt.compute.models import DiskCreateOption
-
-    from msrestazure.azure_exceptions import CloudError
     HAVE_AZURE = True
 except ImportError:
     HAVE_AZURE = False
@@ -412,6 +410,7 @@ class Azure(Machinery):
         # There are occasions where Azure fails to create an machine.
         # When this happens, just mark the NIC for deletion and move on
         if new_machine is None:
+            _resize_machines_being_created(tag, "-")
             log.debug("Failed to create machine. Look for a CuckooMachineError that may indicate why this happened.")
             self._mark_nic_for_deletion(new_machine_name)
             # TODO: Handle this error better
@@ -979,9 +978,9 @@ def _azure_api_call(*args, **kwargs):
     try:
         log.debug("Trying %s", api_call)
         results = operation(*args, tags=tags)
-    except CloudError as exc:
-        log.debug("Failed to %s due to the Azure error '%s': '%s'.",
-                  api_call, exc.error.error, exc.message)
+    except Exception as exc:
+        log.warning("Failed to %s due to the Azure error '%s': '%s'.",
+                    api_call, exc.error.error, exc.message)
         raise CuckooMachineError("%s:%s" % (exc.error.error, exc.message))
     return results
 
