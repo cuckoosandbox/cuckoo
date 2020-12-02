@@ -52,16 +52,19 @@ class JsonDump(Report):
                 self.calls_to_be_restored[pid] = process_calls
 
                 # If a process has no calls that need to be limited, move on
-                if pid not in calls_to_be_limited:
+                if pid not in calls_to_be_limited or not calls_to_be_limited.get(pid, {}):
                     continue
 
                 calls_to_be_limited_for_pid = calls_to_be_limited[pid]
                 limited_calls = []
                 for call in process_calls:
                     api = str(call["api"])
-                    if api not in calls_to_be_limited_for_pid or calls_to_be_limited_for_pid[api] >= self.call_limit:
+                    # Skip call if over limit
+                    if api in calls_to_be_limited_for_pid and calls_to_be_limited_for_pid[api] >= self.call_limit:
                         continue
-                    calls_to_be_limited_for_pid[api] += 1
+                    # Increment count if call is to be limited
+                    elif api in calls_to_be_limited_for_pid:
+                        calls_to_be_limited_for_pid[api] += 1
                     limited_calls.append(call)
                 process["calls"] = limited_calls
             return
