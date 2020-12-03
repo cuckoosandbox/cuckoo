@@ -515,6 +515,8 @@ class Azure(Machinery):
         every_x_tasks = self.db.count_tasks() % self.peak_throughput == 0
         if greater_than_peak_throughput and every_x_tasks:
             self._delete_leftover_resources()
+        elif greater_than_peak_throughput and not every_x_tasks:
+            pass
         else:
             self._delete_leftover_resources()
         # If we acquired a machine due to it being the oldest but it was of the wrong requested type,
