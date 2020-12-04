@@ -173,12 +173,12 @@ class AnalysisManager(threading.Thread):
                                         platform=self.task.platform,
                                         tags=self.task.tags)
 
-            # If no machine is available at this moment, wait for one second
+            # If no machine is available at this moment, wait for ten seconds
             # and try again.
             if not machine:
                 machine_lock.release()
                 log.debug("Task #%d: no machine available yet", self.task.id)
-                time.sleep(1)
+                time.sleep(10)
             else:
                 log.info(
                     "Task #%d: acquired machine %s (label=%s)",
