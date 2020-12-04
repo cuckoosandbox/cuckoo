@@ -115,12 +115,15 @@ class Azure(Machinery):
 
         # Resource name regexes
         regex_or = "(" + Azure.WINDOWS_7 + "|" + Azure.WINDOWS_10 + "|" + Azure.UBUNTU_1804 + ")"
-        resource_regex_base = Azure.MACHINE_NAME_FORMAT.replace("%03d", "[0-9]{3}") % (self.environment, regex_or)
+        resource_regex_base = Azure.MACHINE_NAME_FORMAT.replace("%03d", "[0-9]{3,}") % (self.environment, regex_or)
         self.nic_name_regex = Azure.NIC_NAME_FORMAT % resource_regex_base
         self.disk_name_regex = Azure.DISK_NAME_FORMAT % resource_regex_base
 
         # Starting the thread that sets API clients periodically
         self._thr_refresh_clients()
+
+        # Starting the thread that deletes leftover resources periodically
+        self._thr_delete_leftover_resources()
 
     def _get_credentials(self):
         """
@@ -167,6 +170,20 @@ class Azure(Machinery):
 
         # Refresh clients every half hour
         threading.Timer(1800, self._thr_refresh_clients).start()
+
+    def _thr_delete_leftover_resources(self):
+        """
+        A thread on a 5 minute timer that deletes the leftover NICs and disks.
+        This way we do not have to wait for a new task to trigger the deletion of
+        leftover resources
+        """
+        global nics_to_delete
+        global disks_to_delete
+        if nics_to_delete or disks_to_delete:
+            self._delete_leftover_resources()
+
+        # Starting the thread that deletes leftover resources periodically
+        threading.Timer(300, self._thr_delete_leftover_resources).start()
 
     def _initialize_check(self):
         """
@@ -960,6 +977,11 @@ class Azure(Machinery):
                 self._delete_machine(machine.name)
 
     def _add_resource_to_delete_set(self, resource_type, name):
+        """
+        Used to add resources to set for deletion
+        @param resource_type: the type of resource to be deleted
+        @param name: the name of the resource to be deleted
+        """
         global nics_to_delete
         global disks_to_delete
         valid_resource_types_to_delete = [self.NIC_KEY, self.DISK_KEY]
