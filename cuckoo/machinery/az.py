@@ -12,6 +12,7 @@ import time
 import socket
 import operator
 import inspect
+import re
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -46,6 +47,10 @@ number_of_win10_machines_being_created = 0
 number_of_ub1804_machines_being_created = 0
 # Variable representing how many machines have been created
 dynamic_machines_sequence = 0
+# Variable containing names of NICs to delete
+nics_to_delete = set()
+# Variable containing names of disks to delete
+disks_to_delete = set()
 
 api_call_counts = {}
 
@@ -62,15 +67,23 @@ class Azure(Machinery):
     ABORTED = "failed"
     ERROR = "machete"
     SUCCEEDED = "Succeeded"
-    TO_BE_DELETED = "to_be_deleted"
 
     # machine tag that indicates autoscaling.
     AUTOSCALE_CUCKOO = "AUTOSCALE_CUCKOO"
 
+    # Resource Keys
+    NIC_KEY = "nic"
+    DISK_KEY = "disk"
+
     # Resource name formats
-    nic_name_format = "nic-01-%s"
-    disk_name_format = "osdisk-%s"
-    machine_name_format = "cuckoo-%s-%03d-%s"
+    NIC_NAME_FORMAT = "nic-01-%s"
+    DISK_NAME_FORMAT = "osdisk-%s"
+    MACHINE_NAME_FORMAT = "cuckoo-%s-%03d-%s"
+
+    # Operating System Tags
+    WINDOWS_7 = "win7"
+    WINDOWS_10 = "win10"
+    UBUNTU_1804 = "ub1804"
 
     # Peak Throughput which will be used to regulate how many
     # times delete_leftover_resources is called.
@@ -98,6 +111,13 @@ class Azure(Machinery):
         self.initializing = True
         self.dynamic_machines_limit = self.options.az.dynamic_machines_limit
         self.running_machines_gap = float(self.options.az.running_machines_gap/100.0)
+        self.environment = self.options.az.environment
+
+        # Resource name regexes
+        regex_or = "(" + Azure.WINDOWS_7 + "|" + Azure.WINDOWS_10 + "|" + Azure.UBUNTU_1804 + ")"
+        resource_regex_base = Azure.MACHINE_NAME_FORMAT.replace("%03d", "[0-9]{3}") % (self.environment, regex_or)
+        self.nic_name_regex = Azure.NIC_NAME_FORMAT % resource_regex_base
+        self.disk_name_regex = Azure.DISK_NAME_FORMAT % resource_regex_base
 
         # Starting the thread that sets API clients periodically
         self._thr_refresh_clients()
@@ -157,7 +177,6 @@ class Azure(Machinery):
         - Create the required amount of machines as specified
         in az.conf
         """
-        self.environment = self.options.az.environment
 
         # Retrieving the subnet ID where we will be creating victim machines,
         # using the Azure resource group, virtual network and subnet name
@@ -173,6 +192,26 @@ class Azure(Machinery):
             self.options.az.group,
             operation=self.compute_client.virtual_machines.list
         )
+
+        # Retrieving all NICs, using the resource group
+        nics = _azure_api_call(
+            self.options.az.group,
+            operation=self.network_client.network_interfaces.list
+        )
+
+        # Retrieving all disks, using the resource group
+        disks = _azure_api_call(
+            self.options.az.group,
+            operation=self.compute_client.disks.list_by_resource_group
+        )
+
+        # Check if old nics from previous Cuckoo runs...
+        for nic in nics:
+            self._add_resource_to_delete_set(self.NIC_KEY, nic.name)
+
+        # Check if old disks from previous Cuckoo runs...
+        for disk in disks:
+            self._add_resource_to_delete_set(self.DISK_KEY, disk.name)
 
         # Cleaning up auto-scaled machines from previous Cuckoo runs...
         # Check if any machines in Azure resource group are auto-scaled
@@ -270,9 +309,9 @@ class Azure(Machinery):
 
         # Based on the tag related to the snapshot id, we are using the global count of number of
         # relevant machines currently being created to factor into our calculations for how many machines to create
-        if tag == "win10":
+        if tag == self.WINDOWS_10:
             number_of_relevant_machines_being_created = number_of_win10_machines_being_created
-        elif tag == "ub1804":
+        elif tag == self.UBUNTU_1804:
             number_of_relevant_machines_being_created = number_of_ub1804_machines_being_created
         else:
             number_of_relevant_machines_being_created = number_of_win7_machines_being_created
@@ -362,15 +401,20 @@ class Azure(Machinery):
         # TODO: find a better way to name machines uniquely
         dynamic_machines_sequence += 1
 
-        new_machine_name = self.machine_name_format % (self.environment, dynamic_machines_sequence, tag)
+        new_machine_name = self.MACHINE_NAME_FORMAT % (self.environment, dynamic_machines_sequence, tag)
 
         # Avoiding collision on machine name if machine is still deleting.
         # TODO: this is only applicable to instances, but what about NICs and disks?
         machine_names = self._list()
-        for machine in machine_names:
-            while machine == new_machine_name:
+        collision_exists = True  # Assuming True until proven otherwise
+        while collision_exists:
+            nic_name = self.NIC_NAME_FORMAT % new_machine_name
+            disk_name = self.DISK_NAME_FORMAT % new_machine_name
+            if nic_name in nics_to_delete or disk_name in disks_to_delete or new_machine_name in machine_names:
                 dynamic_machines_sequence = dynamic_machines_sequence + 1
-                new_machine_name = self.machine_name_format % (self.environment, dynamic_machines_sequence, tag)
+                new_machine_name = self.MACHINE_NAME_FORMAT % (self.environment, dynamic_machines_sequence, tag)
+            else:
+                collision_exists = False
 
         # Creating the network interface card that will be used for new machine
         new_nic_id, new_nic_ip = self._create_nic(new_machine_name, resultserver_ip)
@@ -412,7 +456,8 @@ class Azure(Machinery):
         if new_machine is None:
             _resize_machines_being_created(tag, "-")
             log.debug("Failed to create machine. Look for a CuckooMachineError that may indicate why this happened.")
-            self._mark_nic_for_deletion(new_machine_name)
+            new_nic_name = self.NIC_NAME_FORMAT % new_machine_name
+            self._add_resource_to_delete_set(self.NIC_KEY, new_nic_name)
             # TODO: Handle this error better
             return
 
@@ -629,7 +674,7 @@ class Azure(Machinery):
             }
         }
         # Setting up the name of the NIC
-        new_nic_name = self.nic_name_format % computer_name
+        new_nic_name = self.NIC_NAME_FORMAT % computer_name
         try:
             # Async call to create a network interface card using the
             # resource group, the name of the NIC and the details of
@@ -672,7 +717,7 @@ class Azure(Machinery):
             }
         }
         # Setting up the name of the disk
-        new_disk_name = self.disk_name_format % new_computer_name
+        new_disk_name = self.DISK_NAME_FORMAT % new_computer_name
         # Async call to create a disk using the
         # resource group, the name of the disk and the details of
         # to-be-created disk
@@ -754,8 +799,11 @@ class Azure(Machinery):
         and then deleting the machine
         :param machine_name: String indicating the name of the machine to be deleted
         """
-        self._mark_nic_for_deletion(machine_name)
-        self._mark_disk_for_deletion(machine_name)
+        # Adding the names of the machine's associated resources to delete sets
+        nic_name = self.NIC_NAME_FORMAT % machine_name
+        self._add_resource_to_delete_set(self.NIC_KEY, nic_name)
+        disk_name = self.DISK_NAME_FORMAT % machine_name
+        self._add_resource_to_delete_set(self.DISK_KEY, disk_name)
 
         # Deletes a machine, using the resource group and the machine name
         _azure_api_call(
@@ -768,50 +816,6 @@ class Azure(Machinery):
         # then delete the machine entry from the DB. Otherwise, it wouldn't be in the DB.
         if not self.initializing:
             self._delete_machine_from_db(machine_name)
-
-    def _mark_nic_for_deletion(self, machine_name):
-        """
-        Updates the NIC tags so as to act as an identifier for
-        NICs that are ready to be deleted.
-        @param machine_name: the name of an Azure machine
-        """
-        nic_name = self.nic_name_format % machine_name
-        # Tags a NIC, using the resource group, the machine name and the tag
-        _azure_api_call(
-            self.options.az.group,
-            nic_name,
-            tags={"status": Azure.TO_BE_DELETED},
-            operation=self.network_client.network_interfaces.update_tags,
-        )
-
-    def _mark_disk_for_deletion(self, machine_name):
-        """
-        Updates the disk tags so as to act as an identifier for
-        disks that are ready to be deleted. Disks do not have a convenient
-        method to do this.
-        @param machine_name: the name of an Azure machine
-        """
-        disk_name = self.disk_name_format % machine_name
-        # First get the disk
-        disk = _azure_api_call(
-            self.options.az.group,
-            disk_name,
-            operation=self.compute_client.disks.get,
-        )
-        if disk:
-            # Then change the tag to "mark" it for deletion
-            if disk.tags:
-                disk.tags["status"] = Azure.TO_BE_DELETED
-            else:
-                setattr(disk, "tags", {})
-                disk.tags["status"] = Azure.TO_BE_DELETED
-            # Updates a disk, using the resource group, the disk name and the disk object
-            _azure_api_call(
-                self.options.az.group,
-                disk_name,
-                disk,
-                operation=self.compute_client.disks.create_or_update,
-            )
 
     def _delete_machine_from_db(self, label):
         """
@@ -840,17 +844,30 @@ class Azure(Machinery):
         Used to clean up the resources that aren't cleaned up when a machine is
         deleted.
         """
+        global nics_to_delete
+        global disks_to_delete
+
         # Lists NICs, using the resource group
-        nics = _azure_api_call(
+        paged_nics = _azure_api_call(
             self.options.az.group,
             operation=self.network_client.network_interfaces.list
         )
+        # We only want the nics that are to be deleted
+        nics = [nic for nic in paged_nics]
+        for nic in nics[:]:
+            if nic.name not in nics_to_delete:
+                nics.remove(nic)
 
         # Lists disks, using the resource group
-        disks = _azure_api_call(
+        paged_disks = _azure_api_call(
             self.options.az.group,
             operation=self.compute_client.disks.list_by_resource_group
         )
+        # We only want the disks that are to be deleted
+        disks = [disk for disk in paged_disks]
+        for disk in disks[:]:
+            if disk.name not in disks_to_delete:
+                disks.remove(disk)
 
         # Lists machines, using the resource group
         machines = _azure_api_call(
@@ -874,6 +891,8 @@ class Azure(Machinery):
         Used to delete leftover NICs
         @param nics: a list of network interface cards
         """
+        global nics_to_delete
+
         if self.initializing:
             threads = []
         # Iterate over all network interface cards to check if any are not
@@ -885,18 +904,14 @@ class Azure(Machinery):
                               nic.primary is None and \
                               nic.provisioning_state == Azure.SUCCEEDED
 
-            # One indicator that a NIC has been marked to be deleted
-            nic_is_to_be_deleted = \
-                nic.tags and nic.tags.get("status", "") == Azure.TO_BE_DELETED
-
-            # If four indicators pass, delete NIC
-            if nic_is_detached and nic_is_to_be_deleted:
+            if nic_is_detached:
                 # Async call to delete NIC using the resource group and the NIC name
                 async_delete_nic = _azure_api_call(
                     self.options.az.group,
                     nic.name,
                     operation=self.network_client.network_interfaces.delete
                 )
+                nics_to_delete.discard(nic.name)
                 # only wait for async call to be done if we are initializing, but do so in parallel
                 # The reason we wait is because...?
                 # TODO: why did I do this?
@@ -916,18 +931,19 @@ class Azure(Machinery):
         Used to delete leftover disks
         @param disks: a list of disks
         """
+        global disks_to_delete
         # Iterate over all OS disks to check if any are not associated to a machine.
         for disk in disks:
-            # If the disk is unattached and has the tag that indicates that it can be deleted,
-            # then it can be assumed that the disk can be deleted.
+            # If the disk is unattached, then it can be assumed that the disk can be deleted.
             # TODO: is this the best way to confirm if a disk can be deleted?
-            if disk.disk_state == "Unattached" and disk.tags.get("status", "") == Azure.TO_BE_DELETED:
+            if disk.disk_state == "Unattached":
                 # Async call to delete NIC using the resource group and the disk name
                 _azure_api_call(
                     self.options.az.group,
                     disk.name,
                     operation=self.compute_client.disks.delete
                 )
+                disks_to_delete.discard(disk.name)
 
     def _thr_delete_machines(self, machines):
         """
@@ -942,6 +958,20 @@ class Azure(Machinery):
                     machine.name
                 )
                 self._delete_machine(machine.name)
+
+    def _add_resource_to_delete_set(self, resource_type, name):
+        global nics_to_delete
+        global disks_to_delete
+        valid_resource_types_to_delete = [self.NIC_KEY, self.DISK_KEY]
+        if resource_type not in valid_resource_types_to_delete:
+            raise CuckooMachineError("Resource type %s in _add_resource_to_delete_set is not in "
+                                     "%s." % (resource_type, valid_resource_types_to_delete))
+        if resource_type == self.NIC_KEY:
+            if re.match(self.nic_name_regex, name):
+                nics_to_delete.add(name)
+        elif resource_type == self.DISK_KEY:
+            if re.match(self.disk_name_regex, name):
+                disks_to_delete.add(name)
 
 
 def _azure_api_call(*args, **kwargs):
@@ -994,18 +1024,18 @@ def _get_image_details(label):
     @return: tag string, os_type string, platform string
     """
     platform = "windows"
-    if "win10" in label:
-        tag = "win10"
+    if Azure.WINDOWS_10 in label:
+        tag = Azure.WINDOWS_10
         os_type = "Windows10x64"
-    elif "win7" in label:
-        tag = "win7"
+    elif Azure.WINDOWS_7 in label:
+        tag = Azure.WINDOWS_7
         os_type = "Windows7x64"
-    elif "ub1804" in label:
-        tag = "ub1804"
+    elif Azure.UBUNTU_1804 in label:
+        tag = Azure.UBUNTU_1804
         os_type = "Ubuntu18.04x64"
         platform = "linux"
     else:
-        tag = "win7"
+        tag = Azure.WINDOWS_7
         os_type = "Windows7x64"
     return tag, os_type, platform
 
@@ -1029,9 +1059,9 @@ def _resize_machines_being_created(tag, direction):
 
     # Depending on the tag, resize the global count of a certain type
     # of machine being created
-    if tag == "win10":
+    if tag == Azure.WINDOWS_10:
         number_of_win10_machines_being_created = operation(number_of_win10_machines_being_created, 1)
-    elif tag == "ub1804":
+    elif tag == Azure.UBUNTU_1804:
         number_of_ub1804_machines_being_created = operation(number_of_ub1804_machines_being_created, 1)
     else:
         number_of_win7_machines_being_created = operation(number_of_win7_machines_being_created, 1)
