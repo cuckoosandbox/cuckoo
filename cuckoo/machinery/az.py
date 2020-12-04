@@ -553,10 +553,11 @@ class Azure(Machinery):
             requested_type = "unknown_guest_image"
 
         if self.machine_queue:
-            # Used to minimize wait times as machines are starting up and some might
-            # not be ready to listen yet.
-            first_index_of_relevant_machine = next((x for x, val in enumerate(self.machine_queue) if requested_type in val), 0)
-            # If there are no relevant machines available based on what the user wants, pop the item at the 0 index
+            first_index_of_relevant_machine = next((x for x, val in enumerate(self.machine_queue) if requested_type in val), None)
+            # If there are no relevant machines available based on what the user wants, return and wait.
+            # We should give the people what they want.
+            if first_index_of_relevant_machine is None:
+                return None
             machine_id = self.machine_queue.pop(first_index_of_relevant_machine)
         # We are machine_id or bust
         base_class_return_value = super(Azure, self).acquire(
@@ -568,9 +569,6 @@ class Azure(Machinery):
         if not base_class_return_value:
             return None
 
-        # Get details regarding the machine that was acquired
-        tag, os_type, platform = _get_image_details(base_class_return_value.label)
-
         # This should only be called intermittently when peak throughput is occurring.
         # because it has the tendency to use a ton of API calls and can hit the API rate limit
         greater_than_peak_throughput = len(self.db.list_machines(locked=True)) > self.peak_throughput
@@ -581,12 +579,6 @@ class Azure(Machinery):
             pass
         else:
             self._delete_leftover_resources()
-        # If we acquired a machine due to it being the oldest but it was of the wrong requested type,
-        # we want to replace the used machine in the pool while also preparing the pool for
-        # the requested type
-        if tag != requested_type:
-            used_snap_id = next(snap_id for snap_id in self.snap_ids if tag in snap_id)
-            self._thr_create_machines(used_snap_id)
 
         # If user requests snap_id that doesn't exist, return first snap id
         requested_snap_id = next((snap_id for snap_id in self.snap_ids if requested_type in snap_id), self.snap_ids[0])
