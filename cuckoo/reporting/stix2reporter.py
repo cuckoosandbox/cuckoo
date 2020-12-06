@@ -235,18 +235,15 @@ class Stix2(Report):
                 self.all_stix_objects.append(domain)
 
     def get_parent_dir(self, filepath, timestamp):
-        path = filepath.split("/")[:-1]
-        text_path = ""
-        for p in path:
-            text_path = text_path + p + "/"
+        path = "/".join(filepath.split("/")[:-1])
 
         for dir in self.directories:
-            if text_path == dir.path:
+            if path == dir.path:
                 return dir
 
         dir = Directory(
             type="directory",
-            path=text_path,
+            path=path,
             id="directory--" + str(uuid1()),
             custom_properties={
                 "timestamp": timestamp
