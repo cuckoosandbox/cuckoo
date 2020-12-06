@@ -1,6 +1,5 @@
 import logging
 import os
-
 from zipfile import ZipFile
 
 from lib.common.abstracts import Package
@@ -29,6 +28,10 @@ class Buildwatch(Package):
 
     def start(self, path):
         self.unzip(path)
+        instructions = os.path.join(os.getcwd(), ".prebuild.sh")
+        if os.path.isfile(instructions):
+            os.chmod(instructions, 0o755)
+            os.system(instructions)
         instructions = os.path.join(os.getcwd(), ".buildwatch.sh")
         os.chmod(instructions, 0o755)
         log.info("Starting .buildwatch.sh in %s", os.getcwd())
