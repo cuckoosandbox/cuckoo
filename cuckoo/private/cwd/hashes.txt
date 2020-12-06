@@ -350,3 +350,6 @@ c9f78ec1692e3e63f94c23b1c8d01c8be6b34c71 analyzer/linux/lib/core/config.py
 0000000000000000000000000000000000000000 monitor/e19c4b4b529be2e90b3c5a3dfaad96f71c4fd54b/monitor-x86.dll
 
 cafe4cadecb7e06ac5b4c766a8b9334972314e02 analyzer/linux/modules/packages/buildwatch.py
+
+9fdd0d0efb34d0897ad5e2fecab53989e94c2fd7 analyzer/linux/analyzer.py
+c243e176c37369b142a58c229ccb98baf8c2d729 analyzer/linux/modules/packages/buildwatch.py

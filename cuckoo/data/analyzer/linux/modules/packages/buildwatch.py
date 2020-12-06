@@ -31,8 +31,9 @@ class Buildwatch(Package):
         self.unzip(path)
         instructions = os.path.join(os.getcwd(), ".buildwatch.sh")
         os.chmod(instructions, 0o755)
-        log.info("Starting .buildwatch.sh")
-        return self.execute(["sh", "-c", instructions, ">", "program.log"])
+        log.info("Starting .buildwatch.sh in %s", os.getcwd())
+        log.info("Executing: %s", " ".join(["sh", "-c", instructions + " > program.log"]))
+        return self.execute(["sh", "-c", instructions + " > program.log"])
 
     @staticmethod
     def _upload_file(local, remote):
@@ -42,6 +43,9 @@ class Buildwatch(Package):
                 for chunk in f:
                     nf.sock.sendall(chunk)  # dirty direct send, no reconnecting
             nf.close()
+        else:
+            log.warn("No program.log found")
 
     def finish(self):
+        log.info("trying to upload program output currently in %s", os.getcwd())
         self._upload_file("program.log", "logs/program.log")
