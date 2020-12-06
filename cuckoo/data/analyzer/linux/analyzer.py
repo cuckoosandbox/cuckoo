@@ -32,6 +32,7 @@ PROCESS_LIST = set()
 SEEN_LIST = set()
 PPID = Process(pid=PID).get_parent_pid()
 
+
 def add_pids(pids):
     """Add PID."""
     if not isinstance(pids, (tuple, list, set)):
@@ -44,10 +45,12 @@ def add_pids(pids):
             PROCESS_LIST.add(pid)
         SEEN_LIST.add(pid)
 
+
 def dump_files():
     """Dump all the dropped files."""
     for file_path in FILES_LIST:
         log.info("PLS IMPLEMENT DUMP, want to dump %s", file_path)
+
 
 class Analyzer:
     """Cuckoo Linux Analyzer.
@@ -100,7 +103,7 @@ class Analyzer:
         """
         self.prepare()
 
-        log.debug("Starting analyzer from: %s", os.getcwd())
+        log.debug("Starting the analyzer from: %s", os.getcwd())
         log.debug("Storing results at: %s", PATHS["root"])
 
         # If no analysis package was specified at submission, we try to select
@@ -335,10 +338,14 @@ class Analyzer:
 
         return True
 
+
 if __name__ == "__main__":
     success = False
     error = ""
-
+    data = {
+        "status": "complete",
+        "description": success,
+    }
     try:
         # Initialize the main analyzer class.
         analyzer = Analyzer()
@@ -346,10 +353,14 @@ if __name__ == "__main__":
         # Run it and wait for the response.
         success = analyzer.run()
 
+
     # This is not likely to happen.
     except KeyboardInterrupt:
         error = "Keyboard Interrupt"
-
+        data = {
+            "status": "exception",
+            "description": error,
+        }
     # If the analysis process encountered a critical error, it will raise a
     # CuckooError exception, which will force the termination of the analysis.
     # Notify the agent of the failure. Also catch unexpected exceptions.
@@ -364,19 +375,23 @@ if __name__ == "__main__":
         else:
             sys.stderr.write("{0}\n".format(error_exc))
 
+        data = {
+            "status": "exception",
+            "description": error_exc,
+        }
     # Once the analysis is completed or terminated for any reason, we report
     # back to the agent, notifying that it can report back to the host.
     finally:
+        # Report that we're finished. First try with the XML RPC thing and
+        # if that fails, attempt the new Agent.
         try:
-            # old agent
             server = xmlrpclib.Server("http://127.0.0.1:8000")
-            server.complete(success, error, PATHS["root"])
-        except xmlrpclib.ProtocolError:
-            # new agent
-            data = {
-                "status": "complete",
-                "description": success
-            }
-            urllib2.urlopen(
-                "http://127.0.0.1:8000/status", urllib.urlencode(data)
-            )
+            server.complete(success, error, "unused_path")
+        except Exception as e:
+            try:
+                log.info("Setting status to:" + data["status"])
+                response = urllib2.urlopen("http://127.0.0.1:8000/status", urllib.urlencode(data)).read()
+                log.info("Status update result:" + response)
+            except Exception as ex:
+                log.error(ex)
+    log.info("Analyzer terminated")

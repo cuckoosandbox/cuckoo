@@ -54,6 +54,8 @@ def analyzer_zipfile(platform, monitor):
         for name in files:
             path = os.path.join(root, name)
             archive_name = os.path.join(archive_root, name)
+            if ".pyc" in path:
+                continue
             zip_file.write(path, archive_name)
 
     # Include the chosen monitoring component and any additional files.
