@@ -1,8 +1,7 @@
-import re
 import logging
+import re
 import socket
 from uuid import uuid1
-from datetime import datetime
 
 from stix2 import (
     File,
@@ -228,6 +227,7 @@ class Stix2(Report):
                         "container_id": Stix2.get_containerid(line),
                         "timestamp": line[:24],
                         "full_output": line,
+                        "resolves_to_str": re.search(regex, line).group(1),
                     },
                     allow_custom=True,
                 )
