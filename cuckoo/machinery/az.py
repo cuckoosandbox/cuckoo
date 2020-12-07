@@ -115,9 +115,9 @@ class Azure(Machinery):
 
         # Resource name regexes
         regex_or = "(" + Azure.WINDOWS_7 + "|" + Azure.WINDOWS_10 + "|" + Azure.UBUNTU_1804 + ")"
-        resource_regex_base = Azure.MACHINE_NAME_FORMAT.replace("%03d", "[0-9]{3,}") % (self.environment, regex_or)
-        self.nic_name_regex = Azure.NIC_NAME_FORMAT % resource_regex_base
-        self.disk_name_regex = Azure.DISK_NAME_FORMAT % resource_regex_base
+        self.machine_name_regex = Azure.MACHINE_NAME_FORMAT.replace("%03d", "[0-9]{3,}") % (self.environment, regex_or)
+        self.nic_name_regex = Azure.NIC_NAME_FORMAT % self.machine_name_regex
+        self.disk_name_regex = Azure.DISK_NAME_FORMAT % self.machine_name_regex
 
         # Starting the thread that sets API clients periodically
         self._thr_refresh_clients()
@@ -956,12 +956,17 @@ class Azure(Machinery):
 
     def _thr_delete_machines(self, machines):
         """
-        Used to delete failed machines
+        Used to delete corrupted machines
         @param disks: a list of disks
         """
-        # Iterate over all machines to check if their deployment state is Failed.
         for machine in machines:
-            if machine.provisioning_state == "Failed" and self.environment in machine.name:
+            # We only care about auto-scaled machines that match the regex
+            if not re.match(self.machine_name_regex, machine.name):
+                continue
+            # If a machine's provisioning state is Failed, delete it
+            # If a machine was created by Azure and then Azure couldn't find it, odds are the auto-scaled tags were
+            # not appended and thus the machine was not included further in the Cuckoo system
+            if machine.provisioning_state == "Failed" or not self._is_auto_scaled(machine.tags):
                 log.debug(
                     "Deleting machine that failed to deploy '%s'.",
                     machine.name
