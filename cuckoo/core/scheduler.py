@@ -162,7 +162,7 @@ class AnalysisManager(threading.Thread):
             # In some cases it's possible that we enter this loop without
             # having any available machines. We should make sure this is not
             # such case, or the analysis task will fail completely.
-            if not machinery.availables():
+            if not machinery.availables(tags=self.task.tags):
                 machine_lock.release()
                 time.sleep(1)
                 continue
@@ -173,12 +173,12 @@ class AnalysisManager(threading.Thread):
                                         platform=self.task.platform,
                                         tags=self.task.tags)
 
-            # If no machine is available at this moment, wait for ten seconds
+            # If no machine is available at this moment, wait for one second
             # and try again.
             if not machine:
                 machine_lock.release()
                 log.debug("Task #%d: no machine available yet", self.task.id)
-                time.sleep(10)
+                time.sleep(1)
             else:
                 log.info(
                     "Task #%d: acquired machine %s (label=%s)",

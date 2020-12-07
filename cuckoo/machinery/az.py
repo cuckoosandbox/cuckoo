@@ -84,6 +84,7 @@ class Azure(Machinery):
     WINDOWS_7 = "win7"
     WINDOWS_10 = "win10"
     UBUNTU_1804 = "ub1804"
+    VALID_OS_TAGS = [WINDOWS_7, WINDOWS_10, UBUNTU_1804]
 
     # Peak Throughput which will be used to regulate how many
     # times delete_leftover_resources is called.
@@ -533,6 +534,33 @@ class Azure(Machinery):
         # Depending on the tag, decrement the global count of a certain type
         # of machine being created
         _resize_machines_being_created(tag, "-")
+
+    def availables(self, tags=None):
+        """
+        Overloading abstracts.py:availables() to utilize relevancy via tags.
+        @return: number of relevant available machines that are relevant.
+        @raise: CuckooMachineError
+        """
+        # This happens at the start() of scheduler
+        if not tags:
+            return self.db.count_machines_available()
+
+        # We are getting a list of all available (unlocked) machines
+        available_machines = self.db.get_available_machines()
+        if type(tags) == list and len(tags) > 0 and tags[0] in Azure.VALID_OS_TAGS:
+            requested_type = tags[0]
+        else:
+            requested_type = None
+
+        # If the requested type was not passed in via tag after start(), which it must always be, do:
+        if not requested_type:
+            raise CuckooMachineError("The tags %s passed in to the overloaded availables() method were not valid, "
+                                     "and therefore a relevant machine cannot be deemed available." % tags)
+
+        # The number of relevant available machines are those from the available list that
+        # have the correct tag in their name
+        relevant_available_machines = len([machine for machine in available_machines if requested_type in machine.label])
+        return relevant_available_machines
 
     def acquire(self, machine_id=None, platform=None, tags=None):
         """
