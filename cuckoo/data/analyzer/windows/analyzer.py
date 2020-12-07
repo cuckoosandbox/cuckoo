@@ -344,7 +344,8 @@ class CommandPipeHandler(object):
             log.warning("Received DUMPMEM command with an incorrect argument.")
             return
 
-        dump_memory(int(data))
+        if self.analyzer.config.options.get("procmemdump"):
+            dump_memory(int(data))
 
     def _handle_dumpreqs(self, data):
         if not data.isdigit():
