@@ -21,7 +21,7 @@ try:
     from azure.common.credentials import ServicePrincipalCredentials
     from azure.mgmt.compute import ComputeManagementClient
     from azure.mgmt.network import NetworkManagementClient
-    from azure.mgmt.compute.models import DiskCreateOption
+    from azure.mgmt.compute.models import DiskCreateOption, VirtualMachinePriorityTypes, VirtualMachineEvictionPolicyTypes, BillingProfile
     HAVE_AZURE = True
 except ImportError:
     HAVE_AZURE = False
@@ -123,8 +123,9 @@ class Azure(Machinery):
         # Starting the thread that sets API clients periodically
         self._thr_refresh_clients()
 
-        # Starting the thread that deletes leftover resources periodically
+        # Starting the threads that deletes leftover resources and ensures pools are topped up... periodically
         self._thr_delete_leftover_resources()
+        self._thr_top_up_pools()
 
     def _get_credentials(self):
         """
@@ -178,13 +179,26 @@ class Azure(Machinery):
         This way we do not have to wait for a new task to trigger the deletion of
         leftover resources
         """
-        global nics_to_delete
-        global disks_to_delete
-        if nics_to_delete or disks_to_delete:
-            self._delete_leftover_resources()
+        log.debug("Cleaning up leftover resources...")
+        self._delete_leftover_resources()
 
         # Starting the thread that deletes leftover resources periodically
         threading.Timer(300, self._thr_delete_leftover_resources).start()
+
+    def _thr_top_up_pools(self):
+        """
+        A thread on a 1 minute timer that ensures the correct amount of machines are available.
+        This way we do not have to wait for a new task to trigger the creation of machines
+        in case machines have been deallocated and then deleted by the _thr_delete_leftover_resources poller.
+        Note that no REST API calls are used in this method if the pools are topped up.
+        """
+        log.debug("Ensuring machine pools are topped up...")
+        if getattr(self, "snap_ids", None):
+            for snap_id in self.snap_ids:
+                self._thr_create_machines(snap_id)
+
+        # Starting the thread that tops up the pools periodically
+        threading.Timer(60, self._thr_top_up_pools).start()
 
     def _initialize_check(self):
         """
@@ -291,8 +305,6 @@ class Azure(Machinery):
         @param snap_id: the id of the snapshot to use for creating machines
         @return: Ends method call
         """
-        log.debug("Creating machines for snapshot: %s" % snap_id)
-
         global number_of_win7_machines_being_created
         global number_of_win10_machines_being_created
         global number_of_ub1804_machines_being_created
@@ -308,7 +320,7 @@ class Azure(Machinery):
         relevant_available_machines = len([machine for machine in available_machines if tag in machine.label])
 
         # Getting all tasks in the queue
-        tasks = self.db.list_tasks(status="pending")
+        tasks = self.db.list_tasks(status=Azure.PENDING)
 
         # The task queue that will be used to prepare machines will be relative to the virtual
         # machine tag that is targeted in the task (win7, win10, etc)
@@ -341,7 +353,8 @@ class Azure(Machinery):
         number_of_machines_to_create = number_of_relevant_available_machines_required - number_of_relevant_machines_being_created
 
         log.debug(
-            "Need %d available machines; Machines being created: %d; Machines to create: %d;",
+            "Creating machines for snapshot: %s. Need %d available machines; Machines being created: %d; Machines to create: %d;",
+            snap_id,
             number_of_relevant_available_machines_required,
             number_of_relevant_machines_being_created,
             number_of_machines_to_create,
@@ -538,7 +551,8 @@ class Azure(Machinery):
     def availables(self, tags=None):
         """
         Overloading abstracts.py:availables() to utilize relevancy via tags.
-        @return: number of relevant available machines that are relevant.
+        @return: number of available machines that are relevant. Note that we break after 1
+        because that is all scheduler wants, a 1 or a 0
         @raise: CuckooMachineError
         """
         # This happens at the start() of scheduler
@@ -559,8 +573,16 @@ class Azure(Machinery):
 
         # The number of relevant available machines are those from the available list that
         # have the correct tag in their name
-        relevant_available_machines = len([machine for machine in available_machines if requested_type in machine.label])
-        return relevant_available_machines
+        relevant_available_machines = [machine.label for machine in available_machines if requested_type in machine.label]
+
+        # We only care about the Azure machines that are relevant and "available" according to the database
+        # Now we will confirm how available they really are
+        for machine in relevant_available_machines:
+            if self._status(machine) == Azure.RUNNING:
+                # As long as one relevant machine is running and available, we're good
+                return 1
+        # If no relevant machines are running or available, tell scheduler is chill
+        return 0
 
     def acquire(self, machine_id=None, platform=None, tags=None):
         """
@@ -580,13 +602,32 @@ class Azure(Machinery):
         elif type(tags) == list and len(tags) == 0:
             requested_type = "unknown_guest_image"
 
+        # If user requests snap_id that doesn't exist, return first snap id
+        requested_snap_id = next((snap_id for snap_id in self.snap_ids if requested_type in snap_id), self.snap_ids[0])
         if self.machine_queue:
-            first_index_of_relevant_machine = next((x for x, val in enumerate(self.machine_queue) if requested_type in val), None)
-            # If there are no relevant machines available based on what the user wants, return and wait.
-            # We should give the people what they want.
-            if first_index_of_relevant_machine is None:
-                return None
-            machine_id = self.machine_queue.pop(first_index_of_relevant_machine)
+            # Assume no machines are ready until proven wrong
+            no_relevant_available_machines = True
+            while no_relevant_available_machines:
+                first_index_of_relevant_machine = next((x for x, val in enumerate(self.machine_queue) if requested_type in val), None)
+                # If there are no relevant machines available based on what the user wants, return and wait.
+                # We should give the people what they want.
+                if first_index_of_relevant_machine is None:
+                    return None
+                machine_id = self.machine_queue.pop(first_index_of_relevant_machine)
+                # Since this is the step right before we assign a task to a machine,
+                # we should get the most up-to-date status of the machine
+                machine_status = self._status(machine_id)
+                # Check to see if machine is not running. Since we are using Azure Spot VMs, there is a chance it could be deallocated without us knowing.
+                if not machine_status == Azure.RUNNING:
+                    log.warning("Machine %s had status %s when an attempt was made to acquire it." % (machine_id, machine_status))
+                    # Delete it and create another
+                    self._delete_machine(machine_id)
+                    self._thr_create_machines(requested_snap_id)
+                    # Look for another relevant available machine in the queue
+                    continue
+                # If we made it here, then there is an available machine of the requested type
+                no_relevant_available_machines = False
+
         # We are machine_id or bust
         base_class_return_value = super(Azure, self).acquire(
             machine_id=machine_id,
@@ -608,12 +649,9 @@ class Azure(Machinery):
         else:
             self._delete_leftover_resources()
 
-        # If user requests snap_id that doesn't exist, return first snap id
-        requested_snap_id = next((snap_id for snap_id in self.snap_ids if requested_type in snap_id), self.snap_ids[0])
         self._thr_create_machines(requested_snap_id)
         return base_class_return_value
 
-    # This method is only used for testing currently
     def _status(self, label):
         """
         Gets current status of a machine.
@@ -642,16 +680,12 @@ class Azure(Machinery):
 
         if state == "PowerState/running":
             status = Azure.RUNNING
-        elif state == "PowerState/stopped":
+        elif state in ["PowerState/stopped", "PowerState/deallocated"]:
             status = Azure.POWEROFF
         elif state == "PowerState/starting":
             status = Azure.PENDING
-        elif state == "PowerState/stopping":
+        elif state in ["PowerState/stopping", "PowerState/deallocating"]:
             status = Azure.STOPPING
-        elif state == "PowerState/deallocating":
-            status = Azure.STOPPING
-        elif state == "PowerState/deallocated":
-            status = Azure.POWEROFF
         elif state == "ProvisioningState/deleting":
             status = Azure.DELETING
         elif state == "ProvisioningState/failed/InternalOperationError":
@@ -804,7 +838,12 @@ class Azure(Machinery):
                     "id": nic_id,
                     "properties": {"primary": True}
                 }]
-            }
+            },
+            # Note: The following key value pairs are for Azure spot instances
+            "priority": VirtualMachinePriorityTypes.spot,
+            "eviction_policy": VirtualMachineEvictionPolicyTypes.deallocate,
+            # Note: This value may change depending on your needs.
+            "billing_profile": BillingProfile(max_price=float(-1))
         }
         # Async call to create a new machine, using the resource group,
         # the computer name, and the machine details
@@ -836,6 +875,9 @@ class Azure(Machinery):
         and then deleting the machine
         :param machine_name: String indicating the name of the machine to be deleted
         """
+        # Delete the machine name from machine queue. Note that this will only be the case post-initialization
+        if machine_name in self.machine_queue:
+            self.machine_queue.remove(machine_name)
         # Adding the names of the machine's associated resources to delete sets
         nic_name = self.NIC_NAME_FORMAT % machine_name
         self._add_resource_to_delete_set(self.NIC_KEY, nic_name)
@@ -991,14 +1033,19 @@ class Azure(Machinery):
             # We only care about auto-scaled machines that match the regex
             if not re.match(self.machine_name_regex, machine.name):
                 continue
-            # If a machine's provisioning state is Failed, delete it
-            # If a machine was created by Azure and then Azure couldn't find it, odds are the auto-scaled tags were
+            # Delete the machine if:
+            # - If a machine's provisioning state is Failed, delete it
+            # - If a machine was created by Azure and then Azure couldn't find it, odds are the auto-scaled tags were
             # not appended and thus the machine was not included further in the Cuckoo system
-            if machine.provisioning_state == "Failed" or not self._is_auto_scaled(machine.tags):
-                log.debug(
-                    "Deleting machine that failed to deploy '%s'.",
-                    machine.name
-                )
+            # - If a machine has been deallocated because it is a spot instance, delete it
+            if machine.provisioning_state == "Failed":
+                log.warning("Deleting machine '%s' because it failed to provision.", machine.name)
+                self._delete_machine(machine.name)
+            elif not self._is_auto_scaled(machine.tags):
+                log.warning("Deleting machine '%s' because it was not auto-scaled." % machine.name)
+                self._delete_machine(machine.name)
+            elif self._status(machine.name) == Azure.POWEROFF:
+                log.warning("Deleting machine '%s' because it was deallocated." % machine.name)
                 self._delete_machine(machine.name)
 
     def _add_resource_to_delete_set(self, resource_type, name):
