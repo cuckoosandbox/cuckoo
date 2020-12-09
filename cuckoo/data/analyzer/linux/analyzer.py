@@ -166,7 +166,13 @@ class Analyzer:
                 log.warning("Unable to import the auxiliary module "
                             "\"%s\": %s", name, e)
 
-        # Walk through the available auxiliary modules.
+        try:
+            pack.pre_recorded(self.target)
+        except Exception as e:
+            log.exception("Error occurred when package executed pre_recorded")
+
+
+            # Walk through the available auxiliary modules.
         aux_enabled, aux_avail = [], []
         for module in sorted(Auxiliary.__subclasses__(), key=lambda x: x.priority, reverse=True):
             # Try to start the auxiliary module.

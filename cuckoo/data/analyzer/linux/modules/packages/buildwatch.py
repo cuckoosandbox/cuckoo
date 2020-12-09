@@ -26,17 +26,21 @@ class Buildwatch(Package):
                 raise CuckooPackageError(
                     "Something went wrong with the zipfile: {}".format(exc))
 
-    def start(self, path):
+    def pre_recorded(self, path):
+        log.info("Unzipping target")
         self.unzip(path)
         instructions = os.path.join(os.getcwd(), ".prebuild.sh")
         if os.path.isfile(instructions):
+            log.info("Found prebuild.sh and executing it")
             os.chmod(instructions, 0o755)
             os.system(instructions)
+
+    def start(self, path):
         instructions = os.path.join(os.getcwd(), ".buildwatch.sh")
         os.chmod(instructions, 0o755)
         log.info("Starting .buildwatch.sh in %s", os.getcwd())
-        log.info("Executing: %s", " ".join(["sh", "-c", instructions + " > program.log"]))
-        return self.execute(["sh", "-c", instructions + " > program.log"])
+        log.info("Executing: %s", " ".join(["sh", "-c", instructions]))
+        return self.execute(["sh", "-c", instructions])
 
     @staticmethod
     def _upload_file(local, remote):
@@ -47,7 +51,7 @@ class Buildwatch(Package):
                     nf.sock.sendall(chunk)  # dirty direct send, no reconnecting
             nf.close()
         else:
-            log.warn("No program.log found")
+            log.info("No program.log found")
 
     def finish(self):
         log.info("trying to upload program output currently in %s", os.getcwd())

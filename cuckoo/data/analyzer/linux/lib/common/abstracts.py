@@ -64,6 +64,10 @@ class Package(object):
     def get_pids(self):
         return []
 
+    def pre_recorded(self, target):
+        pass
+
+
 class Auxiliary(object):
     priority = 0
 
