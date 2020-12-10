@@ -676,8 +676,8 @@ class Database(object):
             session.close()
 
     @classlock
-    def fetch(self, machine=None, service=True):
-        """Fetch a task waiting to be processed and lock it for running.
+    def fetch(self, machine=None, service=True, lock_it=True):
+        """Fetch a task waiting to be processed and possibly lock it for running.
         @return: None or task
         """
         session = self.Session()
@@ -691,7 +691,7 @@ class Database(object):
                 q = q.filter(not_(Task.tags.any(name="service")))
 
             row = q.order_by(Task.priority.desc(), Task.added_on).first()
-            if row:
+            if row and lock_it:
                 self.set_status(task_id=row.id, status=TASK_RUNNING)
                 session.refresh(row)
 

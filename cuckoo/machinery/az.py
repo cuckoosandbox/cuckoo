@@ -29,7 +29,7 @@ except ImportError:
 # Cuckoo specific imports
 from cuckoo.common.abstracts import Machinery
 from cuckoo.common.config import config
-from cuckoo.common.exceptions import CuckooMachineError, CuckooDependencyError, CuckooGuestCriticalTimeout
+from cuckoo.common.exceptions import CuckooMachineError, CuckooDependencyError, CuckooGuestCriticalTimeout, CuckooMissingMachineError
 from cuckoo.common.constants import CUCKOO_GUEST_PORT
 
 # Only log INFO or higher from imported python packages
@@ -51,6 +51,9 @@ dynamic_machines_sequence = 0
 nics_to_delete = set()
 # Variable containing names of disks to delete
 disks_to_delete = set()
+# TODO: use a Queue instead of a list for machine_queue?
+# Variable containing all machines, in a nice list
+machine_queue = []
 
 api_call_counts = {}
 
@@ -67,6 +70,7 @@ class Azure(Machinery):
     ABORTED = "failed"
     ERROR = "machete"
     SUCCEEDED = "Succeeded"
+    MISSING = "missing"
 
     # machine tag that indicates autoscaling.
     AUTOSCALE_CUCKOO = "AUTOSCALE_CUCKOO"
@@ -106,8 +110,6 @@ class Azure(Machinery):
 
         # Setting the class attributes
         self.azure_machines = {}
-        # TODO: use a Queue instead of a list for machine_queue?
-        self.machine_queue = []
         self.dynamic_machines_count = 0
         self.initializing = True
         self.dynamic_machines_limit = self.options.az.dynamic_machines_limit
@@ -400,6 +402,7 @@ class Azure(Machinery):
         machinery_options = self.options.az
 
         global dynamic_machines_sequence
+        global machine_queue
 
         # Getting details of the image based on snapshot ID
         tag, os_type, platform = _get_image_details(snap_id)
@@ -494,7 +497,7 @@ class Azure(Machinery):
 
         # This list will be used for acquiring machines, you'll see, you'll see
         # TODO: use a Queue instead of a list?
-        self.machine_queue.append(new_machine_name)
+        machine_queue.append(new_machine_name)
 
         # A dict that holds machine name: machine details key value pairs
         self.azure_machines[new_machine_name] = new_machine
@@ -593,6 +596,7 @@ class Azure(Machinery):
         @param tags: any tags that are associated with the machine to be acquired
         @return: dict representing machine object from DB
         """
+        global machine_queue
         # This will be used to indicate what type of machine the user wants to acquire
         requested_type = None
 
@@ -604,16 +608,16 @@ class Azure(Machinery):
 
         # If user requests snap_id that doesn't exist, return first snap id
         requested_snap_id = next((snap_id for snap_id in self.snap_ids if requested_type in snap_id), self.snap_ids[0])
-        if self.machine_queue:
+        if machine_queue:
             # Assume no machines are ready until proven wrong
             no_relevant_available_machines = True
             while no_relevant_available_machines:
-                first_index_of_relevant_machine = next((x for x, val in enumerate(self.machine_queue) if requested_type in val), None)
+                first_index_of_relevant_machine = next((x for x, val in enumerate(machine_queue) if requested_type in val), None)
                 # If there are no relevant machines available based on what the user wants, return and wait.
                 # We should give the people what they want.
                 if first_index_of_relevant_machine is None:
                     return None
-                machine_id = self.machine_queue.pop(first_index_of_relevant_machine)
+                machine_id = machine_queue.pop(first_index_of_relevant_machine)
                 # Since this is the step right before we assign a task to a machine,
                 # we should get the most up-to-date status of the machine
                 machine_status = self._status(machine_id)
@@ -659,11 +663,14 @@ class Azure(Machinery):
         @return: machine state string.
         """
         # Get the machine details for a machine given the resource group and label
-        machine_details = _azure_api_call(
-            self.options.az.group,
-            label,
-            operation=self.compute_client.virtual_machines.instance_view
-        )
+        try:
+            machine_details = _azure_api_call(
+                self.options.az.group,
+                label,
+                operation=self.compute_client.virtual_machines.instance_view
+            )
+        except CuckooMissingMachineError:
+            return Azure.MISSING
 
         state = None
         for status in machine_details.statuses:
@@ -875,9 +882,10 @@ class Azure(Machinery):
         and then deleting the machine
         :param machine_name: String indicating the name of the machine to be deleted
         """
+        global machine_queue
         # Delete the machine name from machine queue. Note that this will only be the case post-initialization
-        if machine_name in self.machine_queue:
-            self.machine_queue.remove(machine_name)
+        if machine_name in machine_queue:
+            machine_queue.remove(machine_name)
         # Adding the names of the machine's associated resources to delete sets
         nic_name = self.NIC_NAME_FORMAT % machine_name
         self._add_resource_to_delete_set(self.NIC_KEY, nic_name)
@@ -1107,7 +1115,10 @@ def _azure_api_call(*args, **kwargs):
     except Exception as exc:
         log.warning("Failed to %s due to the Azure error '%s': '%s'.",
                     api_call, exc.error.error, exc.message)
-        raise CuckooMachineError("%s:%s" % (exc.error.error, exc.message))
+        if "NotFound" in exc.error.error:
+            raise CuckooMissingMachineError("%s:%s" % (exc.error.error, exc.message))
+        else:
+            raise CuckooMachineError("%s:%s" % (exc.error.error, exc.message))
     return results
 
 

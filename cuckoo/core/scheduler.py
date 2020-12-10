@@ -20,7 +20,7 @@ from cuckoo.common.exceptions import (
 )
 from cuckoo.common.objects import File
 from cuckoo.common.files import Folders
-from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
+from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED, TASK_RUNNING
 from cuckoo.core.guest import GuestManager
 from cuckoo.core.plugins import RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
@@ -1075,29 +1075,46 @@ class Scheduler(object):
                 continue
 
             # Fetch a pending analysis task.
+            task, available = None, False
+
+            # Fetch the top task and don't lock it to RUNNING. We just want to
+            # figure out if the task has any requirements such as a required
+            # OS profile of guest machine
+            task = self.db.fetch(service=False, lock_it=False)
+            if not task:
+                continue
+
+            # TODO: Implement a better way to do this
+            # In the current setup, the assumption is made that each task only
+            # has a single tag which indicates what the requested OS profile is.
+            task_tag = None
+            task_details = self.db.view_task(task.id)
+            if getattr(task_details, "tags") and len(task_details.tags) > 0:
+                task_tag = task_details.tags[0].name
+
             # TODO This fixes only submissions by --machine, need to add
             # other attributes (tags etc).
             # TODO We should probably move the entire "acquire machine" logic
             # from the Analysis Manager to the Scheduler and then pass the
             # selected machine onto the Analysis Manager instance.
-            task, available = None, False
+            task_for_specified_machine = None
             for machine in self.db.get_available_machines():
-                task = self.db.fetch(machine=machine.name)
-                if task:
+                task_for_specified_machine = self.db.fetch(machine=machine.name)
+                # A machine is specified for a task, do it!
+                if task_for_specified_machine:
                     break
-
-                if machine.is_analysis():
+                # If not, then we're going to try the first task in PENDING
+                if task_tag and task_tag in machine.label and machine.is_analysis():
                     available = True
 
-            # We only fetch a new task if at least one of the available
-            # machines is not a "service" machine (again, please refer to the
-            # services auxiliary module for more information on service VMs).
-            if not task and available:
-                task = self.db.fetch(service=False)
+            # Set that task to running, since we are ready to begin analysis
+            if not task_for_specified_machine and available:
+                self.db.set_status(task.id, TASK_RUNNING)
+            else:
+                task = task_for_specified_machine
 
             if task:
-                start = time.time()
-                #log.debug("Processing task #%s", task.id)
+                log.debug("Processing task #%s", task.id)
                 self.total_analysis_count += 1
 
                 # Initialize and start the analysis manager.
@@ -1106,7 +1123,6 @@ class Scheduler(object):
                 analysis.start()
                 self.analysis_managers.add(analysis)
                 launched_analysis = True
-                log.debug("Processing task #%s Call Duration %9.3fs", task.id, time.time() - start)
             # Deal with errors.
             try:
                 raise errors.get(block=False)
