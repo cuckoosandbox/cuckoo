@@ -99,6 +99,8 @@ def tasks_create_file():
         clock=clock
     )
 
+    request.is_xhr = True
+
     return jsonify(task_id=task_id)
 
 @app.route("/tasks/create/url", methods=["POST"])
@@ -332,6 +334,8 @@ def tasks_report(task_id, report_format="json"):
     formats = {
         "json": "report.json",
         "html": "report.html",
+        "stix": "stix.json",
+        "programlog": "../logs/program.log"
     }
 
     bz_formats = {
@@ -697,6 +701,7 @@ def api_auth_required(error):
 
 @app.before_request
 def check_authentication():
+    request.is_xhr= False
     token = config("cuckoo:cuckoo:api_token")
     if token:
         expect = "Bearer " + token

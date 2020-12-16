@@ -392,7 +392,7 @@ class Stix2(Report):
             )
 
     def write_report(self, stix_bundle):
-        output_file = open(self.analysis_path + "/stix-file.json", "w")
+        output_file = open(self.analysis_path + "reports/stix.json", "w")
         str_bundle = stix_bundle.serialize(pretty=False, indent=4)
         output_file.writelines(str_bundle)
         output_file.close()
