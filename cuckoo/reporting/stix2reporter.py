@@ -19,20 +19,23 @@ from cuckoo.common.abstracts import Report
 
 log = logging.getLogger(__name__)
 
-class Stix2(Report):
-    CWD = ""
 
-    all_stix_objects = []
-    processes = []
-    files_read = []
-    files_written = []
-    files_removed = []
-    ipv4 = []
-    ipv6 = []
-    domains = []
-    classifiers = []
-    key_words = []
-    directories = []
+class Stix2(Report):
+
+    def __init__(self):
+        super(Stix2, self).__init__()
+        self.CWD = ""
+        self.all_stix_objects = []
+        self.processes = []
+        self.files_read = []
+        self.files_written = []
+        self.files_removed = []
+        self.ipv4 = []
+        self.ipv6 = []
+        self.domains = []
+        self.classifiers = []
+        self.key_words = []
+        self.directories = []
 
     def run(self, results):
         self.init()
