@@ -12,7 +12,6 @@ from stix2 import (
     DomainName,
     Grouping,
     MalwareAnalysis,
-    Directory,
 )
 
 from cuckoo.common.abstracts import Report
@@ -35,7 +34,6 @@ class Stix2(Report):
         self.domains = []
         self.classifiers = []
         self.key_words = []
-        self.directories = []
 
     def run(self, results):
         self.init()
@@ -171,7 +169,6 @@ class Stix2(Report):
                 type="file",
                 id="file--" + str(uuid1()),
                 name=classifier["prepare"](re.search(regex, line).group(1)).split("/")[-1],
-                parent_directory_ref=self.get_parent_dir(classifier["prepare"](re.search(regex, line).group(1)), line[:24]),
                 custom_properties={
                     "parent_directory_str": "/".join(classifier["prepare"](re.search(regex, line).group(1)).split("/")[:-1]),
                     "container_id": Stix2.get_containerid(line),
@@ -237,24 +234,6 @@ class Stix2(Report):
                 self.domains.append(domain)
                 self.all_stix_objects.append(domain)
 
-    def get_parent_dir(self, filepath, timestamp):
-        path = "/".join(filepath.split("/")[:-1])
-
-        for dir in self.directories:
-            if path == dir.path:
-                return dir
-
-        dir = Directory(
-            type="directory",
-            path=path,
-            id="directory--" + str(uuid1()),
-            custom_properties={
-                "timestamp": timestamp
-            }
-        )
-        self.directories.append(dir)
-        self.all_stix_objects.append(dir)
-        return dir
 
     def get_ip_stix_object_for_domain(self, line, ip):
         ipv4_regex = r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}"
@@ -383,16 +362,7 @@ class Stix2(Report):
                     object_refs=self.domains,
                 )
             )
-        if self.directories:
-            self.all_stix_objects.append(
-                Grouping(
-                    type="grouping",
-                    id="grouping--" + str(uuid1()),
-                    name="directories",
-                    context="suspicious-activity",
-                    object_refs=self.directories,
-                )
-            )
+
 
     def write_report(self, stix_bundle):
         output_file = open(self.analysis_path + "/reports/stix.json", "w")
