@@ -293,6 +293,34 @@ class Config(object):
                 "initial_pool_size": Int(1)
             },
         },
+        "az_with_vmss": {
+            "az_with_vmss": {
+                "region_name": String("earth"),
+                "group": String("malware_fighters"),
+                "subscription_id": String(
+                    "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"),
+                "client_id": String("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"),
+                "secret": String("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"),
+                "tenant": String("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"),
+                "machines": List(String, "cuckoo1"),
+                "interface": String("eth1"),
+                "running_machines_gap": Int(110),
+                "vnet": String("cuckoo-vnet"),
+                "subnet": String("cuckoo-subnet"),
+                "environment": String("staging"),
+                "dynamic_machines_limit": Int(10),
+                "instance_type": String("average"),
+                "options": List(String, None, ",\\s"),
+                "tags": String(),
+                "resultserver_ip": String("192.168.54.111"),
+                "resultserver_port": Int(2042),
+                "gallery_name": String("Louvre"),
+                "gallery_image_names": List(String, None, ",\\s"),
+                "storage_account_type": String("sample-type"),
+                "initial_pool_size": Int(1),
+                "supported_os_tags": List(String, None, ",\\s")
+            },
+        },
         "virtualbox": {
             "virtualbox": {
                 "mode": String("headless"),

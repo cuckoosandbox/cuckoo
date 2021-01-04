@@ -1109,7 +1109,11 @@ class Scheduler(object):
 
             # Set that task to running, since we are ready to begin analysis
             if not task_for_specified_machine and available:
-                self.db.set_status(task.id, TASK_RUNNING)
+                # Is the machinery in a good state for tasks to be sent to it?
+                if machinery.availables(tags=task_details.tags):
+                    self.db.set_status(task.id, TASK_RUNNING)
+                else:
+                    continue
             else:
                 task = task_for_specified_machine
 
