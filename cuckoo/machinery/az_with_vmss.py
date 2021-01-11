@@ -43,8 +43,8 @@ log = logging.getLogger(__name__)
 # Timeout used for calls that shouldn't take longer than 5 minutes but somehow do
 AZURE_TIMEOUT = 300
 
-# Setting the timeout for the ARM Poller to 5 seconds
-ARM_POLLER = ARMPolling(5)
+# Setting the timeout for the ARM Poller to 2 second
+ARM_POLLER = ARMPolling(2)
 
 # Global variable which will maintain details about each machine pool
 machine_pools = {}
@@ -67,7 +67,7 @@ class Azure(Machinery):
     def _initialize_check(self):
         """
         Overloading abstracts.py:_initialize_check()
-        Running checks against Azure that the.
+        Running checks against Azure that the configuration is correct.
         @param module_name: module name, currently not used be required
         @raise CuckooDependencyError: if there is a problem with the dependencies call
         """
@@ -682,6 +682,10 @@ class Azure(Machinery):
                 raise CuckooMissingMachineError("%s:%s" % (exc.error.error, exc.message))
             else:
                 raise CuckooMachineError("%s:%s" % (exc.error.error, exc.message))
+        if type(results) == LROPoller:
+            # Log the subscription limits
+            headers = results._response.headers
+            log.debug("API Charge: %s; Remaining Calls: %s" % (headers["x-ms-request-charge"], headers['x-ms-ratelimit-remaining-resource']))
         return results
 
     def _thr_create_vmss(self, vmss_name, vmss_image_ref, vmss_image_os, vmss_tag):
@@ -853,7 +857,7 @@ class Azure(Machinery):
                     # Get the updated number of relevant machines required
                     relevant_task_queue = self._get_relevant_tasks(tag)
                     # As soon as a task is in the queue, we do not want to scale down any more.
-                    # We also want the capacity to stay the same as before we started to delete machines.
+                    # Deleting an instance affects the capacity of the VMSS, so we do not need to update it.
                     if relevant_task_queue:
                         machine_pools[vmss_name]["is_scaling_down"] = False
                         machine_pools[vmss_name]["is_scaling"] = False
