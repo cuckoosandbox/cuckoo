@@ -560,7 +560,7 @@ class GuestManager(object):
                 # wait for things to recover
                 log.warning(
                     "Virtual Machine /status failed. This can indicate the "
-                    "guest losing network connectivity"
+                    "guest losing network connectivity with %s" % self.vmid
                 )
                 continue
             except Exception as e:

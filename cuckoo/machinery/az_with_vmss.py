@@ -354,6 +354,19 @@ class Azure(Machinery):
                 break
             if not machine_pools[vmss_name]["is_scaling_down"]:
                 try:
+                    # TODO: replace this with a batch reimaging when throuput reaches a certain level, either will work:
+                    # async_reimage_some = compute_client.virtual_machine_scale_sets.reimage_all(
+                    #     resource_group,
+                    #     vmss_name,
+                    #     instance_ids,
+                    #     polling=ARMPolling(1),
+                    # )
+                    # async_reimage_some = compute_client.virtual_machine_scale_sets.reimage(
+                    #     resource_group,
+                    #     vmss_name,
+                    #     instance_ids=instance_ids,
+                    #     polling=ARMPolling(1),
+                    # )
                     async_reimage_machine = Azure._azure_api_call(
                         self.options.az_with_vmss.group,
                         vmss_name,
@@ -365,18 +378,36 @@ class Azure(Machinery):
                     reimage_machine_result = self._handle_poller_result(async_reimage_machine)
                     log.debug("Reimaging %s took %ss" % (label, time.time()-start_time))
                     break
+                except CuckooMachineError:
+                    log.warning("Unable to reimage %s. Deleting from database." % label)
+                    self._delete_machine_from_db(label)
+                    raise
                 except Exception as exc:
                     if "InvalidParameter" in repr(exc):
                         # A reimaged VM cannot be reimaged again. It is currently still reimaging, despite
-                        # reimage.result() returning a value.
+                        # reimage.result() returning a value. It could also be deleted, so let's check.
+                        if not self._machine_exists(vmss_name, instance_id):
+                            log.warning("Machine %s does not exist anymore. Deleting from DB." % label)
+                            self._delete_machine_from_db(label)
+                            break
                         # Sleep a minute, until Azure gets its act together
                         time.sleep(60)
                         log.debug("Let's try reimaging/deleting %s again!" % label)
                         continue
+                    elif "AllocationFailed" in repr(exc):
+                        # Azure has failed "updating" the machine, therefore, just delete it and move on
+                        self._delete_machine_from_db(label)
+                        break
                     else:
                         raise
             else:
                 try:
+                    # TODO: replace with batch deleting when throughput reaches a certain level
+                    # async_delete_some = compute_client.virtual_machine_scale_sets.delete_instances(
+                    #     resource_group,
+                    #     vmss_name,
+                    #     instances_to_be_acted_on
+                    # )
                     Azure._azure_api_call(
                         self.options.az_with_vmss.group,
                         vmss_name,
@@ -742,8 +773,11 @@ class Azure(Machinery):
         vmss = models.VirtualMachineScaleSet(
             location=self.options.az_with_vmss.region_name,
             sku=models.Sku(name=self.options.az_with_vmss.instance_type, capacity=self.options.az_with_vmss.initial_pool_size),
-            # It appears as though reimaging is bottlenecked by updating the vmss
-            upgrade_policy=models.UpgradePolicy(mode="Manual"),
+            # This error will happen if set to Manual:
+            # 'BadRequest': 'Virtual Machine Scale Set '<vmss-name>' has reached its limit of 10 models that may be referenced
+            # by one or more VMs belonging to the Virtual Machine Scale Set.
+            # Upgrade the VMs to the latest model of the Virtual Machine Scale Set before trying again.'.
+            upgrade_policy=models.UpgradePolicy(mode="Automatic"),
             virtual_machine_profile=vmss_vm_profile,
             overprovision=False,
             # When true this limits the scale set to a single placement group, of max size 100 virtual machines.
@@ -803,14 +837,10 @@ class Azure(Machinery):
         # This is the flag that is used to indicate if the VMSS is being scaled by a thread
         machine_pools[vmss_name]["is_scaling"] = True
 
-        # We are getting a list of all locked and available machines
-        machines = self.db.list_machines()
-
-        # The number of relevant machines are those from the list that have the correct tag in their name
-        relevant_machines = [machine for machine in machines if tag in machine.label]
+        relevant_machines = self._get_relevant_machines(tag)
         number_of_relevant_machines = len(relevant_machines)
 
-        relevant_task_queue = self._get_relevant_tasks(tag)
+        relevant_task_queue = self._get_number_of_relevant_tasks(tag)
 
         # The scaling technique we will use is a tweaked version of the Leaky Bucket, where we
         # only scale down if the relevant task queue is empty.
@@ -827,6 +857,12 @@ class Azure(Machinery):
             number_of_relevant_machines_required = self.options.az_with_vmss.dynamic_machines_limit
 
         if machine_pools[vmss_name]["size"] == number_of_relevant_machines_required:
+            # Check that VMs in DB actually exist in the VMSS. There is a possibility that
+            # Azure will delete a machine in a VMSS that has not been used in a while. So the machine_pools value
+            # will not be up-to-date
+            self._delete_machines_from_db_if_missing(vmss_name)
+            # Update the VMSS size accordingly
+            machine_pools[vmss_name]["size"] = len(self._get_relevant_machines(tag))
             log.debug("The size of the machine pool %s is already the size that we want" % vmss_name)
             machine_pools[vmss_name]["is_scaling"] = False
             return
@@ -839,8 +875,8 @@ class Azure(Machinery):
 
         # Time to scale down!
         if number_of_relevant_machines_required < initial_capacity:
-            # The system is at rest when no tasks are in the queue and no machines are locked
-            if relevant_task_queue == 0 and not len([machine for machine in machines if machine.locked]):
+            # The system is at rest when no relevant tasks are in the queue and no relevant machines are locked
+            if relevant_task_queue == 0 and not len([machine for machine in relevant_machines if machine.locked]):
                 # The VMSS will scale in via the ScaleInPolicy.
                 machine_pools[vmss_name]["wait"] = True
                 log.debug("System is at rest, scale down VMSS capacity and delete machines.")
@@ -851,28 +887,29 @@ class Azure(Machinery):
                 # Wait until currently locked machines are deleted to the number that we require
                 while number_of_relevant_machines > number_of_relevant_machines_required:
                     # We don't want to be stuck in this for longer than ten minutes
-                    if time.time() - start_time > 600:
+                    if time.time() - start_time > AZURE_TIMEOUT:
                         log.debug("Breaking out of the while loop within the scale down section")
                         break
                     # Get the updated number of relevant machines required
-                    relevant_task_queue = self._get_relevant_tasks(tag)
+                    relevant_task_queue = self._get_number_of_relevant_tasks(tag)
                     # As soon as a task is in the queue, we do not want to scale down any more.
                     # Deleting an instance affects the capacity of the VMSS, so we do not need to update it.
                     if relevant_task_queue:
-                        machine_pools[vmss_name]["is_scaling_down"] = False
-                        machine_pools[vmss_name]["is_scaling"] = False
-                        return
+                        break
                     # Relaxxxx
                     time.sleep(1)
-                    log.debug("Scaling down. number_of_relevant_machines: %s; number_of_relevant_machines_required: %s" %
+                    log.debug("Scaling down. number_of_relevant_machines: %s -> number_of_relevant_machines_required: %s" %
                               (number_of_relevant_machines, number_of_relevant_machines_required))
 
                     # Get an updated count of relevant machines
-                    relevant_machines = [machine for machine in self.db.list_machines() if tag in machine.label]
+                    relevant_machines = self._get_relevant_machines(tag)
                     number_of_relevant_machines = len(relevant_machines)
+                    machine_pools[vmss_name]["size"] = number_of_relevant_machines
 
                 # No longer scaling down
                 machine_pools[vmss_name]["is_scaling_down"] = False
+                machine_pools[vmss_name]["is_scaling"] = False
+                return
             else:
                 # We only scale down if the relevant task queue is 0
                 machine_pools[vmss_name]["is_scaling"] = False
@@ -930,7 +967,7 @@ class Azure(Machinery):
         else:
             return lro_poller_result
 
-    def _get_relevant_tasks(self, tag):
+    def _get_number_of_relevant_tasks(self, tag):
         """
         Returns the number of relevant tasks for a tag
         @param tag: The OS tag used for finding relevant tasks
@@ -947,3 +984,35 @@ class Azure(Machinery):
                 if t.name == tag:
                     relevant_task_queue += 1
         return relevant_task_queue
+
+    def _get_relevant_machines(self, tag):
+        """
+        Returns the relevant machines for a given tag
+        @param tag: The OS tag used for finding relevant machines
+        @return list of db.Machine: The machines that are relevant for the given tag
+        """
+        # The number of relevant machines are those from the list of locked and unlocked machines
+        # that have the correct tag in their name
+        return [machine for machine in self.db.list_machines() if tag in machine.label]
+
+    def _machine_exists(self, vmss_name, instance_id):
+        """
+        Returns a boolean that represents if the machine exists
+        @param vmss_name: The name of the VMSS
+        @param instance_id: The ID of the instance to check if it exists
+        @return boolean: Representative of if the machine exists
+        @raises Exception: If another exception occurs, raise it up!
+        """
+        try:
+            vmss_vm = Azure._azure_api_call(
+                self.options.az_with_vmss.group,
+                vmss_name,
+                instance_id,
+                operation=self.compute_client.virtual_machine_scale_set_vms.get
+            )
+        except Exception as exc:
+            if exc.status_code == 404:
+                return False
+            else:
+                raise
+        return True
