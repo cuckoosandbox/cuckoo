@@ -374,14 +374,6 @@ class Azure(Machinery):
                         custom_poller=ARM_POLLER,
                         operation=self.compute_client.virtual_machine_scale_set_vms.reimage
                     )
-                    # We wait because we want the machine to be fresh before another task is assigned to it
-                    reimage_machine_result = self._handle_poller_result(async_reimage_machine)
-                    log.debug("Reimaging %s took %ss" % (label, time.time()-start_time))
-                    break
-                except CuckooMachineError:
-                    log.warning("Unable to reimage %s. Deleting from database." % label)
-                    self._delete_machine_from_db(label)
-                    raise
                 except Exception as exc:
                     if "InvalidParameter" in repr(exc):
                         # A reimaged VM cannot be reimaged again. It is currently still reimaging, despite
@@ -394,12 +386,22 @@ class Azure(Machinery):
                         time.sleep(60)
                         log.debug("Let's try reimaging/deleting %s again!" % label)
                         continue
-                    elif "AllocationFailed" in repr(exc):
+                    elif any(error in repr(exc) for error in ["AllocationFailed", "DisallowedResourceOperation"]):
                         # Azure has failed "updating" the machine, therefore, just delete it and move on
                         self._delete_machine_from_db(label)
                         break
                     else:
                         raise
+                try:
+                    # We wait because we want the machine to be fresh before another task is assigned to it
+                    reimage_machine_result = self._handle_poller_result(async_reimage_machine)
+                    log.debug("Reimaging %s took %ss" % (label, time.time()-start_time))
+                    break
+                # TODO: if reimage takes 300s, then delete as it will cause more harm than good
+                except CuckooMachineError:
+                    log.warning("Unable to reimage %s. Deleting from database." % label)
+                    self._delete_machine_from_db(label)
+                    raise
             else:
                 try:
                     # TODO: replace with batch deleting when throughput reaches a certain level
@@ -519,6 +521,7 @@ class Azure(Machinery):
         @param vmss_name: the name of the VMSS to be queried
         @param vmss_tag: the OS tag to be added to the machine's "tags"
         """
+        log.debug("Adding machines to database.")
         # We don't want to re-add machines! Therefore, let's see what we're working with
         machines_in_db = self.db.list_machines()
         db_machine_labels = [machine.label for machine in machines_in_db]
@@ -596,6 +599,7 @@ class Azure(Machinery):
         Delete machine from database if it does not exist in the VMSS.
         @param vmss_name: the name of the VMSS to be queried
         """
+        log.debug("Deleting machines from database if they do not exist in the VMSS.")
         # Get all VMs in the VMSS
         paged_vmss_vms = Azure._azure_api_call(
             self.options.az_with_vmss.group,
@@ -937,7 +941,7 @@ class Azure(Machinery):
         except CuckooMachineError:
             machine_pools[vmss_name]["wait"] = False
             machine_pools[vmss_name]["is_scaling"] = False
-            raise
+            return
 
         log.debug("The scaling of %s took %ss" % (vmss_name, time.time()-start_time))
         machine_pools[vmss_name]["size"] = number_of_relevant_machines_required
@@ -962,7 +966,7 @@ class Azure(Machinery):
         start_time = time.time()
         # TODO: Azure disregards the timeout passed to it in most cases, unless it has a custom poller
         lro_poller_result = lro_poller_object.result(timeout=AZURE_TIMEOUT)
-        if lro_poller_result is not None and (lro_poller_result.provisioning_state is None or lro_poller_result.additional_properties.get("status") == "InProgress"):
+        if ((time.time() - start_time) >= AZURE_TIMEOUT) or (lro_poller_result is not None and (lro_poller_result.provisioning_state is None or lro_poller_result.additional_properties.get("status") == "InProgress")):
             raise CuckooMachineError("The task took %s to complete! Bad Azure!" % (time.time() - start_time))
         else:
             return lro_poller_result
@@ -1010,9 +1014,6 @@ class Azure(Machinery):
                 instance_id,
                 operation=self.compute_client.virtual_machine_scale_set_vms.get
             )
-        except Exception as exc:
-            if exc.status_code == 404:
-                return False
-            else:
-                raise
+        except CuckooMissingMachineError:
+            return False
         return True
