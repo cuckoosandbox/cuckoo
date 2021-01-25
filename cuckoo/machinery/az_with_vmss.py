@@ -76,8 +76,6 @@ class Azure(Machinery):
 
         # Set the flag that indicates that the system is initializing
         self.initializing = True
-        # TODO: take this out?
-        # self.running_machines_gap = float(self.options.az_with_vmss.running_machines_gap/100.0)
 
         # If the lengths are different, that means there isn't a 1:1 mapping of supported OS tags
         # and gallery images, when there should be.
@@ -160,7 +158,8 @@ class Azure(Machinery):
         else:
             log.debug("Monitoring the machine pools...")
             for vmss, vals in self.required_vmsss.items():
-                self._thr_scale_machine_pool(vals["tag"])
+                if not machine_pools[vmss]["is_scaling"]:
+                    self._thr_scale_machine_pool(vals["tag"])
 
         # Check the machine pools every 5 minutes
         threading.Timer(300, self._thr_machine_pool_monitor).start()
@@ -354,7 +353,7 @@ class Azure(Machinery):
                 break
             if not machine_pools[vmss_name]["is_scaling_down"]:
                 try:
-                    # TODO: replace this with a batch reimaging when throuput reaches a certain level, either will work:
+                    # TODO: replace this with a batch reimaging when throughput reaches a certain level, either will work:
                     # async_reimage_some = compute_client.virtual_machine_scale_sets.reimage_all(
                     #     resource_group,
                     #     vmss_name,
@@ -376,7 +375,7 @@ class Azure(Machinery):
                     )
                 except Exception as exc:
                     if "InvalidParameter" in repr(exc):
-                        # A reimaged VM cannot be reimaged again. It is currently still reimaging, despite
+                        # A reimaged VM cannot be reimaged again. It could still be currently reimaging, despite
                         # reimage.result() returning a value. It could also be deleted, so let's check.
                         if not self._machine_exists(vmss_name, instance_id):
                             log.warning("Machine %s does not exist anymore. Deleting from DB." % label)
@@ -386,7 +385,7 @@ class Azure(Machinery):
                         time.sleep(60)
                         log.debug("Let's try reimaging/deleting %s again!" % label)
                         continue
-                    elif any(error in repr(exc) for error in ["AllocationFailed", "DisallowedResourceOperation"]):
+                    elif any(error in repr(exc) for error in ["AllocationFailed", "DisallowedResourceOperation", "BadRequest"]):
                         # Azure has failed "updating" the machine, therefore, just delete it and move on
                         self._delete_machine_from_db(label)
                         break
@@ -711,7 +710,7 @@ class Azure(Machinery):
         except Exception as exc:
             log.warning("Failed to %s due to the Azure error '%s': '%s'.",
                         api_call, exc.error.error, exc.message)
-            if "NotFound" in repr(exc):
+            if "NotFound" in repr(exc) or exc.status_code == 404:
                 # Note that this exception is used to represent if an Azure resource
                 # has not been found, not just machines
                 raise CuckooMissingMachineError("%s:%s" % (exc.error.error, exc.message))
@@ -814,13 +813,27 @@ class Azure(Machinery):
         @param tag: the tag used that represents the OS image
         """
         # Reset all machines via reimage_all
-        async_reimage_all = Azure._azure_api_call(
-            self.options.az_with_vmss.group,
-            vmss_name,
-            custom_poller=ARM_POLLER,
-            operation=self.compute_client.virtual_machine_scale_sets.reimage_all
-        )
-        reimage_all_result = self._handle_poller_result(async_reimage_all)
+        try:
+            async_reimage_all = Azure._azure_api_call(
+                self.options.az_with_vmss.group,
+                vmss_name,
+                custom_poller=ARM_POLLER,
+                operation=self.compute_client.virtual_machine_scale_sets.reimage_all
+            )
+            reimage_all_result = self._handle_poller_result(async_reimage_all)
+        except CuckooMachineError as e:
+            # Possible error: 'BadRequest': 'The VM {id} creation in Virtual Machine Scale Set {vmss-name} with
+            # ephemeral disk is not complete. Please trigger a restart if required.'
+            if "BadRequest" in repr(e):
+                async_restart_vmss = Azure._azure_api_call(
+                    self.options.az_with_vmss.group,
+                    vmss_name,
+                    custom_poller=ARM_POLLER,
+                    operation=self.compute_client.virtual_machine_scale_sets.restart
+                )
+                reimage_restart_vmss = self._handle_poller_result(async_restart_vmss)
+            else:
+                raise
         self._add_machines_to_db(vmss_name, tag)
 
     def _thr_scale_machine_pool(self, tag):
@@ -965,7 +978,10 @@ class Azure(Machinery):
         """
         start_time = time.time()
         # TODO: Azure disregards the timeout passed to it in most cases, unless it has a custom poller
-        lro_poller_result = lro_poller_object.result(timeout=AZURE_TIMEOUT)
+        try:
+            lro_poller_result = lro_poller_object.result(timeout=AZURE_TIMEOUT)
+        except Exception as e:
+            raise CuckooMachineError(repr(e))
         if ((time.time() - start_time) >= AZURE_TIMEOUT) or (lro_poller_result is not None and (lro_poller_result.provisioning_state is None or lro_poller_result.additional_properties.get("status") == "InProgress")):
             raise CuckooMachineError("The task took %s to complete! Bad Azure!" % (time.time() - start_time))
         else:
