@@ -45,6 +45,8 @@ class Files(object):
         self.files = {}
         self.files_orig = {}
         self.dumped = []
+        self.total_size_of_uploaded_files = 0
+        self.max_total_size_of_uploaded_files = 0
 
     def is_protected_filename(self, file_name):
         """Return whether or not to inject into a process with this name."""
@@ -85,6 +87,14 @@ class Files(object):
         except IOError as e:
             log.info("Error dumping file from path \"%s\": %s", filepath, e)
             return
+
+        # Check if size of file at filepath will exceed the maximum total size of all uploaded files
+        if self.max_total_size_of_uploaded_files:
+            file_size = os.path.getsize(filepath)
+            if self.total_size_of_uploaded_files + file_size > self.max_total_size_of_uploaded_files:
+                log.debug("Cannot upload %s because it will exceed the maximum total size of uploaded files." % filepath)
+                return
+            self.total_size_of_uploaded_files += file_size
 
         filename = "%s_%s" % (sha256[:16], os.path.basename(filepath))
         upload_path = os.path.join("files", filename)
@@ -465,6 +475,9 @@ class Analyzer(object):
 
         # Set the default DLL to be used for this analysis.
         self.default_dll = self.config.options.get("dll")
+
+        # Set the maximum size of uploaded files from analysis
+        self.files.max_total_size_of_uploaded_files = int(self.config.options.get("max_total_size_of_uploaded_files", 0))
 
         # If a pipe name has not set, then generate a random one.
         self.config.pipe = self.get_pipe_path(
