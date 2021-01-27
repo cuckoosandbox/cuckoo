@@ -158,8 +158,7 @@ class Azure(Machinery):
         else:
             log.debug("Monitoring the machine pools...")
             for vmss, vals in self.required_vmsss.items():
-                if not machine_pools[vmss]["is_scaling"]:
-                    self._thr_scale_machine_pool(vals["tag"])
+                self._thr_scale_machine_pool(vals["tag"])
 
         # Check the machine pools every 5 minutes
         threading.Timer(300, self._thr_machine_pool_monitor).start()
@@ -344,6 +343,8 @@ class Azure(Machinery):
         log.debug("Stopping machine '%s'" % label)
         # Parse the tag and instance id out to confirm which VMSS to modify
         vmss_name, instance_id = label.split("_")
+        # Boolean flag that indicates if Azure is in an error state and reimage commands are timing out
+        reimage_timed_out = False
         # Bang on the Azure API until it submits to our whims
         start_time = time.time()
         while True:
@@ -388,6 +389,8 @@ class Azure(Machinery):
                     elif any(error in repr(exc) for error in ["AllocationFailed", "DisallowedResourceOperation", "BadRequest"]):
                         # Azure has failed "updating" the machine, therefore, just delete it and move on
                         self._delete_machine_from_db(label)
+                        # Attempt to delete it from the VMSS as well
+                        _ = self._delete_machine_from_vmss(vmss_name, instance_id)
                         break
                     else:
                         raise
@@ -397,37 +400,35 @@ class Azure(Machinery):
                     log.debug("Reimaging %s took %ss" % (label, time.time()-start_time))
                     break
                 # TODO: if reimage takes 300s, then delete as it will cause more harm than good
-                except CuckooMachineError:
-                    log.warning("Unable to reimage %s. Deleting from database." % label)
+                except CuckooMachineError as exc:
+                    # Odds are the reimage command timed out, so set flag to true
+                    reimage_timed_out = True
+                    log.warning("Unable to reimage %s due to %s. Deleting from database and VMSS." % (label, repr(exc)))
                     self._delete_machine_from_db(label)
-                    raise
+                    # Attempt to delete it from the VMSS as well
+                    _ = self._delete_machine_from_vmss(vmss_name, instance_id)
+                    break
             else:
-                try:
-                    # TODO: replace with batch deleting when throughput reaches a certain level
-                    # async_delete_some = compute_client.virtual_machine_scale_sets.delete_instances(
-                    #     resource_group,
-                    #     vmss_name,
-                    #     instances_to_be_acted_on
-                    # )
-                    Azure._azure_api_call(
-                        self.options.az_with_vmss.group,
-                        vmss_name,
-                        instance_id,
-                        operation=self.compute_client.virtual_machine_scale_set_vms.delete
-                    )
+                is_machine_deleted = self._delete_machine_from_vmss(vmss_name, instance_id)
+                if is_machine_deleted:
                     # We don't care when this async_delete_machine finishes
                     self._delete_machine_from_db(label)
                     break
-                except Exception as exc:
-                    if "Conflict" in repr(exc):
-                        # This occurs when a VM is still undergoing reimaging, even though reimage.result()
-                        # returned a value.
-                        # Sleep a minute, until Azure gets its act together
-                        time.sleep(60)
-                        log.debug("Let's try reimaging/deleting %s again!" % label)
-                        continue
-                    else:
-                        raise
+                else:
+                    # Sleep a minute, until Azure gets its act together
+                    time.sleep(60)
+                    log.debug("Let's try reimaging/deleting %s again!" % label)
+                    continue
+
+        if reimage_timed_out:
+            # Grab the tag from the VMSS name
+            tag = vmss_name.split("-")[2]
+            # Check remaining relevant machines in database, if 0, then scale!
+            relevant_machines = self._get_relevant_machines(tag)
+            if len(relevant_machines) == 0:
+                log.debug("There are no relevant machines for %s available because Azure has failed us. SCALE!" % vmss_name)
+                self._thr_scale_machine_pool(tag)
+
 
     def availables(self, tags=None):
         """
@@ -520,7 +521,7 @@ class Azure(Machinery):
         @param vmss_name: the name of the VMSS to be queried
         @param vmss_tag: the OS tag to be added to the machine's "tags"
         """
-        log.debug("Adding machines to database.")
+        log.debug("Adding machines to database for %s." % vmss_name)
         # We don't want to re-add machines! Therefore, let's see what we're working with
         machines_in_db = self.db.list_machines()
         db_machine_labels = [machine.label for machine in machines_in_db]
@@ -554,7 +555,7 @@ class Azure(Machinery):
             platform = str(os_type).split(".")[1]
 
             vmss_vm_nic = next(vmss_vm_nic for vmss_vm_nic in vmss_vm_nics
-                               if vmss_vm.network_profile.network_interfaces[0].id == vmss_vm_nic.id)
+                               if vmss_vm.network_profile.network_interfaces[0].id.lower() == vmss_vm_nic.id.lower())
 
             # Sets "new_machine" object in configuration object to
             # avoid raising an exception.
@@ -579,6 +580,7 @@ class Azure(Machinery):
                 resultserver_ip=self.options.az_with_vmss.resultserver_ip,
                 resultserver_port=self.options.az_with_vmss.resultserver_port
             )
+            log.debug("added")
             # When we aren't initializing the system, the machine will immediately become available in DB
             # When we are initializing, we're going to wait for the machine to be have the Cuckoo agent all set up
             if self.initializing:
@@ -708,14 +710,16 @@ class Azure(Machinery):
             log.debug("Trying %s", api_call)
             results = operation(*args, tags=tags, polling=custom_poller)
         except Exception as exc:
+            # For ClientRequestErrors, they do not have the attribute 'error'
+            error = exc.error.error if getattr(exc, "error") else exc
             log.warning("Failed to %s due to the Azure error '%s': '%s'.",
-                        api_call, exc.error.error, exc.message)
+                        api_call, error, exc.message)
             if "NotFound" in repr(exc) or exc.status_code == 404:
                 # Note that this exception is used to represent if an Azure resource
                 # has not been found, not just machines
-                raise CuckooMissingMachineError("%s:%s" % (exc.error.error, exc.message))
+                raise CuckooMissingMachineError("%s:%s" % (error, exc.message))
             else:
-                raise CuckooMachineError("%s:%s" % (exc.error.error, exc.message))
+                raise CuckooMachineError("%s:%s" % (error, exc.message))
         if type(results) == LROPoller:
             # Log the subscription limits
             headers = results._response.headers
@@ -915,8 +919,8 @@ class Azure(Machinery):
                         break
                     # Relaxxxx
                     time.sleep(1)
-                    log.debug("Scaling down. number_of_relevant_machines: %s -> number_of_relevant_machines_required: %s" %
-                              (number_of_relevant_machines, number_of_relevant_machines_required))
+                    log.debug("Scaling %s down until new task is received. %s -> %s" %
+                              (vmss_name, number_of_relevant_machines, number_of_relevant_machines_required))
 
                     # Get an updated count of relevant machines
                     relevant_machines = self._get_relevant_machines(tag)
@@ -951,7 +955,8 @@ class Azure(Machinery):
                 operation=self.compute_client.virtual_machine_scale_sets.update
             )
             updated_vmss = self._handle_poller_result(async_update_vmss)
-        except CuckooMachineError:
+        except CuckooMachineError as e:
+            log.warning(repr(e))
             machine_pools[vmss_name]["wait"] = False
             machine_pools[vmss_name]["is_scaling"] = False
             return
@@ -1033,3 +1038,31 @@ class Azure(Machinery):
         except CuckooMissingMachineError:
             return False
         return True
+
+    def _delete_machine_from_vmss(self, vmss_name, instance_id):
+        """
+        Returns a boolean indicating if operation to delete machine from VMSS was successful
+        @param vmss_name: String representing the virtual machine scale set name
+        @param instance_id: ID of the machine to be deleted
+        @return boolean: Value that represents if operation was successful
+        @raises Exception: If another exception occurs, raise it up!
+        """
+        try:
+            # TODO: replace with batch deleting when throughput reaches a certain level
+            # async_delete_some = compute_client.virtual_machine_scale_sets.delete_instances(
+            #     resource_group,
+            #     vmss_name,
+            #     instances_to_be_acted_on
+            # )
+            Azure._azure_api_call(
+                self.options.az_with_vmss.group,
+                vmss_name,
+                instance_id,
+                operation=self.compute_client.virtual_machine_scale_set_vms.delete
+            )
+            return True
+        except Exception as exc:
+            if any(error in repr(exc) for error in ["Conflict"]):
+                return False
+            else:
+                raise
