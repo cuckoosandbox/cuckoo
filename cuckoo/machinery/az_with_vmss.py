@@ -714,7 +714,7 @@ class Azure(Machinery):
             results = operation(*args, tags=tags, polling=custom_poller)
         except Exception as exc:
             # For ClientRequestErrors, they do not have the attribute 'error'
-            error = exc.error.error if getattr(exc, "error") else exc
+            error = exc.error.error if getattr(exc, "error", False) else exc
             log.warning("Failed to %s due to the Azure error '%s': '%s'.",
                         api_call, error, exc.message)
             if "NotFound" in repr(exc) or exc.status_code == 404:
@@ -840,6 +840,7 @@ class Azure(Machinery):
                 )
                 reimage_restart_vmss = self._handle_poller_result(async_restart_vmss)
             else:
+                log.error(repr(e))
                 raise
         self._add_machines_to_db(vmss_name, tag)
 
@@ -867,7 +868,7 @@ class Azure(Machinery):
 
             relevant_machines = self._get_relevant_machines(tag)
             number_of_relevant_machines = len(relevant_machines)
-
+            machine_pools[vmss_name]["size"] = number_of_relevant_machines
             relevant_task_queue = self._get_number_of_relevant_tasks(tag)
 
             # The scaling technique we will use is a tweaked version of the Leaky Bucket, where we
@@ -903,8 +904,12 @@ class Azure(Machinery):
 
             # Time to scale down!
             if number_of_relevant_machines_required < initial_capacity:
+                # Creating these variables to be used to assist with the scaling down process
+                initial_number_of_locked_relevant_machines = len([machine for machine in relevant_machines if machine.locked])
+                initial_number_of_unlocked_relevant_machines = number_of_relevant_machines - initial_number_of_locked_relevant_machines
+
                 # The system is at rest when no relevant tasks are in the queue and no relevant machines are locked
-                if relevant_task_queue == 0 and len([machine for machine in relevant_machines if machine.locked]) == 0:
+                if relevant_task_queue == 0 and initial_number_of_locked_relevant_machines == 0:
                     # The VMSS will scale in via the ScaleInPolicy.
                     machine_pools[vmss_name]["wait"] = True
                     log.debug("System is at rest, scale down %s capacity and delete machines." % vmss_name)
@@ -914,15 +919,25 @@ class Azure(Machinery):
                     start_time = time.time()
                     # Wait until currently locked machines are deleted to the number that we require
                     while number_of_relevant_machines > number_of_relevant_machines_required:
-                        # We don't want to be stuck in this for longer than ten minutes
+                        # Since we're sleeping 1 second between iterations of this while loop, if there are available
+                        # machines waiting to be assigned tasks and a new task comes down the pipe then there will be
+                        # no queue and instead the # of locked relevant machines will increase (or unlocked relevant
+                        # machines will decrease). Either one indicates that a new task has been submitted and therefore
+                        # the "scaling down" process should exit. This is to prevent scaling down and up so often.
+                        updated_number_of_locked_relevant_machines = len([machine for machine in relevant_machines if machine.locked])
+                        updated_number_of_unlocked_relevant_machines = number_of_relevant_machines - updated_number_of_locked_relevant_machines
+
+                        # We don't want to be stuck in this for longer than the timeout specified
                         if time.time() - start_time > AZURE_TIMEOUT:
                             log.debug("Breaking out of the while loop within the scale down section")
                             break
                         # Get the updated number of relevant machines required
                         relevant_task_queue = self._get_number_of_relevant_tasks(tag)
-                        # As soon as a task is in the queue, we do not want to scale down any more.
+                        # As soon as a task is in the queue or has been assigned to a machine, we do not want to scale down any more.
                         # Deleting an instance affects the capacity of the VMSS, so we do not need to update it.
-                        if relevant_task_queue:
+                        if relevant_task_queue or \
+                                updated_number_of_locked_relevant_machines > initial_number_of_locked_relevant_machines or \
+                                updated_number_of_unlocked_relevant_machines < initial_number_of_unlocked_relevant_machines:
                             break
                         # Relaxxxx
                         time.sleep(1)
