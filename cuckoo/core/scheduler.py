@@ -20,7 +20,7 @@ from cuckoo.common.exceptions import (
 )
 from cuckoo.common.objects import File
 from cuckoo.common.files import Folders
-from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED, TASK_RUNNING
+from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED, TASK_RUNNING, TASK_PENDING
 from cuckoo.core.guest import GuestManager
 from cuckoo.core.plugins import RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
@@ -967,7 +967,7 @@ class Scheduler(object):
 
     def _thr_periodic_log(self):
         log.debug("# Tasks: %d; # Available Machines: %d; # Locked Machines: %d; # Total Machines: %d;",
-                  self.db.count_tasks(status="pending"), self.db.count_machines_available(),
+                  self.db.count_tasks(status=TASK_PENDING), self.db.count_machines_available(),
                   len(self.db.list_machines(locked=True)), len(self.db.list_machines()))
         threading.Timer(10, self._thr_periodic_log).start()
 
@@ -1077,21 +1077,7 @@ class Scheduler(object):
             # Fetch a pending analysis task.
             task, available = None, False
 
-            # Fetch the top task and don't lock it to RUNNING. We just want to
-            # figure out if the task has any requirements such as a required
-            # OS profile of guest machine
-            task = self.db.fetch(service=False, lock_it=False)
-            if not task:
-                continue
-
-            # TODO: Implement a better way to do this
-            # In the current setup, the assumption is made that each task only
-            # has a single tag which indicates what the requested OS profile is.
-            task_tag = None
-            task_details = self.db.view_task(task.id)
-            if getattr(task_details, "tags") and len(task_details.tags) > 0:
-                task_tag = task_details.tags[0].name
-
+            # Check to see if there are any tasks meant for specific machines
             # TODO This fixes only submissions by --machine, need to add
             # other attributes (tags etc).
             # TODO We should probably move the entire "acquire machine" logic
@@ -1103,9 +1089,31 @@ class Scheduler(object):
                 # A machine is specified for a task, do it!
                 if task_for_specified_machine:
                     break
-                # If not, then we're going to try the first task in PENDING
-                if task_tag and task_tag in machine.label and machine.is_analysis():
-                    available = True
+
+            if not task_for_specified_machine:
+                # Go through each task in the queue, checking if it has an available
+                # machine for it to lock to
+                tasks = self.db.list_tasks(status=TASK_PENDING)
+                if not tasks:
+                    continue
+
+                for task in tasks:
+                    # TODO: Implement a better way to do this
+                    # In the current setup, the assumption is made that each task only
+                    # has a single tag which indicates what the requested OS profile is.
+                    task_tag = None
+                    task_details = self.db.view_task(task.id)
+                    if getattr(task_details, "tags") and len(task_details.tags) > 0:
+                        task_tag = task_details.tags[0].name
+
+                    # Cycle through available machines, looking for one analysis machine
+                    # that matches the task tag
+                    for machine in self.db.get_available_machines():
+                        if task_tag and task_tag in machine.label and machine.is_analysis():
+                            available = True
+                            break
+                    if available:
+                        break
 
             # Set that task to running, since we are ready to begin analysis
             if not task_for_specified_machine and available:
