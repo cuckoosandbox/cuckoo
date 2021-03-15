@@ -12,6 +12,10 @@ class Permissions(Auxiliary):
     to prevent malware from messing with analysis
     """
     def start(self):
+        if "permissions" in self.options:
+            if not int(self.options["permissions"]):
+                return
+
         locations = ["C:\\Python27", self.analyzer.path, "C:\\WindowsAzure"]
         log.debug("Adjusting permissions for %s", locations)
         for location in locations:
