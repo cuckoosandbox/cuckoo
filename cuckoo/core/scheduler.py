@@ -1103,7 +1103,7 @@ class Scheduler(object):
                     # has a single tag which indicates what the requested OS profile is.
                     task_tag = None
                     task_details = self.db.view_task(task.id)
-                    if getattr(task_details, "tags") and len(task_details.tags) > 0:
+                    if getattr(task_details, "tags", None) and len(task_details.tags) > 0:
                         task_tag = task_details.tags[0].name
 
                     # Cycle through available machines, looking for one analysis machine
