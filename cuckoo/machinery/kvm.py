@@ -2,10 +2,13 @@
 # Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+import logging
 from cuckoo.common.abstracts import LibVirtMachinery
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooMachineError
 from cuckoo.core.database import Machine
+from sqlalchemy.exc import SQLAlchemyError
+log = logging.getLogger(__name__)
 
 try:
     import libvirt
@@ -36,20 +39,24 @@ class KVM(LibVirtMachinery):
         """Disconnect, ignore request to disconnect."""
         pass
 
-    def availables(self, label=None, platform=None, tags=None):
-        if all(param is None for param in [label, platform, tags]):
+    def availables(self, platform=None, tags=None):
+        if all(param is None for param in [platform, tags]):
             return super(KVM, self).availables()
         else:
-            return self._get_specific_availables(label=label, platform=platform, tags=tags)
+            return self._get_specific_availables(platform=platform, tags=tags)
 
-    def _get_specific_availables(self, label=None, platform=None, tags=None):
+    def _get_specific_availables(self, platform=None, tags=None):
         session = self.db.Session()
-        machines = session.query(Machine)
-        if label:
-            machines = machines.filter_by(label=label)
-        elif platform:
-            machines = machines.filter_by(platform=platform)
-        elif tags:
-            for tag in tags:
-                machines = machines.filter(Machine.tags.any(name=tag))
-        return machines.count()
+        try:
+            machines = session.query(Machine)
+            if platform:
+                machines = machines.filter_by(platform=platform)
+            elif tags:
+                for tag in tags:
+                    machines = machines.filter(Machine.tags.any(name=tag))
+            return machines.count()
+        except SQLAlchemyError as e:
+            log.exception("Database error getting specific available machines: {0}".format(e))
+            return 0
+        finally:
+            session.close()
