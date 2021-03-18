@@ -5,6 +5,7 @@
 from cuckoo.common.abstracts import LibVirtMachinery
 from cuckoo.common.exceptions import CuckooCriticalError
 from cuckoo.common.exceptions import CuckooMachineError
+from cuckoo.core.database import Machine
 
 try:
     import libvirt
@@ -34,3 +35,21 @@ class KVM(LibVirtMachinery):
     def _disconnect(self, conn):
         """Disconnect, ignore request to disconnect."""
         pass
+
+    def availables(self, label=None, platform=None, tags=None):
+        if all(param is None for param in [label, platform, tags]):
+            return super(KVM, self).availables()
+        else:
+            return self._get_specific_availables(label=label, platform=platform, tags=tags)
+
+    def _get_specific_availables(self, label=None, platform=None, tags=None):
+        session = self.db.Session()
+        machines = session.query(Machine)
+        if label:
+            machines = machines.filter_by(label=label)
+        elif platform:
+            machines = machines.filter_by(platform=platform)
+        elif tags:
+            for tag in tags:
+                machines = machines.filter(Machine.tags.any(name=tag))
+        return machines.count()
