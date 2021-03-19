@@ -20,7 +20,7 @@ from cuckoo.common.exceptions import (
 )
 from cuckoo.common.objects import File
 from cuckoo.common.files import Folders
-from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED
+from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED, TASK_PENDING, TASK_RUNNING
 from cuckoo.core.guest import GuestManager
 from cuckoo.core.plugins import RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
@@ -1076,8 +1076,38 @@ class Scheduler(object):
                 if task:
                     break
 
-                if machine.is_analysis():
-                    available = True
+            # Since there are no tasks meant for a specific AVAILABLE machine,
+            # check if any tasks meant for a specific LOCKED machine, specific platform or specific tag
+            if not task:
+                tasks = self.db.list_tasks(status=TASK_PENDING)
+                if not tasks:
+                    continue
+
+                # If so, dispatch to an available machine
+                for task in tasks:
+                    task_details = self.db.view_task(task.id)
+                    # Note that label > platform > tags
+                    if task_details.machine:
+                        if machinery.availables(label=task_details.machine):
+                            available = True
+                            break
+                    elif task_details.platform:
+                        if machinery.availables(platform=task_details.platform):
+                            available = True
+                            break
+                    elif task_details.tags:
+                        tag_names = [tag.name for tag in task_details.tags]
+                        if machinery.availables(tags=tag_names):
+                            available = True
+                            break
+                    else:
+                        available = True
+                        break
+
+                if task and available:
+                    self.db.set_status(task.id, TASK_RUNNING)
+                else:
+                    continue
 
             # We only fetch a new task if at least one of the available
             # machines is not a "service" machine (again, please refer to the

@@ -39,21 +39,24 @@ class KVM(LibVirtMachinery):
         """Disconnect, ignore request to disconnect."""
         pass
 
-    def availables(self, platform=None, tags=None):
-        if all(param is None for param in [platform, tags]):
+    def availables(self, label=None, platform=None, tags=None):
+        if all(param is None for param in [label, platform, tags]):
             return super(KVM, self).availables()
         else:
-            return self._get_specific_availables(platform=platform, tags=tags)
+            return self._get_specific_availables(label=label, platform=platform, tags=tags)
 
-    def _get_specific_availables(self, platform=None, tags=None):
+    def _get_specific_availables(self, label=None, platform=None, tags=None):
         session = self.db.Session()
         try:
             machines = session.query(Machine)
-            if platform:
-                machines = machines.filter_by(platform=platform)
+            # Note that label > platform > tags
+            if label:
+                machines = machines.filter_by(locked=False).filter_by(label=label)
+            elif platform:
+                machines = machines.filter_by(locked=False).filter_by(platform=platform)
             elif tags:
                 for tag in tags:
-                    machines = machines.filter(Machine.tags.any(name=tag))
+                    machines = machines.filter_by(locked=False).filter(Machine.tags.any(name=tag))
             return machines.count()
         except SQLAlchemyError as e:
             log.exception("Database error getting specific available machines: {0}".format(e))
