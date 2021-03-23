@@ -138,7 +138,7 @@ def search_behavior(request, task_id):
         raise PermissionDenied
 
     query = request.POST.get("search")
-    query = re.compile(query, re.I)
+    query = re.compile(re.escape(query), re.I)
     results = []
 
     # Fetch analysis report.
