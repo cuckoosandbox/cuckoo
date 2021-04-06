@@ -694,7 +694,7 @@ function setupEnv () {
             return;
         }
 
-        klass[methodName].overloads[0].implementation = function () {
+        klass[hookConfig.method].overloads[0].implementation = function () {
             let returnValue;
             if (typeof returnValuePatch === "function") {
                 returnValue = returnValuePatch(arguments, this);
