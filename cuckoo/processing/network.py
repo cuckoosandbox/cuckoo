@@ -490,11 +490,16 @@ class Pcap(object):
                 netloc += ":" + str(entry["port"])
 
             entry["data"] = convert_to_printable(tcpdata)
-            url = urlparse.urlunparse(("http", netloc, http.uri,
+            path = http.uri
+            if netloc and netloc in http.uri:
+                path = http.uri.split(netloc)[1]
+            elif entry["host"] and entry["host"] in http.uri:
+                path = http.uri.split(entry["host"])[1]
+            url = urlparse.urlunparse(("http", netloc, path,
                                        None, None, None))
             entry["uri"] = convert_to_printable(url)
             entry["body"] = convert_to_printable(http.body)
-            entry["path"] = convert_to_printable(http.uri)
+            entry["path"] = convert_to_printable(path)
 
             if "user-agent" in http.headers:
                 entry["user-agent"] = \
