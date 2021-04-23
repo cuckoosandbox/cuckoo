@@ -814,13 +814,17 @@ class Pcap2(object):
                 resp_path = os.path.join(self.network_path, resp_sha1)
                 open(resp_path, "wb").write(recv.body or "")
 
+                path = sent.uri
+                host = sent.headers.get("host", dstip)
+                if host in path:
+                    path = path.split(host)[1]
                 results["%s_ex" % protocol].append({
                     "src": srcip, "sport": srcport,
                     "dst": dstip, "dport": dstport,
                     "protocol": protocol,
                     "method": sent.method,
-                    "host": sent.headers.get("host", dstip),
-                    "uri": sent.uri,
+                    "host": host,
+                    "uri": path,
                     "status": int(getattr(recv, "status", 0)),
 
                     # We'll keep these fields here for now.
