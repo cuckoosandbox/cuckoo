@@ -851,7 +851,7 @@ class Database(object):
                 raise CuckooOperationalError("No machines match selection criteria.")
 
             # Get the first free machine.
-            machine = machines.filter_by(locked=False).first()
+            machine = machines.filter_by(locked=False).with_for_update().first()
         except SQLAlchemyError as e:
             log.exception("Database error locking machine: {0}".format(e))
             session.close()
