@@ -2,6 +2,10 @@
    :alt: Cuckoo Sandbox
    :target: https://cuckoosandbox.org/
 
+**PLEASE NOTE: Cuckoo Sandbox 2.x is currently unmaintained. Any open issues
+or pull requests will most likely not be processed, as a current full rewrite
+of Cuckoo is undergoing and will be announced soon.**
+
 `Cuckoo Sandbox <https://cuckoosandbox.org/>`_ is the leading open source
 automated malware analysis system.
 
