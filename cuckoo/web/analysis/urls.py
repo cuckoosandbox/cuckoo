@@ -5,6 +5,7 @@
 
 from . import views
 from django.conf.urls import url
+from django.views.decorators.csrf import csrf_exempt
 
 from cuckoo.web.controllers.analysis.api import AnalysisApi
 from cuckoo.web.controllers.analysis.compare.routes import AnalysisCompareRoutes
@@ -22,8 +23,8 @@ urlpatterns = [
     url(r"^(?P<task_id>\d+)/reboot/$", SubmissionRoutes.reboot, name="analysis/reboot"),
     url(r"^(?P<task_id>\d+)/control/$", AnalysisControlRoutes.player, name="analysis/control/player"),
     url(r"^(?P<task_id>\d+)/control/screenshots/$", ControlApi.store_screenshots, name="analysis/control/screenshots"),
-    url(r"^(?P<task_id>\d+)/control/tunnel/.*", ControlApi.tunnel, name="analysis/control/tunnel"),
-    url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name="analysis/compare/left"),
+    # Fix for Apache Guacamole https://github.com/cuckoosandbox/cuckoo/issues/2529
+    url(r"^(?P<task_id>\d+)/control/tunnel/.*", csrf_exempt(ControlApi.tunnel), name="analysis/control/tunnel"),    url(r"^(?P<task_id>\d+)/compare/$", AnalysisCompareRoutes.left, name="analysis/compare/left"),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_task_id>\d+)/$", AnalysisCompareRoutes.both, name="analysis/compare/both"),
     url(r"^(?P<task_id>\d+)/compare/(?P<compare_with_hash>.*)/$", AnalysisCompareRoutes.hash, name="analysis/compare/hash"),
     # TODO Get rid of this magic routing again as it's only complicating the URL routing.
@@ -46,7 +47,8 @@ urlpatterns = [
         views.moloch),
     url(r"^import/$", SubmissionRoutes.import_, name="analysis/import"),
     # url(r"^api/tasks/list/$", AnalysisApi.tasks_list),
-    url(r"^api/tasks/info/$", AnalysisApi.tasks_info),
+    # Fix for Apache Guacamole https://github.com/cuckoosandbox/cuckoo/issues/2529
+    url(r"^api/tasks/info/$", csrf_exempt(AnalysisApi.tasks_info)),
     url(r"^api/tasks/recent/$", AnalysisApi.tasks_recent),
     url(r"^api/tasks/stats/$", AnalysisApi.tasks_stats),
     # url(r"^api/tasks/delete/$", AnalysisApi.task_delete),
