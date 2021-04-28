@@ -206,6 +206,7 @@ do_setup(
         "peepdf>=0.4.2, <0.5",
         "pefile2==1.2.11",
         "pillow==3.2",
+        "proxmoxer==1.0.3",
         "pyelftools==0.24",
         "pyguacamole==0.6",
         "pymisp==2.4.106",
