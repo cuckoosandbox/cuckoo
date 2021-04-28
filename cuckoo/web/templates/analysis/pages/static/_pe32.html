@@ -32,7 +32,7 @@
                 {% for cert in report.analysis.static.signature %}
                 <table class="table table-striped table-bordered">
                     <colgroup>
-                        <col width="150" />
+                        <col width="250" />
                         <col width="*" />
                     </colgroup>
                     <tr>
@@ -44,20 +44,68 @@
                         <td>{{cert.sha1}}</td>
                     </tr>
                     <tr>
+			<th>SHA256</th>
+			<td>{{cert.sha256}}</td>
+		    </tr>
+                    <tr>
                         <th>Serial Number</th>
                         <td>{{cert.serial_number}}</td>
                     </tr>
                     <tr>
-                        <th>Common Name</th>
-                        <td>{{cert.common_name}}</td>
+                        <th>Subject Common Name</th>
+                        <td>{{cert.subject_commonName}}</td>
                     </tr>
                     <tr>
-                        <th>Country</th>
-                        <td>{{cert.country}}</td>
+                        <th>Subject Organization Name</th>
+                        <td>{{cert.subject_organizationName}}</td>
+                    </tr>
+		    <tr>
+			<th>Subject Organization Unit Name</th>
+			<td>{{cert.subject_organizationalUnitName}}</td>
+		    </tr>
+                    <tr>
+                        <th>Subject Street Address</th>
+                        <td>{{cert.subject_streetAddress}}</td>
                     </tr>
                     <tr>
-                        <th>Locality</th>
-                        <td>{{cert.locality}}</td>
+                        <th>Subject Locality</th>
+                        <td>{{cert.subject_localityName}}</td>
+                    </tr>
+                    <tr>
+			<th>Subject State or Province</th>
+                        <td>{{cert.subject_stateOrProvinceName}}</td>
+                    </tr>
+                    <tr>
+                        <th>Subject Postal Code</th>
+                        <td>{{cert.subject_postalCode}}</td>
+                    </tr>
+                    <tr>
+                        <th>Subject Country</th>
+                        <td>{{cert.subject_countryName}}</td>
+                    </tr>
+                    <tr>
+                        <th>Issuer Common Name</th>
+                        <td>{{cert.issuer_commonName}}</td>
+                    </tr>
+                    <tr>
+                        <th>Issuer Organization Name</th>
+                        <td>{{cert.issuer_organizationName}}</td>
+                    </tr>
+		    <tr>
+			<th>Issuer Organization Unit Name</th>
+			<td>{{cert.issuer_organizationalUnitName}}</td>
+		    </tr>
+                    <tr>
+                        <th>Issuer Locality</th>
+                        <td>{{cert.issuer_localityName}}</td>
+                    </tr>
+                    <tr>
+                        <th>Issuer State or Province</th>
+                        <td>{{cert.issuer_stateOrProvinceName}}</td>
+                    </tr>                                                                       
+                    <tr>
+                        <th>Issuer Country</th>
+                        <td>{{cert.issuer_countryName}}</td>
                     </tr>
                 </table>
                 {% endfor %}

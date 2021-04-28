@@ -3,6 +3,8 @@
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
 
+import base64
+import binascii
 import bs4
 import ctypes
 import datetime
@@ -20,18 +22,17 @@ import struct
 import zipfile
 import zlib
 
-try:
-    import M2Crypto
-    HAVE_MCRYPTO = True
-except ImportError:
-    HAVE_MCRYPTO = False
-
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.objects import Archive, File
 from cuckoo.common.structures import LnkHeader, LnkEntry
 from cuckoo.common.utils import convert_to_printable, to_unicode, jsbeautify
 from cuckoo.core.extract import ExtractManager
 from cuckoo.misc import cwd, dispatch
+
+import cryptography
+from cryptography.hazmat.backends.openssl.backend import backend
+from cryptography.hazmat.backends.openssl import x509
+from cryptography.hazmat.primitives import hashes
 
 from elftools.common.exceptions import ELFError
 from elftools.elf.constants import E_FLAGS
@@ -63,14 +64,14 @@ class PortableExecutable(object):
         self.pe = None
 
     def _get_filetype(self, data):
-        """Get filetype, use libmagic if available.
+        """Gets filetype, uses libmagic if available.
         @param data: data to be analyzed.
         @return: file type or None.
         """
         return sflock.magic.from_buffer(data)
 
     def _get_peid_signatures(self):
-        """Get PEID signatures.
+        """Gets PEID signatures.
         @return: matched signatures or None.
         """
         try:
@@ -81,7 +82,7 @@ class PortableExecutable(object):
             return None
 
     def _get_imported_symbols(self):
-        """Get imported symbols.
+        """Gets imported symbols.
         @return: imported symbols dict or None.
         """
         imports = []
@@ -105,7 +106,7 @@ class PortableExecutable(object):
         return imports
 
     def _get_exported_symbols(self):
-        """Get exported symbols.
+        """Gets exported symbols.
         @return: exported symbols dict or None.
         """
         exports = []
@@ -122,7 +123,7 @@ class PortableExecutable(object):
         return exports
 
     def _get_sections(self):
-        """Get sections.
+        """Gets sections.
         @return: sections dict or None.
         """
         sections = []
@@ -207,7 +208,7 @@ class PortableExecutable(object):
         return infos
 
     def _get_imphash(self):
-        """Get imphash.
+        """Gets imphash.
         @return: imphash string or None.
         """
         try:
@@ -250,45 +251,61 @@ class PortableExecutable(object):
         if not dir_entry or not dir_entry.VirtualAddress or not dir_entry.Size:
             return []
 
-        if not HAVE_MCRYPTO:
-            log.critical(
-                "You do not have the m2crypto library installed preventing "
-                "certificate extraction. Please read the Cuckoo "
-                "documentation on installing m2crypto (you need SWIG "
-                "installed and then `pip install m2crypto==0.24.0`)!"
-            )
-            return []
-
         signatures = self.pe.write()[dir_entry.VirtualAddress+8:]
-        bio = M2Crypto.BIO.MemoryBuffer(signatures)
+        bio = backend._bytes_to_bio(signatures)
         if not bio:
             return []
 
-        pkcs7_obj = M2Crypto.m2.pkcs7_read_bio_der(bio.bio_ptr())
+        pkcs7_obj = backend._lib.d2i_PKCS7_bio(bio.bio, backend._ffi.NULL)
         if not pkcs7_obj:
             return []
 
         ret = []
-        p7 = M2Crypto.SMIME.PKCS7(pkcs7_obj)
-        for cert in p7.get0_signers(M2Crypto.X509.X509_Stack()) or []:
-            subject = cert.get_subject()
-            ret.append({
-                "serial_number": "%032x" % cert.get_serial_number(),
-                "common_name": subject.CN,
-                "country": subject.C,
-                "locality": subject.L,
-                "organization": subject.O,
-                "email": subject.Email,
-                "sha1": "%040x" % int(cert.get_fingerprint("sha1"), 16),
-                "md5": "%032x" % int(cert.get_fingerprint("md5"), 16),
-            })
-
-            if subject.GN and subject.SN:
-                ret[-1]["full_name"] = "%s %s" % (subject.GN, subject.SN)
-            elif subject.GN:
-                ret[-1]["full_name"] = subject.GN
-            elif subject.SN:
-                ret[-1]["full_name"] = subject.SN
+        signers = backend._lib.PKCS7_get0_signers(pkcs7_obj, backend._ffi.NULL, 0)
+        certs = list()
+        for i in range(backend._lib.sk_X509_num(signers)):
+            x509_ptr = backend._lib.sk_X509_value(signers, i)
+            certs.append(x509._Certificate(backend, x509_ptr))
+        for cert in certs:
+            md5 = binascii.hexlify(cert.fingerprint(hashes.MD5())).decode()
+            sha1 = binascii.hexlify(cert.fingerprint(hashes.SHA1())).decode()
+            sha256 = binascii.hexlify(cert.fingerprint(hashes.SHA256())).decode()
+            cert_data = {'md5': md5, 'sha1': sha1, 'sha256': sha256, 'serial_number': str(cert.serial_number)}
+            for attribute in cert.subject:
+                cert_data['subject_{}'.format(attribute.oid._name)] = attribute.value
+            for attribute in cert.issuer:
+                cert_data['issuer_{}'.format(attribute.oid._name)] = attribute.value
+            try:
+                for extension in cert.extensions:
+                    if extension.oid._name == 'authorityKeyIdentifier':
+                        cert_data['extensions_{}'.format(extension.oid._name)] = base64.b64encode(extension.value.key_identifier)
+                    elif extension.oid._name == 'subjectKeyIdentifier':
+                        cert_data['extensions_{}'.format(extension.oid._name)] = base64.b64encode(extension.value.digest)
+                    elif extension.oid._name == 'certificatePolicies':
+                        for index, policy in enumerate(extension.value):
+                            if policy.policy_qualifiers:
+                                for qualifier in policy.policy_qualifiers:
+                                    if qualifier.__class__ is not cryptography.x509.extensions.UserNotice:
+                                        cert_data['extensions_{}_{}'.format(extension.oid._name, index)] = qualifier
+                    elif extension.oid._name == 'cRLDistributionPoints':
+                        for index, point in enumerate(extension.value):
+                            for full_name in point.full_name:
+                                cert_data['extensions_{}_{}'.format(extension.oid._name, index)] = full_name.value
+                    elif extension.oid._name == 'authorityInfoAccess':
+                        for authority_info in extension.value:
+                            if authority_info.access_method._name == 'caIssuers':
+                                cert_data['extensions_{}_caIssuers'.format(extension.oid._name)] = authority_info.access_location.value
+                            elif authority_info.access_method._name == 'OCSP':
+                                cert_data['extensions_{}_OCSP'.format(extension.oid._name)] = authority_info.access_location.value
+                    elif extension.oid._name == 'subjectAltName':
+                        for index, name in enumerate(extension.value._general_names):
+                            if isinstance(name.value, bytes):
+                                cert_data['extensions_{}_{}'.format(extension.oid._name, index)] = base64.b64encode(name.value)
+                            else:
+                                cert_data['extensions_{}_{}'.format(extension.oid._name, index)] = name.value
+            except ValueError:
+                continue
+            ret.append(cert_data)
 
         return ret
 
