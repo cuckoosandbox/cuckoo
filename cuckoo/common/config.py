@@ -338,6 +338,9 @@ class Config(object):
             "reboot": {
                 "enabled": Boolean(True),
             },
+            "sysmon": {
+                "enabled": Boolean(False),
+            }
         },
         "avd": {
             "avd": {
@@ -546,6 +549,9 @@ class Config(object):
             },
             "buffer": {
                 "enabled": Boolean(True),
+            },
+            "sysmon": {
+                "enabled": Boolean(False),
             },
             "debug": {
                 "enabled": Boolean(True),
