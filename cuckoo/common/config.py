@@ -741,6 +741,7 @@ class Config(object):
                 "enabled": Boolean(True),
                 "indent": Int(4),
                 "calls": Boolean(True),
+                "call_limit": Int(0),
             },
             "singlefile": {
                 "enabled": Boolean(False),
