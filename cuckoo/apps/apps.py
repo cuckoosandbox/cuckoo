@@ -387,13 +387,31 @@ def cuckoo_clean():
             "monthly": "%Y-%m",
             "daily": "%Y-%m-%d",
         }[elastic.index_time_pattern])
-        dated_index = "%s-%s" % (elastic.index, date_index)
 
+        dated_index = "%s-%s" % (elastic.report_index, date_index)
         elastic.client.indices.delete(
             index=dated_index, ignore=[400, 404]
         )
 
-        template_name = "%s_template" % dated_index
+        dated_index = "%s-%s" % (elastic.calls_index, date_index)
+        elastic.client.indices.delete(
+            index=dated_index, ignore=[400, 404]
+        )
+
+        dated_index = "%s-%s" % (elastic.irma_index, date_index)
+        elastic.client.indices.delete(
+            index=dated_index, ignore=[400, 404]
+        )
+
+        template_name = "%s_template" % elastic.report_index
+        if elastic.client.indices.exists_template(template_name):
+            elastic.client.indices.delete_template(template_name)
+
+        template_name = "%s_template" % elastic.calls_index
+        if elastic.client.indices.exists_template(template_name):
+            elastic.client.indices.delete_template(template_name)
+
+        template_name = "%s_template" % elastic.irma_index
         if elastic.client.indices.exists_template(template_name):
             elastic.client.indices.delete_template(template_name)
 

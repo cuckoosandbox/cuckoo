@@ -1,0 +1,37 @@
+{
+    "template": "cuckoo-irma-*",
+    "settings": {
+        "index": {
+            "mapping.coerce": true,
+            "number_of_shards": "1",
+            "codec": "best_compression",
+            "number_of_replicas": "0"
+        }
+    },
+    "mappings": {
+        "irma": {
+            "dynamic_templates": [
+                {
+                    "notanalyzed": {
+                        "mapping": {
+                            "type": "keyword",
+                            "doc_values": "True"
+                        },
+                        "match_mapping_type": "string",
+                        "match": "*"
+                    }
+                }
+            ],
+            "properties": {
+                "timestamp_first_scan": {
+                    "format": "epoch_millis",
+                    "type": "date"
+                },
+                "timestamp_last_scan": {
+                    "format": "epoch_millis",
+                    "type": "date"
+                }
+            }
+        }
+    }
+}

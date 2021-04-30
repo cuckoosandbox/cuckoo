@@ -1,0 +1,45 @@
+{
+    "template": "cuckoo-calls-*",
+    "settings": {
+        "index": {
+            "mapping.coerce": true,
+            "number_of_shards": "1",
+            "codec": "best_compression",
+            "number_of_replicas": "0"
+        }
+    },
+    "mappings": {
+        "call": {
+            "date_detection": false,
+            "dynamic_templates": [
+                {
+                    "keyword": {
+                        "mapping": {
+                            "type": "keyword",
+                            "ignore_above": 32766
+                        },
+                        "match_mapping_type": "string",
+                        "match": "*"
+                    }
+                },
+                {
+                    "call_arguments": {
+                        "mapping": {
+                            "type": "keyword",
+                            "ignore_above": 32766
+                        },
+                        "path_match": "arguments.*",
+                        "match": "*",
+                        "match_mapping_type": "long"
+                    }
+                }
+            ],
+            "properties": {
+                "report_time": {
+                    "format": "epoch_second",
+                    "type": "date"
+                }
+            }
+        }
+    }
+}

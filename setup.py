@@ -194,7 +194,7 @@ do_setup(
         "django_extensions==1.6.7",
         "dpkt==1.8.7",
         "egghatch>=0.2.3, <0.3",
-        "elasticsearch==5.3.0",
+        "elasticsearch==6.3.1",
         "flask==0.12.2",
         "flask-sqlalchemy==2.4.0",
         "httpreplay>=0.2.4, <0.3",

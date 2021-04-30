@@ -5,23 +5,27 @@
 from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooOperationalError
 
+
 class Elastic(object):
     def __init__(self):
         self.client = None
 
         self.enabled = None
         self.hosts = None
-        self.calls = None
-        self.index = None
+        self.calls_index = None
+        self.report_index = None
+        self.irma_index = None
         self.index_time_pattern = None
         self.cuckoo_node = None
+        self.timeout = None
 
     def init(self):
         self.enabled = config("reporting:elasticsearch:enabled")
         self.hosts = config("reporting:elasticsearch:hosts")
         self.timeout = config("reporting:elasticsearch:timeout")
-        self.calls = config("reporting:elasticsearch:calls")
-        self.index = config("reporting:elasticsearch:index")
+        self.calls_index = config("reporting:elasticsearch:calls_index")
+        self.report_index = config("reporting:elasticsearch:reports_index")
+        self.irma_index = config("reporting:elasticsearch:irma_index")
         self.index_time_pattern = config(
             "reporting:elasticsearch:index_time_pattern"
         )
