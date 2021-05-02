@@ -411,6 +411,8 @@ def cuckoo_clean():
     for path in paths:
         if os.path.isdir(path):
             try:
+                # handle soft-links cases
+                path = os.path.realpath(path)
                 shutil.rmtree(path)
                 os.mkdir(path)
             except (IOError, OSError) as e:
