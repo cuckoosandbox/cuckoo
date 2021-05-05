@@ -20,7 +20,7 @@ from cuckoo.common.exceptions import (
 )
 from cuckoo.common.objects import File
 from cuckoo.common.files import Folders
-from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED, TASK_PENDING, TASK_RUNNING
+from cuckoo.core.database import Database, TASK_COMPLETED, TASK_REPORTED, TASK_RUNNING, TASK_PENDING
 from cuckoo.core.guest import GuestManager
 from cuckoo.core.plugins import RunAuxiliary, RunProcessing
 from cuckoo.core.plugins import RunSignatures, RunReporting
@@ -965,11 +965,18 @@ class Scheduler(object):
                 cleaned.add(am)
         return cleaned
 
+    def _thr_periodic_log(self):
+        log.debug("# Tasks: %d; # Available Machines: %d; # Locked Machines: %d; # Total Machines: %d;",
+                  self.db.count_tasks(status=TASK_PENDING), self.db.count_machines_available(),
+                  len(self.db.list_machines(locked=True)), len(self.db.list_machines()))
+        threading.Timer(10, self._thr_periodic_log).start()
+
     def start(self):
         """Start scheduler."""
         self.initialize()
 
         log.info("Waiting for analysis tasks.")
+        self._thr_periodic_log()
 
         # Message queue with threads to transmit exceptions (used as IPC).
         errors = Queue.Queue()
@@ -978,27 +985,12 @@ class Scheduler(object):
         if self.maxcount is None:
             self.maxcount = self.cfg.cuckoo.max_analysis_count
 
+        launched_analysis = True
         # This loop runs forever.
         while self.running:
-            time.sleep(1)
-
-            # Run cleanup on finished analysis managers and untrack them
-            for am in self._cleanup_managers():
-                self.analysis_managers.discard(am)
-
-            # Wait until the machine lock is not locked. This is only the case
-            # when all machines are fully running, rather that about to start
-            # or still busy starting. This way we won't have race conditions
-            # with finding out there are no available machines in the analysis
-            # manager or having two analyses pick the same machine.
-            if not machine_lock.acquire(False):
-                logger(
-                    "Could not acquire machine lock",
-                    action="scheduler.machine_lock", status="busy"
-                )
-                continue
-
-            machine_lock.release()
+            if not launched_analysis:
+                time.sleep(1)
+            launched_analysis = False
 
             # If not enough free disk space is available, then we print an
             # error message and wait another round (this check is ignored
@@ -1064,58 +1056,50 @@ class Scheduler(object):
                     )
                 continue
 
-            # Fetch a pending analysis task.
-            # TODO This fixes only submissions by --machine, need to add
-            # other attributes (tags etc).
-            # TODO We should probably move the entire "acquire machine" logic
-            # from the Analysis Manager to the Scheduler and then pass the
-            # selected machine onto the Analysis Manager instance.
-            task, available = None, False
-            for machine in self.db.get_available_machines():
-                task = self.db.fetch(machine=machine.name)
-                if task:
-                    break
+            # Get all tasks in the queue
+            tasks = self.db.list_tasks(status=TASK_PENDING, details=True)
+            if not tasks:
+                continue
 
-            # Since there are no tasks meant for a specific AVAILABLE machine,
-            # check if any tasks meant for a specific LOCKED machine, specific platform or specific tag
-            if not task:
-                tasks = self.db.list_tasks(status=TASK_PENDING)
-                if not tasks:
+            for task in tasks:
+                # Run cleanup on finished analysis managers and untrack them
+                for am in self._cleanup_managers():
+                    self.analysis_managers.discard(am)
+
+                # Wait until the machine lock is not locked. This is only the case
+                # when all machines are fully running, rather that about to start
+                # or still busy starting. This way we won't have race conditions
+                # with finding out there are no available machines in the analysis
+                # manager or having two analyses pick the same machine.
+                if not machine_lock.acquire(False):
+                    logger(
+                        "Could not acquire machine lock",
+                        action="scheduler.machine_lock", status="busy"
+                    )
                     continue
 
-                # If so, dispatch to an available machine
-                for task in tasks:
-                    task_details = self.db.view_task(task.id)
-                    # Note that label > platform > tags
-                    if task_details.machine:
-                        if machinery.availables(label=task_details.machine):
-                            available = True
-                            break
-                    elif task_details.platform:
-                        if machinery.availables(platform=task_details.platform):
-                            available = True
-                            break
-                    elif task_details.tags:
-                        tag_names = [tag.name for tag in task_details.tags]
-                        if machinery.availables(tags=tag_names):
-                            available = True
-                            break
-                    else:
+                machine_lock.release()
+
+                available = False
+                # Note that label > platform > tags
+                if task.machine:
+                    if machinery.availables(label=task.machine):
                         available = True
-                        break
-
-                if task and available:
-                    self.db.set_status(task.id, TASK_RUNNING)
+                elif task.platform:
+                    if machinery.availables(platform=task.platform):
+                        available = True
+                elif task.tags:
+                    tag_names = [tag.name for tag in task.tags]
+                    if machinery.availables(tags=tag_names):
+                        available = True
                 else:
+                    available = True
+
+                if not available:
                     continue
 
-            # We only fetch a new task if at least one of the available
-            # machines is not a "service" machine (again, please refer to the
-            # services auxiliary module for more information on service VMs).
-            if not task and available:
-                task = self.db.fetch(service=False)
+                self.db.set_status(task.id, TASK_RUNNING)
 
-            if task:
                 log.debug("Processing task #%s", task.id)
                 self.total_analysis_count += 1
 
@@ -1124,7 +1108,7 @@ class Scheduler(object):
                 analysis.daemon = True
                 analysis.start()
                 self.analysis_managers.add(analysis)
-
+                launched_analysis = True
             # Deal with errors.
             try:
                 raise errors.get(block=False)
