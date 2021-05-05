@@ -28,7 +28,7 @@ from cuckoo.common.config import config
 from cuckoo.common.exceptions import CuckooMachineError, CuckooDependencyError, CuckooGuestCriticalTimeout, \
     CuckooMissingMachineError, CuckooConfigurationError
 from cuckoo.common.constants import CUCKOO_GUEST_PORT
-from cuckoo.core.database import TASK_PENDING
+from cuckoo.core.database import TASK_PENDING, Machine
 
 # SQLAlchemy-specific imports
 from sqlalchemy.exc import SQLAlchemyError
@@ -443,54 +443,35 @@ class Azure(Machinery):
                 log.debug("Successfully created %s. Now to SCALE!" % vmss_name)
                 threading.Thread(target=self._thr_scale_machine_pool, args=(tag,)).start()
 
-    def availables(self, tags=None):
-        """
-        Overloading abstracts.py:availables() to utilize relevancy via tags.
-        @return: number of available machines that are relevant. Note that we break after 1
-        because that is all scheduler wants, a 1 or a 0
-        @raise: CuckooMachineError
-        """
-        if not tags:
-            return self.db.count_machines_available()
-
-        tag = None
-        # If called by the AnalysisManager
-        if type(tags) == list and len(tags) > 0:
-            tag = tags[0]
-        # If called by the Scheduler
-        elif type(tags) == InstrumentedList and len(tags) > 0:
-            tag = tags[0].name
-
-        if tag and tag in self.options.az_with_vmss.supported_os_tags:
-            requested_type = tag
+    def availables(self, label=None, platform=None, tags=None):
+        if all(param is None for param in [label, platform, tags]):
+            return super(Azure, self).availables()
         else:
-            requested_type = None
+            return self._get_specific_availables(label=label, platform=platform, tags=tags)
 
-        # If the requested type was not passed in via tag after start(), which it must always be, do:
-        if not requested_type:
-            raise CuckooMachineError("The tags %s passed in to the overloaded availables() method were not valid, "
-                                     "and therefore a relevant machine cannot be deemed available." % tags)
-
-        # If VMSS is in the "wait" state, then WAIT
-        vmss_name = next(name for name, vals in self.required_vmsss.items() if vals["tag"] == requested_type)
-        if machine_pools[vmss_name]["wait"]:
-            log.debug("Machinery is not ready yet...")
+    def _get_specific_availables(self, label=None, platform=None, tags=None):
+        session = self.db.Session()
+        try:
+            machines = session.query(Machine)
+            # Note that label > platform > tags
+            if label:
+                machines = machines.filter_by(locked=False).filter_by(label=label)
+            elif platform:
+                machines = machines.filter_by(locked=False).filter_by(platform=platform)
+            elif tags:
+                for tag in tags:
+                    # If VMSS is in the "wait" state, then WAIT
+                    vmss_name = next(name for name, vals in self.required_vmsss.items() if vals["tag"] == tag)
+                    if machine_pools[vmss_name]["wait"]:
+                        log.debug("Machinery is not ready yet...")
+                        return 0
+                    machines = machines.filter_by(locked=False).filter(Machine.tags.any(name=tag))
+            return machines.count()
+        except SQLAlchemyError as e:
+            log.exception("Database error getting specific available machines: {0}".format(e))
             return 0
-
-        # We are getting a list of all available (unlocked) machines
-        available_machines = self.db.get_available_machines()
-
-        # The number of relevant available machines are those from the available list that
-        # have the correct tag in their name
-        relevant_available_machines = [machine.label for machine in available_machines
-                                       if requested_type in machine.label]
-
-        # We only care about the Azure machines that are relevant and "available" according to the database
-        if relevant_available_machines:
-            # As long as one relevant machine is running and available, we're good
-            return 1
-        # If no relevant machines are running or available, tell scheduler to chill
-        return 0
+        finally:
+            session.close()
 
     def acquire(self, machine_id=None, platform=None, tags=None):
         """
@@ -500,10 +481,9 @@ class Azure(Machinery):
         @param tags: any tags that are associated with the machine to be acquired
         @return: dict representing machine object from DB
         """
-        # We are tags/machine_id or bust
         base_class_return_value = super(Azure, self).acquire(
             machine_id=machine_id,
-            platform=None,
+            platform=platform,
             tags=tags
         )
         if machine_id:
@@ -894,7 +874,8 @@ class Azure(Machinery):
             if relevant_task_queue == 0:
                 number_of_relevant_machines_required = self.options.az_with_vmss.initial_pool_size
             else:
-                number_of_relevant_machines_required = relevant_task_queue
+                number_of_relevant_machines_required = \
+                    int(round(relevant_task_queue * (1 + self.options.az_with_vmss.overprovision / 100)))
 
             if number_of_relevant_machines_required < self.options.az_with_vmss.initial_pool_size:
                 number_of_relevant_machines_required = self.options.az_with_vmss.initial_pool_size
@@ -1031,7 +1012,7 @@ class Azure(Machinery):
             lro_poller_result = lro_poller_object.result(timeout=AZURE_TIMEOUT)
         except Exception as e:
             raise CuckooMachineError(repr(e))
-        if ((time.time() - start_time) >= AZURE_TIMEOUT) or (lro_poller_result is not None and lro_poller_result.provisioning_state is None):
+        if (time.time() - start_time) >= AZURE_TIMEOUT:
             raise CuckooMachineError("The task took %s to complete! Bad Azure!" % (time.time() - start_time))
         else:
             return lro_poller_result

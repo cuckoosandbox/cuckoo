@@ -162,7 +162,7 @@ class AnalysisManager(threading.Thread):
             # In some cases it's possible that we enter this loop without
             # having any available machines. We should make sure this is not
             # such case, or the analysis task will fail completely.
-            if not machinery.availables(tags=self.task.tags):
+            if not machinery.availables(label=self.task.machine, platform=self.task.platform, tags=self.task.tags):
                 machine_lock.release()
                 time.sleep(1)
                 continue
@@ -992,24 +992,6 @@ class Scheduler(object):
                 time.sleep(1)
             launched_analysis = False
 
-            # Run cleanup on finished analysis managers and untrack them
-            for am in self._cleanup_managers():
-                self.analysis_managers.discard(am)
-
-            # Wait until the machine lock is not locked. This is only the case
-            # when all machines are fully running, rather that about to start
-            # or still busy starting. This way we won't have race conditions
-            # with finding out there are no available machines in the analysis
-            # manager or having two analyses pick the same machine.
-            if not machine_lock.acquire(False):
-                logger(
-                    "Could not acquire machine lock",
-                    action="scheduler.machine_lock", status="busy"
-                )
-                continue
-
-            machine_lock.release()
-
             # If not enough free disk space is available, then we print an
             # error message and wait another round (this check is ignored
             # when the freespace configuration variable is set to zero).
@@ -1074,58 +1056,50 @@ class Scheduler(object):
                     )
                 continue
 
-            # Fetch a pending analysis task.
-            task, available = None, False
+            # Get all tasks in the queue
+            tasks = self.db.list_tasks(status=TASK_PENDING, details=True)
+            if not tasks:
+                continue
 
-            # Check to see if there are any tasks meant for specific machines
-            # TODO This fixes only submissions by --machine, need to add
-            # other attributes (tags etc).
-            # TODO We should probably move the entire "acquire machine" logic
-            # from the Analysis Manager to the Scheduler and then pass the
-            # selected machine onto the Analysis Manager instance.
-            task_for_specified_machine = None
-            for machine in self.db.get_available_machines():
-                task_for_specified_machine = self.db.fetch(machine=machine.name)
-                # A machine is specified for a task, do it!
-                if task_for_specified_machine:
-                    break
+            for task in tasks:
+                # Run cleanup on finished analysis managers and untrack them
+                for am in self._cleanup_managers():
+                    self.analysis_managers.discard(am)
 
-            if not task_for_specified_machine:
-                # Go through each task in the queue, checking if it has an available
-                # machine for it to lock to
-                tasks = self.db.list_tasks(status=TASK_PENDING)
-                if not tasks:
+                # Wait until the machine lock is not locked. This is only the case
+                # when all machines are fully running, rather that about to start
+                # or still busy starting. This way we won't have race conditions
+                # with finding out there are no available machines in the analysis
+                # manager or having two analyses pick the same machine.
+                if not machine_lock.acquire(False):
+                    logger(
+                        "Could not acquire machine lock",
+                        action="scheduler.machine_lock", status="busy"
+                    )
                     continue
 
-                for task in tasks:
-                    # TODO: Implement a better way to do this
-                    # In the current setup, the assumption is made that each task only
-                    # has a single tag which indicates what the requested OS profile is.
-                    task_tag = None
-                    task_details = self.db.view_task(task.id)
-                    if getattr(task_details, "tags", None) and len(task_details.tags) > 0:
-                        task_tag = task_details.tags[0].name
+                machine_lock.release()
 
-                    # Cycle through available machines, looking for one analysis machine
-                    # that matches the task tag
-                    for machine in self.db.get_available_machines():
-                        if task_tag and task_tag in machine.label and machine.is_analysis():
-                            available = True
-                            break
-                    if available:
-                        break
-
-            # Set that task to running, since we are ready to begin analysis
-            if not task_for_specified_machine and available:
-                # Is the machinery in a good state for tasks to be sent to it?
-                if machinery.availables(tags=task_details.tags):
-                    self.db.set_status(task.id, TASK_RUNNING)
+                available = False
+                # Note that label > platform > tags
+                if task.machine:
+                    if machinery.availables(label=task.machine):
+                        available = True
+                elif task.platform:
+                    if machinery.availables(platform=task.platform):
+                        available = True
+                elif task.tags:
+                    tag_names = [tag.name for tag in task.tags]
+                    if machinery.availables(tags=tag_names):
+                        available = True
                 else:
-                    continue
-            else:
-                task = task_for_specified_machine
+                    available = True
 
-            if task:
+                if not available:
+                    continue
+
+                self.db.set_status(task.id, TASK_RUNNING)
+
                 log.debug("Processing task #%s", task.id)
                 self.total_analysis_count += 1
 

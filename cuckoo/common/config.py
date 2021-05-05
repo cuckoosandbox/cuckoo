@@ -290,7 +290,7 @@ class Config(object):
                 "resultserver_port": Int(2042),
                 "guest_snapshot": List(String, None, ",\\s"),
                 "storage_account_type": String("sample-type"),
-                "initial_pool_size": Int(1)
+                "initial_pool_size": Int(1),
             },
         },
         "az_with_vmss": {
@@ -318,7 +318,8 @@ class Config(object):
                 "gallery_image_names": List(String, None, ",\\s"),
                 "storage_account_type": String("sample-type"),
                 "initial_pool_size": Int(1),
-                "supported_os_tags": List(String, None, ",\\s")
+                "supported_os_tags": List(String, None, ",\\s"),
+                "overprovision": Int(100),
             },
         },
         "virtualbox": {
