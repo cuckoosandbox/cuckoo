@@ -675,7 +675,11 @@ Returns the report associated with the specified task ID.
 **Parameters**:
 
 * ``id`` *(required)* *(int)* - ID of the task to get the report for
-* ``format`` *(optional)* - format of the report to retrieve [json/html/all/dropped/package_files]. If none is specified the JSON report will be returned. ``all`` returns all the result files as tar.bz2, ``dropped`` the dropped files as tar.bz2, ``package_files`` files uploaded to host by analysis packages.
+* ``format`` *(optional)* - format of the report to retrieve [json/html/all/all_memory/dropped/package_files]. If none is specified the JSON report will be returned.
+    * ``all`` returns all the result files as tar.bz2
+    * ``all_memory`` returns all the result files as tar.bz2, including the full memory dump if it was requested in the submission
+    * ``dropped`` the dropped files as tar.bz2
+    * ``package_files`` files uploaded to host by analysis packages.
 
 **Status codes**:
 
