@@ -1,9 +1,12 @@
 # Copyright (C) 2014-2016 Cuckoo Foundation.
 # This file is part of Cuckoo Sandbox - http://www.cuckoosandbox.org
 # See the file 'docs/LICENSE' for copying permission.
+from os import sys, path
+import inspect
 
 from lib.api.process import Process
 from lib.common.exceptions import CuckooPackageError
+
 
 class Package(object):
     """Base abstract analysis package."""
@@ -32,7 +35,8 @@ class Package(object):
 
     def execute(self, cmd):
         """Start an executable for analysis.
-        @param cmd: executable path
+        @param path: executable path
+        @param args: executable arguments
         @return: process pid
         """
         p = Process()
@@ -45,10 +49,10 @@ class Package(object):
     def package_files(self):
         """A list of files to upload to host.
         The list should be a list of tuples (<path on guest>, <name of file in package_files folder>).
-        (package_files is a folder that will be created in analysis folder). 
+        (package_files is a folder that will be created in analysis folder).
         """
         return None
-    
+
     def finish(self):
         """Finish run.
         If specified to do so, this method dumps the memory of
@@ -66,6 +70,18 @@ class Package(object):
 
 class Auxiliary(object):
     priority = 0
+    def __init__(self, options={}, analyzer=None):
+        self.options = options
+        self.analyzer = analyzer
 
     def get_pids(self):
         return []
+
+    def init(self):
+        pass
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass

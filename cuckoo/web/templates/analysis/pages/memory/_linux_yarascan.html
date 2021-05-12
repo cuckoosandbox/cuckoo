@@ -1,0 +1,20 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Owner</th>
+            <th>Rule</th>
+            <th>Address</th>
+            <th>Hexdump</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_yarascan.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.owner}}</td>
+            <td class="{{ row.class_ }}">{{row.rule}}</td>
+            <td class="{{ row.class_ }}">{{row.addr}}</td>
+            <td class="{{ row.class_ }}"><span class="mono"><pre>{{row.hexdump}}</pre></span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,44 @@
+{% for row in report.analysis.memory.malconfscan.data %}
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Process Name</th>
+            <th>PID</th>
+            <th>Malware Name</th>
+            <th>Base Address(VAD)</th>
+            <th>Size</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.malware_name}}</td>
+            <td class="{{ row.class_ }}">{{row.vad_base_addr}}</td>
+            <td class="{{ row.class_ }}">{{row.size}}</td>
+        </tr>
+    </tbody>
+</table><br>
+
+
+{% for malconf_list in row.malconf %}
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Config Field</th>
+            <th>Config Value</th>
+	</tr>
+    </thead>
+    <tbody>
+	    {% for conf in malconf_list %}
+	    {% for field,value in conf.items %}
+	    <tr>
+	        <td class="{{ row.class_ }}">{{field}}</td>
+                <td class="{{ row.class_ }}">{{value}}</td>
+	    </tr>
+	    {% endfor %}
+	    {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+{% endfor %}

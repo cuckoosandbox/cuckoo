@@ -1,0 +1,24 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>PID</th>
+            <th>Process Name</th>
+            <th>Start</th>
+            <th>File Path</th>
+            <th>Kernel</th>
+            <th>Libc</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_ldrmodules.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.vm_start}}</td>
+            <td class="{{ row.class_ }}">{{row.vma_name}}</td>
+            <td class="{{ row.class_ }}">{{row.pmaps}}</td>
+            <td class="{{ row.class_ }}">{{row.dmaps}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

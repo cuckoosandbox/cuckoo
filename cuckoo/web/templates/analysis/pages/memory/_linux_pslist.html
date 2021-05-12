@@ -1,0 +1,26 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Parent PID</th>
+            <th>PID</th>
+            <th>Name</th>
+            <th>Create Time</th>
+            <th>Uid</th>
+            <th>Gid</th>
+            <th>DTB</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_pslist.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.parent_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.create_time}}</td>
+            <td class="{{ row.class_ }}">{{row.uid}}</td>
+            <td class="{{ row.class_ }}">{{row.gid}}</td>
+            <td class="{{ row.class_ }}">{{row.DTB}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

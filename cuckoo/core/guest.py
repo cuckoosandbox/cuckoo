@@ -385,6 +385,8 @@ class GuestManager(object):
     def determine_temp_path(self):
         if self.platform == "windows":
             return self.environ["TEMP"]
+        elif self.platform == "linux":
+            return "/tmp"        
         return "/tmp"
 
     def upload_analyzer(self, monitor):

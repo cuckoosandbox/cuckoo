@@ -1,0 +1,30 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Protocol</th>
+            <th>Local IP</th>
+            <th>Local Port</th>
+            <th>Remote IP</th>
+            <th>Remote Port</th>
+            <th>State</th>
+            <th>Process</th>
+            <th>PID</th>
+            <th>Name</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_netstat.data|volsort %}
+        <tr>
+          <td class="{{ row.class_ }}">{{row.protocol}}</td>
+            <td class="{{ row.class_ }}">{{row.source_address}}</td>
+            <td class="{{ row.class_ }}">{{row.source_port}}</td>
+            <td class="{{ row.class_ }}">{{row.destination_address}}</td>
+            <td class="{{ row.class_ }}">{{row.destination_port}}</td>
+            <td class="{{ row.class_ }}">{{row.state}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.name}}</td>            
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

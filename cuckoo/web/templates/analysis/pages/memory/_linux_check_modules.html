@@ -1,0 +1,20 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Module Address</th>
+            <th>Core Address</th>
+            <th>Init Address</th>
+            <th>Module Name</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_check_modules.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.Module_Address}}</td>
+            <td class="{{ row.class_ }}">{{row.Core_Address}}</td>
+            <td class="{{ row.class_ }}">{{row.Init_Address}}</td>
+            <td class="{{ row.class_ }}">{{row.Module_Name}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

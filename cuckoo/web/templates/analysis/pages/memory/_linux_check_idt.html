@@ -1,0 +1,18 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Index</th>
+            <th>Address</th>
+            <th>Module</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_check_idt.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.index}}</td>
+            <td class="{{ row.class_ }}"><span class="mono">{{row.address}}</span></td>
+            <td class="{{ row.class_ }}">{{row.module}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

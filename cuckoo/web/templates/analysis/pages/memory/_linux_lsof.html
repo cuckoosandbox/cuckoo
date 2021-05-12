@@ -1,0 +1,22 @@
+<table class="cuckoo-table__fullscreen">
+    <thead>
+        <tr>
+            <th>Offset</th>
+            <th>Process ID</th>
+            <th>Process name</th>
+            <th>FD</th>
+            <th>Path</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for row in report.analysis.memory.linux_lsof.data|volsort %}
+        <tr>
+            <td class="{{ row.class_ }}">{{row.offset}}</td>
+            <td class="{{ row.class_ }}">{{row.process_id}}</td>
+            <td class="{{ row.class_ }}">{{row.process_name}}</td>
+            <td class="{{ row.class_ }}">{{row.fd}}</td>
+            <td class="{{ row.class_ }}">{{row.path}}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
