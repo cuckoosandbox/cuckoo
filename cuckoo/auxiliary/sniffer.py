@@ -5,6 +5,7 @@
 
 import logging
 import os
+from stat import S_ISUID
 import subprocess
 
 from cuckoo.common.abstracts import Auxiliary
@@ -37,12 +38,12 @@ class Sniffer(Auxiliary):
                       "capture aborted", tcpdump)
             return False
 
-        # TODO: this isn't working. need to fix.
-        # mode = os.stat(tcpdump)[stat.ST_MODE]
-        # if (mode & stat.S_ISUID) == 0:
-        #    log.error("Tcpdump is not accessible from this user, "
-        #              "network capture aborted")
-        #    return
+        # Check that tcpdump has access using current account
+        mode = os.stat(tcpdump).st_mode
+        if bool(mode & S_ISUID) is True:
+            log.error("Tcpdump is not accessible from this user, "
+                      "network capture aborted")
+            return False
 
         pargs = [
             tcpdump, "-U", "-q", "-s", "0", "-n",
