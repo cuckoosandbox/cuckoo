@@ -1199,13 +1199,14 @@ class Signature(object):
                                  regex=regex,
                                  all=all)
 
-    def check_suricata_alerts(self, pattern):
+    def check_suricata_alerts(self, pattern, banned_sids=[]):
         """Check for pattern in Suricata alert signature
         @param pattern: string or expression to check for.
         @return: True/False
         """
         for alert in self.get_results("suricata", {}).get("alerts", []):
-            if re.findall(pattern, alert.get("signature", ""), re.I):
+            if alert.get("sid", 0) not in banned_sids and \
+               re.findall(pattern, alert.get("signature", ""), re.I):
                 return True
         return False
 
