@@ -51,6 +51,8 @@ install it within a separate ``virtualenv`` to isolate it and its requirements
 from Cuckoo's Python 2.7 environment. After installing mitmproxy in a separate
 virtualenv, include its binary path in the Cuckoo configuration, e.g.,
 ``/tmp/mitmproxy3/bin/mitmdump`` if the virtualenv is ``/tmp/mitmproxy3``.
+For XP guests, the mitm auxiliary requires that Windows Server 2003 Administration
+Tools Pack be installed.
 
 .. _Yara: https://github.com/plusvic/yara
 .. _Pydeep: https://github.com/kbandla/pydeep
