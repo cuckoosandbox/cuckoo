@@ -172,7 +172,9 @@ example, registering ``eth0`` with ``iproute2`` could look as follows::
     400     eth0
 
 And that's really all there is to it. You will have to do this for each
-network interface you intend to use for network routing.
+network interface you intend to use for network routing. But for vpn it should be like this::
+
+     401 vpn.bestvpn.com
 
 .. _routing_none:
 
