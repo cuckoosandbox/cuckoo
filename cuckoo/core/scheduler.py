@@ -1057,7 +1057,7 @@ class Scheduler(object):
                 continue
 
             # Get all tasks in the queue
-            tasks = self.db.list_tasks(status=TASK_PENDING, details=True)
+            tasks = self.db.list_tasks(status=TASK_PENDING, details=True, order_by="added_on")
             if not tasks:
                 continue
 
