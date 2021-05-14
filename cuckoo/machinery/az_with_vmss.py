@@ -552,9 +552,11 @@ class Azure(Machinery):
                 # Extract the platform str
                 platform = str(os_type).split(".")[1]
 
-                vmss_vm_nic = next(vmss_vm_nic for vmss_vm_nic in vmss_vm_nics
-                                   if vmss_vm.network_profile.network_interfaces[0].id.lower() == vmss_vm_nic.id.lower())
-
+                vmss_vm_nic = next((vmss_vm_nic for vmss_vm_nic in vmss_vm_nics
+                                   if vmss_vm.network_profile.network_interfaces[0].id.lower() == vmss_vm_nic.id.lower()), None)
+                if not vmss_vm_nic:
+                    log.error("%s does not match any NICs in %s" % (vmss_vm.network_profile.network_interfaces[0].id.lower(), [vmss_vm_nic.id.lower() for vmss_vm_nic in vmss_vm_nics]))
+                    continue
                 # Sets "new_machine" object in configuration object to
                 # avoid raising an exception.
                 setattr(self.options, vmss_vm.name, {})
