@@ -486,31 +486,18 @@ class Azure(Machinery):
             platform=platform,
             tags=tags
         )
-        if machine_id:
+        if base_class_return_value and base_class_return_value.name:
             # Make sure that machine_id follows naming format Azure.VMSS_NAME_FORMAT
-            vmss_name, instance_id = machine_id.split("_")
+            vmss_name, instance_id = base_class_return_value.name.split("_")
             requested_type = vmss_name.split("-")[2]
-        else:
-            # This will be used to indicate what type of machine the user wants to acquire
-            requested_type = None
 
-            # Depending on setup, tags could be a list or a string. If tags is a list, do the following:
-            if type(tags) == list and len(tags) > 0:
-                requested_type = tags[0]
-            elif type(tags) == list and len(tags) == 0:
-                requested_type = "unknown_guest_image"
+            # Get the VMSS name by the tag
+            vmss_name = next(name for name, vals in self.required_vmsss.items() if vals["tag"] == requested_type)
+            if not machine_pools[vmss_name]["is_scaling"]:
+                # Start it and forget about it
+                threading.Thread(target=self._thr_scale_machine_pool, args=(requested_type,)).start()
 
-        # Get the VMSS name by the tag
-        vmss_name = next(name for name, vals in self.required_vmsss.items() if vals["tag"] == requested_type)
-        if not machine_pools[vmss_name]["is_scaling"]:
-            # Start it and forget about it
-            threading.Thread(target=self._thr_scale_machine_pool, args=(requested_type,)).start()
-
-        # This way, the scheduler will sleep and try again
-        if not base_class_return_value:
-            return None
-        else:
-            return base_class_return_value
+        return base_class_return_value
 
     def _add_machines_to_db(self, vmss_name, vmss_tag):
         """
