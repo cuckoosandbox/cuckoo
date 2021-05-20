@@ -64,4 +64,4 @@ class Procmon(Auxiliary):
         ])
 
         # Upload the XML file to the host.
-        upload_to_host(self.procmon_xml, os.path.join("logs", "procmon.xml"))
+        upload_to_host(self.procmon_xml, os.path.join("files", "procmon.xml"))
