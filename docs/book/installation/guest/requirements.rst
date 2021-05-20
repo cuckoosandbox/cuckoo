@@ -19,6 +19,8 @@ Cuckoo guest component. They include:
 
     * `Python Pillow`_: it's used for taking screenshots of the Windows desktop during the analysis.
 
+Attention: Screenshots are currently not available under Linux (only Windows and macOS)!
+
 They are not strictly required by Cuckoo to work properly, but you are encouraged
 to install them if you want to have access to all available features. Make sure
 to download and install the proper packages according to your Python version.
