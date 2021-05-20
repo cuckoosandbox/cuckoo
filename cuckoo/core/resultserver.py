@@ -46,7 +46,7 @@ def netlog_sanitize_fname(path):
     """Validate agent-provided path for result files"""
     path = path.replace("\\", "/")
     dir_part, name = os.path.split(path)
-    if dir_part not in RESULT_UPLOADABLE:
+    if dir_part not in RESULT_DIRECTORIES:
         raise CuckooOperationalError("Netlog client requested banned path: %r"
                                      % path)
     if any(c in BANNED_PATH_CHARS for c in name):
