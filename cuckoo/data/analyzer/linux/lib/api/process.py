@@ -31,10 +31,10 @@ class Process:
     def get_proc_status(self):
         try:
             status = open("/proc/%u/status" % self.pid).readlines()
-            status_values = dict((i[0], i[1]) for i in [j.strip().split(None, 1) for j in status])
+            status_values = dict((i[0], i[1]) for i in [j.strip().split(None, 1) + [""] for j in status])
             return status_values
         except:
-            log.critical("could not get process status for pid %u", self.pid)
+            log.exception("could not get process status for pid %u", self.pid)
         return {}
 
     def execute(self, cmd):
