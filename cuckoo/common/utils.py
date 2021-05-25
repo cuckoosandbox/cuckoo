@@ -184,6 +184,9 @@ def to_unicode(s):
     # If already in unicode, skip.
     if isinstance(s, unicode):
         return s
+    
+    if s == "":
+        return unicode(s)
 
     # First try to decode against a little set of common encodings.
     result = brute_enc(s)
