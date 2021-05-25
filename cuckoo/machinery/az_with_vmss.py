@@ -32,7 +32,6 @@ from cuckoo.core.database import TASK_PENDING, Machine
 
 # SQLAlchemy-specific imports
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.collections import InstrumentedList
 
 # Only log INFO or higher from imported python packages
 logging.getLogger("adal-python").setLevel(logging.INFO)
@@ -49,6 +48,9 @@ ARM_POLLER = ARMPolling(2)
 # Global variable which will maintain details about each machine pool
 machine_pools = {}
 
+# Global variable which will maintain state for platform scaling
+is_platform_scaling = {}
+
 
 class Azure(Machinery):
 
@@ -63,6 +65,10 @@ class Azure(Machinery):
     VALID_TAG_PREFIXES = [WINDOWS_TAG_PREFIX, LINUX_TAG_PREFIX]
 
     VMSS_NAME_FORMAT = "vmss-%s-%s"
+
+    # Platform names
+    WINDOWS_PLATFORM = "windows"
+    LINUX_PLATFORM = "linux"
 
     def _initialize_check(self):
         """
@@ -168,6 +174,7 @@ class Azure(Machinery):
         Ready. Set. Action! Set the stage for the VMSSs
         """
         global machine_pools
+        global is_platform_scaling
 
         matched_tags = set()
         # Check that each provided gallery image is valid
@@ -328,6 +335,12 @@ class Azure(Machinery):
         # Wait for everything to complete!
         for thr in vmss_reimage_threads + vmss_creation_threads:
             thr.join()
+
+        # Initialize the platform scaling state monitor
+        is_platform_scaling = {
+            Azure.WINDOWS_PLATFORM: False,
+            Azure.LINUX_PLATFORM: False
+        }
 
     def start(self, label, task):
         # NOTE: Machines are always started. ALWAYS
@@ -495,7 +508,7 @@ class Azure(Machinery):
             vmss_name = next(name for name, vals in self.required_vmsss.items() if vals["tag"] == requested_type)
             if not machine_pools[vmss_name]["is_scaling"]:
                 # Start it and forget about it
-                threading.Thread(target=self._thr_scale_machine_pool, args=(requested_type,)).start()
+                threading.Thread(target=self._thr_scale_machine_pool, args=(requested_type, True if platform else False)).start()
 
         return base_class_return_value
 
@@ -538,6 +551,10 @@ class Azure(Machinery):
                 os_type = vmss_vm.storage_profile.os_disk.os_type
                 # Extract the platform str
                 platform = str(os_type).split(".")[1]
+
+                if not vmss_vm.network_profile:
+                    log.error("%s does not have a network profile" % vmss_vm.name)
+                    continue
 
                 vmss_vm_nic = next((vmss_vm_nic for vmss_vm_nic in vmss_vm_nics
                                    if vmss_vm.network_profile.network_interfaces[0].id.lower() == vmss_vm_nic.id.lower()), None)
@@ -829,13 +846,25 @@ class Azure(Machinery):
                 raise
         self._add_machines_to_db(vmss_name, tag)
 
-    def _thr_scale_machine_pool(self, tag):
+    def _thr_scale_machine_pool(self, tag, per_platform=False):
         """
         Expand/Reduce the machine pool based on the number of queued relevant tasks
         @param tag: the OS tag of the machine pool to be scaled
+        @param per_platform: A boolean flag indicating that we should scale machine pools "per platform" vs. "per tag"
         @return: Ends method call
         """
         global machine_pools
+        global is_platform_scaling
+
+        platform = None
+        if per_platform and Azure.WINDOWS_TAG_PREFIX in tag:
+            platform = Azure.WINDOWS_PLATFORM
+        elif per_platform and Azure.LINUX_TAG_PREFIX in tag:
+            platform = Azure.LINUX_PLATFORM
+
+        # If the designated VMSS is already being scaled for the given platform, don't mess with it
+        if platform and is_platform_scaling[platform]:
+            return
 
         # Get the VMSS name by the tag
         vmss_name = next(name for name, vals in self.required_vmsss.items() if vals["tag"] == tag)
@@ -851,10 +880,15 @@ class Azure(Machinery):
             # This is the flag that is used to indicate if the VMSS is being scaled by a thread
             machine_pools[vmss_name]["is_scaling"] = True
 
+            # This is the flag that is used to indicate if a designated VMSS has been selected for a platform and if
+            # it is being scaled by a thread
+            if platform:
+                is_platform_scaling[platform] = True
+
             relevant_machines = self._get_relevant_machines(tag)
             number_of_relevant_machines = len(relevant_machines)
             machine_pools[vmss_name]["size"] = number_of_relevant_machines
-            relevant_task_queue = self._get_number_of_relevant_tasks(tag)
+            relevant_task_queue = self._get_number_of_relevant_tasks(tag, platform)
 
             # The scaling technique we will use is a tweaked version of the Leaky Bucket, where we
             # only scale down if the relevant task queue is empty.
@@ -880,6 +914,8 @@ class Azure(Machinery):
                 machine_pools[vmss_name]["size"] = len(self._get_relevant_machines(tag))
                 log.debug("The size of the machine pool %s is already the size that we want" % vmss_name)
                 machine_pools[vmss_name]["is_scaling"] = False
+                if platform:
+                    is_platform_scaling[platform] = False
                 return
 
             # This value will be used for adding or deleting machines from the database
@@ -967,6 +1003,8 @@ class Azure(Machinery):
                 log.warning(repr(e))
                 machine_pools[vmss_name]["wait"] = False
                 machine_pools[vmss_name]["is_scaling"] = False
+                if platform:
+                    is_platform_scaling[platform] = False
                 return
 
             log.debug("The scaling of %s took %ss" % (vmss_name, time.time()-start_time))
@@ -982,10 +1020,14 @@ class Azure(Machinery):
             # I release you from your earthly bonds!
             machine_pools[vmss_name]["wait"] = False
             machine_pools[vmss_name]["is_scaling"] = False
+            if platform:
+                is_platform_scaling[platform] = False
             log.debug("Scaling %s has completed." % vmss_name)
         except Exception as exc:
             machine_pools[vmss_name]["wait"] = False
             machine_pools[vmss_name]["is_scaling"] = False
+            if platform:
+                is_platform_scaling[platform] = False
             log.error(repr(exc))
             log.debug("Scaling %s has completed with errors." % vmss_name)
 
@@ -1006,21 +1048,28 @@ class Azure(Machinery):
         else:
             return lro_poller_result
 
-    def _get_number_of_relevant_tasks(self, tag):
+    def _get_number_of_relevant_tasks(self, tag, platform=None):
         """
-        Returns the number of relevant tasks for a tag
+        Returns the number of relevant tasks for a tag or platform
         @param tag: The OS tag used for finding relevant tasks
+        @param platform: The platform used for finding relevant tasks
         @return int: The number of relevant tasks for the given tag
         """
         # Getting all tasks in the queue
         tasks = self.db.list_tasks(status=TASK_PENDING)
 
         # The task queue that will be used to prepare machines will be relative to the virtual
-        # machine tag that is targeted in the task (win7, win10, etc)
+        # machine tag that is targeted in the task (win7, win10, etc) or platform (windows, linux)
         relevant_task_queue = 0
-        for task in tasks:
-            for t in task.tags:
-                if t.name == tag:
+
+        if not platform:
+            for task in tasks:
+                for t in task.tags:
+                    if t.name == tag:
+                        relevant_task_queue += 1
+        else:
+            for task in tasks:
+                if task.platform == platform:
                     relevant_task_queue += 1
         return relevant_task_queue
 
