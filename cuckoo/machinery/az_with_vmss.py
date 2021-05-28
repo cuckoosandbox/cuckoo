@@ -650,11 +650,12 @@ class Azure(Machinery):
         """
         session = self.db.Session()
         try:
-            from cuckoo.core.database import Machine
             machine = session.query(Machine).filter_by(label=machine_name).first()
             if machine:
                 session.delete(machine)
                 session.commit()
+            else:
+                log.warning("%s does not exist in the database." % machine_name)
         except SQLAlchemyError as exc:
             log.debug("Database error removing machine: '%s'.", exc)
             session.rollback()
