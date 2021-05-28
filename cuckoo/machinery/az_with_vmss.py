@@ -523,6 +523,8 @@ class Azure(Machinery):
             # We don't want to re-add machines! Therefore, let's see what we're working with
             machines_in_db = self.db.list_machines()
             db_machine_labels = [machine.label for machine in machines_in_db]
+            # We want to avoid collisions where the IP is already associated with a machine
+            db_machine_ips = [machine.ip for machine in machines_in_db]
 
             # Get all VMs in the VMSS
             paged_vmss_vms = Azure._azure_api_call(
@@ -569,6 +571,9 @@ class Azure(Machinery):
                 tags = vmss_tag
 
                 private_ip = vmss_vm_nic.ip_configurations[0].private_ip_address
+                if private_ip in db_machine_ips:
+                    log.error("The IP %s is already associated with a machine in the DB. Moving on..." % private_ip)
+                    continue
 
                 # Add machine to DB.
                 # TODO: What is the point of name vs label?
@@ -785,11 +790,7 @@ class Azure(Machinery):
         vmss = models.VirtualMachineScaleSet(
             location=self.options.az_with_vmss.region_name,
             sku=models.Sku(name=self.options.az_with_vmss.instance_type, capacity=self.options.az_with_vmss.initial_pool_size),
-            # This error will happen if set to Manual:
-            # 'BadRequest': 'Virtual Machine Scale Set '<vmss-name>' has reached its limit of 10 models that may be referenced
-            # by one or more VMs belonging to the Virtual Machine Scale Set.
-            # Upgrade the VMs to the latest model of the Virtual Machine Scale Set before trying again.'.
-            upgrade_policy=models.UpgradePolicy(mode="Automatic"),
+            upgrade_policy=models.UpgradePolicy(mode="Manual"),
             virtual_machine_profile=vmss_vm_profile,
             overprovision=False,
             # When true this limits the scale set to a single placement group, of max size 100 virtual machines.
