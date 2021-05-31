@@ -24,7 +24,7 @@ For setup instructions, please refer
 `our <https://docs.cuckoosandbox.org/en/latest/installation/host/installation>`_
 `documentation <https://docs.cuckoosandbox.org/en/latest/>`_.
 
-This is a development version, we do not recommend its use in production; the
+This is a development version, and we do not recommend its use in production; the
 latest stable version may be installed through :code:`pip install -U cuckoo`.
 
 You can find the full documentation of the latest stable release
