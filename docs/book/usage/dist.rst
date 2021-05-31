@@ -276,21 +276,25 @@ Get basic information about a particular task::
             "2": {
                 "id": 2,
                 "clock": null,
+                "completed": "Tue, 23 Jun 2020 22:44:56 GMT",
                 "custom": null,
+                "delegated": "Tue, 23 Jun 2020 22:34:56 GMT",
                 "owner": "",
                 "enforce_timeout": null,
                 "machine": null,
                 "memory": null,
+                "node_id": 2,
                 "options": null,
                 "package": null,
                 "path": "/tmp/tmpPwUeXm",
                 "platform": "windows",
                 "priority": 1,
+                "started": "Tue, 23 Jun 2020 22:35:15 GMT",
+                "status": "finished",
+                "submitted": "Tue, 23 Jun 2020 22:34:30 GMT",
                 "tags": null,
                 "timeout": null,
                 "task_id": 1,
-                "node_id": 2,
-                "finished": false
             }
         }
     }

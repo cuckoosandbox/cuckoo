@@ -295,6 +295,10 @@ def task_get(task_id):
         node_id=task.node_id,
         task_id=task.task_id,
         status=task.status,
+        submitted=task.submitted,
+        delegated=task.delegated,
+        started=task.started,
+        completed=task.completed,
     )})
 
 @blueprint.route("/task/<int:task_id>", methods=["DELETE"])
