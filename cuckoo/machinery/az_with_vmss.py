@@ -791,7 +791,7 @@ class Azure(Machinery):
         vmss = models.VirtualMachineScaleSet(
             location=self.options.az_with_vmss.region_name,
             sku=models.Sku(name=self.options.az_with_vmss.instance_type, capacity=self.options.az_with_vmss.initial_pool_size),
-            upgrade_policy=models.UpgradePolicy(mode="Manual"),
+            upgrade_policy=models.UpgradePolicy(mode="Automatic"),
             virtual_machine_profile=vmss_vm_profile,
             overprovision=False,
             # When true this limits the scale set to a single placement group, of max size 100 virtual machines.
