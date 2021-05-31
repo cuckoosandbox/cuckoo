@@ -185,6 +185,8 @@ class StapParser(object):
         arg = argstr.lstrip("{")
         while arg:
             key, _, arg = arg.partition("=")
+            if key == "..." or not arg:
+                continue
             delim = self.get_delim(arg)
             if delim != ", ":
                 delim += ", "
