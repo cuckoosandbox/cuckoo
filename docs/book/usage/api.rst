@@ -199,7 +199,7 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 
 **Example request**::
 
-    curl -H "Authorization: Bearer S4MPL3" -F file=@/path/to/file http://localhost:8090/tasks/create/file
+    curl -u 'Bearer:S4MPL3' -F file=@/path/to/file http://localhost:8090/tasks/create/file
 
 **Example request using Python**..
 
@@ -264,7 +264,7 @@ Adds a file to the list of pending tasks. Returns the ID of the newly created ta
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" -F url="http://www.malicious.site" http://localhost:8090/tasks/create/url
+    curl -u 'Bearer:S4MPL3' -F url="http://www.malicious.site" http://localhost:8090/tasks/create/url
 
 **Example request using Python**.
 
@@ -329,13 +329,13 @@ submit ID as well as the task IDs of the newly created task(s).
 .. code-block:: bash
 
     # Submit two executables.
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/create/submit -F files=@1.exe -F files=@2.exe
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/create/submit -F files=@1.exe -F files=@2.exe
 
     # Submit http://google.com
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/create/submit -F strings=google.com
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/create/submit -F strings=google.com
 
     # Submit http://google.com & http://facebook.com
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/create/submit -F strings=$'google.com\nfacebook.com'
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/create/submit -F strings=$'google.com\nfacebook.com'
 
 **Example request using Python**.
 
@@ -411,7 +411,7 @@ Returns list of tasks.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/list
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/list
 
 **Example response**.
 
@@ -491,7 +491,7 @@ Returns list of tasks for sample.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/sample/1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/sample/1
 
 **Example response**.
 
@@ -548,7 +548,7 @@ Returns details on the task associated with the specified ID.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/view/1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/view/1
 
 **Example response**.
 
@@ -612,7 +612,7 @@ is 1).
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/reschedule/1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/reschedule/1
 
 **Example response**.
 
@@ -645,7 +645,7 @@ Removes the given task from the database and deletes the results.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/delete/1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/delete/1
 
 **Parameters**:
 
@@ -670,7 +670,7 @@ Returns the report associated with the specified task ID.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/report/1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/report/1
 
 **Parameters**:
 
@@ -744,7 +744,7 @@ Re-run reporting for task associated with the specified task ID.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/rereport/1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/rereport/1
 
 **Example response**.
 
@@ -776,7 +776,7 @@ Add a reboot task to database from an existing analysis ID.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/tasks/reboot/1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/tasks/reboot/1
 
 **Example response**.
 
@@ -860,7 +860,7 @@ Returns details on the file matching either the specified MD5 hash, SHA256 hash 
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/files/view/id/1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/files/view/id/1
 
 **Example response**.
 
@@ -905,7 +905,7 @@ Returns details on the file matching either the specified MD5 hash, SHA256 hash 
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/files/get/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 > sample.exe
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/files/get/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 > sample.exe
 
 **Status codes**:
 
@@ -925,7 +925,7 @@ Returns the content of the PCAP associated with the given task.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/pcap/get/1 > dump.pcap
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/pcap/get/1 > dump.pcap
 
 **Status codes**:
 
@@ -945,7 +945,7 @@ Returns a list with details on the analysis machines available to Cuckoo.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/machines/list
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/machines/list
 
 **Example response**.
 
@@ -992,7 +992,7 @@ Returns details on the analysis machine associated with the given name.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/machines/view/cuckoo1
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/machines/view/cuckoo1
 
 **Example response**.
 
@@ -1056,7 +1056,7 @@ Unix!)
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/cuckoo/status
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/cuckoo/status
 
 **Example response**.
 
@@ -1114,7 +1114,7 @@ Returns VPN status.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/vpn/status
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/vpn/status
 
 **Status codes**:
 
@@ -1134,7 +1134,7 @@ Shuts down the server if in debug mode and using the werkzeug server.
 
 .. code-block:: bash
 
-    curl -H "Authorization: Bearer S4MPL3" http://localhost:8090/exit
+    curl -u 'Bearer:S4MPL3' http://localhost:8090/exit
 
 **Status codes**:
 
