@@ -184,6 +184,11 @@ class ExtractManager(object):
             if Buffer(content).get_yara_quick("office", externals):
                 self.push_blob(content, "office", externals)
 
+    def peek_rtf(self, content):
+        externals = {}
+        if Buffer(content).get_yara_quick("office", externals):
+            self.push_blob(content, "office", externals)
+
     def peek_procmem(self, process):
         for match in process["yara"]:
             self.handle_yara(process["file"], YaraMatch(match))
