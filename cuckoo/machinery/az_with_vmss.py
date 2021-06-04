@@ -358,80 +358,57 @@ class Azure(Machinery):
         vmss_name, instance_id = label.split("_")
         # Boolean flag that indicates if Azure is in an error state and reimage commands are timing out
         reimage_timed_out = False
-        # Bang on the Azure API until it submits to our whims
+        # If we aren't scaling down, then reimage
         start_time = time.time()
-        while True:
-            if (time.time() - start_time) > AZURE_TIMEOUT:
-                log.error("%s refuses to cooperate, deleting from database and leaving machine in VMSS." % label)
-                self._delete_machine_from_db(label)
-                break
-            if not machine_pools[vmss_name]["is_scaling_down"]:
-                try:
-                    # TODO: replace this with a batch reimaging when throughput reaches a certain level, either will work:
-                    # async_reimage_some = compute_client.virtual_machine_scale_sets.reimage_all(
-                    #     resource_group,
-                    #     vmss_name,
-                    #     instance_ids,
-                    #     polling=ARMPolling(1),
-                    # )
-                    # async_reimage_some = compute_client.virtual_machine_scale_sets.reimage(
-                    #     resource_group,
-                    #     vmss_name,
-                    #     instance_ids=instance_ids,
-                    #     polling=ARMPolling(1),
-                    # )
-                    async_reimage_machine = Azure._azure_api_call(
-                        self.options.az_with_vmss.group,
-                        vmss_name,
-                        instance_id,
-                        custom_poller=ARM_POLLER,
-                        operation=self.compute_client.virtual_machine_scale_set_vms.reimage
-                    )
-                except Exception as exc:
-                    if "InvalidParameter" in repr(exc):
-                        # A reimaged VM cannot be reimaged again. It could still be currently reimaging, despite
-                        # reimage.result() returning a value. It could also be deleted, so let's check.
-                        if not self._machine_exists(vmss_name, instance_id):
-                            log.warning("Machine %s does not exist anymore. Deleting from DB." % label)
-                            self._delete_machine_from_db(label)
-                            break
-                        # Sleep a minute, until Azure gets its act together
-                        time.sleep(60)
-                        log.debug("Let's try reimaging/deleting %s again!" % label)
-                        continue
-                    elif any(error in repr(exc) for error in ["AllocationFailed", "DisallowedResourceOperation", "BadRequest"]):
-                        # Azure has failed "updating" the machine, therefore, just delete it and move on
-                        self._delete_machine_from_db(label)
-                        # Attempt to delete it from the VMSS as well
-                        _ = self._delete_machine_from_vmss(vmss_name, instance_id)
-                        break
-                    else:
-                        raise
-                try:
-                    # We wait because we want the machine to be fresh before another task is assigned to it
-                    _ = self._handle_poller_result(async_reimage_machine)
-                    log.debug("Reimaging %s took %ss" % (label, time.time()-start_time))
-                    break
-                # TODO: if reimage takes 300s, then delete as it will cause more harm than good
-                except CuckooMachineError as exc:
-                    # Odds are the reimage command timed out, so set flag to true
-                    reimage_timed_out = True
-                    log.warning("Unable to reimage %s due to %s. Deleting from database and VMSS." % (label, repr(exc)))
+        if not machine_pools[vmss_name]["is_scaling_down"]:
+            try:
+                # TODO: replace this with a batch reimaging when throughput reaches a certain level, either will work:
+                # async_reimage_some = compute_client.virtual_machine_scale_sets.reimage_all(
+                #     resource_group,
+                #     vmss_name,
+                #     instance_ids,
+                #     polling=ARMPolling(1),
+                # )
+                # async_reimage_some = compute_client.virtual_machine_scale_sets.reimage(
+                #     resource_group,
+                #     vmss_name,
+                #     instance_ids=instance_ids,
+                #     polling=ARMPolling(1),
+                # )
+                async_reimage_machine = Azure._azure_api_call(
+                    self.options.az_with_vmss.group,
+                    vmss_name,
+                    instance_id,
+                    custom_poller=ARM_POLLER,
+                    operation=self.compute_client.virtual_machine_scale_set_vms.reimage
+                )
+            except Exception as exc:
+                if "InvalidParameter" in repr(exc):
+                    # If InvalidParameter: 'The provided instanceId x is not an active Virtual Machine Scale Set VM instanceId.
+                    # This means that the spot instance machine has been preempted and deleted
+                    log.warning("Machine %s does not exist anymore. Deleting from DB." % label)
+                    self._delete_machine_from_db(label)
+                    return
+                elif any(error in repr(exc) for error in ["AllocationFailed", "DisallowedResourceOperation", "BadRequest"]):
+                    # Azure has failed "updating" the machine, therefore, just delete it and move on
                     self._delete_machine_from_db(label)
                     # Attempt to delete it from the VMSS as well
-                    _ = self._delete_machine_from_vmss(vmss_name, instance_id)
-                    break
-            else:
-                is_machine_deleted = self._delete_machine_from_vmss(vmss_name, instance_id)
-                if is_machine_deleted:
-                    # We don't care when this async_delete_machine finishes
-                    self._delete_machine_from_db(label)
-                    break
+                    self._delete_machine_from_vmss(vmss_name, instance_id)
+                    return
                 else:
-                    # Sleep a minute, until Azure gets its act together
-                    time.sleep(60)
-                    log.debug("Let's try reimaging/deleting %s again!" % label)
-                    continue
+                    raise
+            # We wait because we want the machine to be fresh before another task is assigned to it
+            while not async_reimage_machine.done():
+                if (time.time() - start_time) > AZURE_TIMEOUT:
+                    reimage_timed_out = True
+                    self._delete_machine_from_db(label)
+                    self._delete_machine_from_vmss(vmss_name, instance_id)
+                    break
+                time.sleep(5)
+            log.debug("Reimaging %s took %ss" % (label, time.time() - start_time))
+        else:
+            self._delete_machine_from_db(label)
+            self._delete_machine_from_vmss(vmss_name, instance_id)
 
         if reimage_timed_out:
             # Grab the tag from the VMSS name
@@ -1094,7 +1071,7 @@ class Azure(Machinery):
         @raises Exception: If another exception occurs, raise it up!
         """
         try:
-            vmss_vm = Azure._azure_api_call(
+            _ = Azure._azure_api_call(
                 self.options.az_with_vmss.group,
                 vmss_name,
                 instance_id,
@@ -1106,11 +1083,9 @@ class Azure(Machinery):
 
     def _delete_machine_from_vmss(self, vmss_name, instance_id):
         """
-        Returns a boolean indicating if operation to delete machine from VMSS was successful
+        Attempts to delete machine from VMSS
         @param vmss_name: String representing the virtual machine scale set name
         @param instance_id: ID of the machine to be deleted
-        @return boolean: Value that represents if operation was successful
-        @raises Exception: If another exception occurs, raise it up!
         """
         try:
             # TODO: replace with batch deleting when throughput reaches a certain level
@@ -1125,9 +1100,8 @@ class Azure(Machinery):
                 instance_id,
                 operation=self.compute_client.virtual_machine_scale_set_vms.delete
             )
-            return True
         except Exception as exc:
             if any(error in repr(exc) for error in ["Conflict"]):
-                return False
+                pass
             else:
                 raise
