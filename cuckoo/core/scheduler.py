@@ -224,13 +224,6 @@ class AnalysisManager(threading.Thread):
             options["timeout"] = self.cfg.timeouts.default
         else:
             options["timeout"] = self.task.timeout
-
-        # copy in other analyzer specific options, TEMPORARY (most likely)
-        vm_options = getattr(machinery.options, self.machine.name)
-        for k in vm_options:
-            if k.startswith("analyzer_"):
-                options[k] = vm_options[k]
-
         return options
 
     def route_network(self):
