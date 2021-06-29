@@ -77,6 +77,9 @@ reimage_lock = threading.Lock()
 delete_lock = threading.Lock()
 vms_currently_being_deleted_lock = threading.Lock()
 
+# This is the number of operations that are taking place at the same time
+current_vmss_operations = 0
+
 
 class Azure(Machinery):
 
