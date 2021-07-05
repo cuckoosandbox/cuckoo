@@ -194,6 +194,9 @@ If ``SWIG`` is present on the system one may install ``M2Crypto`` as follows::
 
     $ sudo pip install m2crypto==0.24.0
 
+``m2crypto 0.24.0`` is incompatible with latest version of `openssl v1.1.0`, so if you get error on installation, try to install `openssl v1.0` before installing `m2crypto`:
+    $ sudo apt install libssl1.0-dev
+
 .. _SWIG: http://www.swig.org/
 
 Installing guacd
