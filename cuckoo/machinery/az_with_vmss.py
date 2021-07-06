@@ -1227,6 +1227,9 @@ class Azure(Machinery):
             except Exception as exc:
                 log.error(repr(exc))
                 current_vmss_operations -= 1
+                with vms_currently_being_deleted_lock:
+                    for instance_id in instance_ids:
+                        vms_currently_being_deleted.remove("%s_%s" % (vmss_to_delete, instance_id))
                 continue
 
             # We wait because we want the machine to be fresh before another task is assigned to it
