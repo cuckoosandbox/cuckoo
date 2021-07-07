@@ -454,6 +454,23 @@ def task_screenshots(task_id=0, screenshot=None):
         response.headers["Content-Type"] = "application/zip"
         return response
 
+@app.route("/tasks/files/<int:task_id>/<file_name>")
+@app.route("/v1/tasks/files/<int:task_id>/<file_name>")
+def task_files(task_id, file_name):
+    folder_path = cwd("storage", "analyses", "%s" % task_id, "files")
+
+    if not os.path.exists(folder_path):
+        return json_error(404, "Task not found")
+
+    file_path = os.path.join(folder_path, file_name)
+    if not os.path.exists(file_path) or os.path.dirname(file_path) != folder_path:
+        return json_error(404, "File not found!")
+
+    # TODO: Add content disposition.
+    response = make_response(open(file_path, "rb").read())
+    response.headers["Content-Type"] = "application/octet-stream"
+    return response
+
 @app.route("/tasks/rereport/<int:task_id>")
 def rereport(task_id):
     task = db.view_task(task_id)

@@ -163,6 +163,8 @@ each one. For details click on the resource name.
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_shots`          | Retrieves one or all screenshots associated with a given analysis task ID.                                       |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
+| ``GET`` :ref:`tasks_files`          | Retrieves one of dropped files associated with a given analysis task ID.                                         |
++-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_rereport`       | Re-run reporting for task associated with a given analysis task ID.                                              |
 +-------------------------------------+------------------------------------------------------------------------------------------------------------------+
 | ``GET`` :ref:`tasks_reboot`         | Reboot a given analysis task ID.                                                                                 |
@@ -726,6 +728,30 @@ Returns one or all screenshots associated with the specified task ID.
 
 * ``id`` *(required)* *(int)* - ID of the task to get the report for
 * ``screenshot`` *(optional)* - numerical identifier of a single screenshot (e.g. 0001, 0002)
+
+**Status codes**:
+
+* ``404`` - file or folder not found
+
+.. _tasks_files:
+
+/tasks/files
+------------------
+
+**GET /tasks/files/** *(int: id)* **/** *(str: file_name)*
+
+Retrieves one of dropped files associated with a given analysis task ID.
+
+**Example request**.
+
+.. code-block:: bash
+
+    wget http://localhost:8090/tasks/files/1/0000000000000000_dropped_malware.exe
+
+**Parameters**:
+
+* ``id`` *(required)* *(int)* - ID of the task to get the report for
+* ``file_name`` *(required)* - file name that you want to retrieve
 
 **Status codes**:
 
