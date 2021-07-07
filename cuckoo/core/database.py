@@ -1529,7 +1529,7 @@ class Database(object):
         except AttributeError:
             return None
         except SQLAlchemyError as e:
-            log.exception("Database error viewing task: {0}".format(e))
+            log.exception("Database error viewing sample: {0}".format(e))
             return None
         else:
             if sample:
