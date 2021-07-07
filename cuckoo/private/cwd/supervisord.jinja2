@@ -1,7 +1,9 @@
 [supervisord]
 logfile = {{ cwd("supervisord", "log.log") }}
 pidfile = {{ cwd("supervisord", "pidfile") }}
-user = {{ username }}
+user = root
+environment = CUCKOO_CWD="{{ cwd() }}"
+
 
 [supervisorctl]
 serverurl = unix://{{ cwd("supervisord", "unix.sock") }}
@@ -12,11 +14,22 @@ supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 [unix_http_server]
 file = {{ cwd("supervisord", "unix.sock") }}
 
+[program:cuckoo-rooter]
+command = {{ cuckoo_path }} rooter
+user = root
+startsecs = 10
+# set autostart to true if cuckoo rooter is used
+autostart = false
+autorestart = true
+priority = 100
+stdout_logfile = {{ cwd("supervisord", "rooter.log") }}
+
 [program:cuckoo-daemon]
 command = {{ cuckoo_path }} -d -m 10000
 user = {{ username }}
 startsecs = 30
 autorestart = true
+priority = 200
 stderr_logfile = {{ cwd("supervisord", "cuckoostderr.log") }}
 
 [program:cuckoo-process]
@@ -25,13 +38,25 @@ process_name = cuckoo-process_%(process_num)d
 numprocs = 4
 user = {{ username }}
 autorestart = true
+priority = 300
+
+[program:cuckoo-restart-uwsgi]
+command = /bin/sh -c "sleep 5 && /etc/init.d/uwsgi reload"
+user = root
+startsecs = 0
+# set autostart to true if uwsgi is used
+autostart = false
+autorestart = false
+startretries = 1
+priority = 400
 
 [group:cuckoo]
-programs = cuckoo-daemon, cuckoo-process
+programs = cuckoo-daemon, cuckoo-process, cuckoo-rooter
 
 [program:distributed]
 command = {{ python_path }} -m cuckoo.distributed.worker
 user = {{ username }}
 autostart = false
 autorestart = true
-environment = CUCKOO_APP="worker",CUCKOO_CWD="{{ cwd() }}"
+priority = 500
+environment = CUCKOO_APP="worker"
