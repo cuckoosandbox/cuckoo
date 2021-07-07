@@ -14,13 +14,18 @@ log = logging.getLogger(__name__)
 
 BUFSIZE = 1024*1024
 
-def upload_to_host(file_path, dump_path, pids=[]):
-    nc = infd = None
+def upload_to_host(file_path, dump_path, pids=[], infd=None):
+    nc = None
+    we_open = False
+
     try:
         nc = NetlogFile()
         nc.init(dump_path, file_path, pids)
 
-        infd = open(file_path, "rb")
+        if not infd and file_path:
+            infd = open(file_path, "rb")
+            we_open = True
+
         buf = infd.read(BUFSIZE)
         while buf:
             nc.send(buf, retry=False)
@@ -28,7 +33,7 @@ def upload_to_host(file_path, dump_path, pids=[]):
     except Exception as e:
         log.error("Exception uploading file %r to host: %s", file_path, e)
     finally:
-        if infd:
+        if infd and we_open:
             infd.close()
         if nc:
             nc.close()

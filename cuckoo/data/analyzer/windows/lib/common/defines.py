@@ -106,6 +106,8 @@ OPEN_EXISTING             = 3
 OPEN_ALWAYS               = 4
 TRUNCATE_EXISTING         = 5
 
+CREATE_NO_WINDOW          = 0x08000000
+
 class STARTUPINFO(Structure):
     _fields_ = [
         ("cb",            DWORD),
