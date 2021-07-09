@@ -3893,7 +3893,7 @@ ep_only = true
 signature = 50 43 52 59 50 54 FF 76 33 2E 35 31 00 E9
 ep_only = true
 
-[PcShare ÎÄ¼þÀ¦°óÆ÷ v4.0 -> ÎÞ¿É·ÇÒé]
+[PcShare æ–‡ä»¶æ†ç»‘å™¨ v4.0 -> æ— å¯éžè®®]
 signature = 55 8B EC 6A FF 68 90 34 40 00 68 B6 28 40 00 64 A1
 ep_only = true
 
@@ -6417,7 +6417,7 @@ ep_only = false
 signature = 60 E8 00 00 00 00 5D 81 ED 48 12 40 00 60 E8 2B 03 00 00 61
 ep_only = true
 
-[UPX-SCRAMBLER 3.06 -> ©OnT®oL]
+[UPX-SCRAMBLER 3.06 -> ãŽ¡nTç•‚L]
 signature = E8 00 00 00 00 59 83 C1 07 51 C3 C3 BE ?? ?? ?? ?? 83 EC 04 89 34 24 B9 80 00 00 00 81 36 ?? ?? ?? ?? 50 B8 04 00 00 00 50 03 34 24 58 58 83 E9 03 E2 E9 EB D6
 ep_only = true
 
