@@ -531,6 +531,7 @@ class Azure(Machinery):
                     continue
                 if vmss_vm.name in vms_to_avoid_adding:
                     # Don't add it if it is currently being deleted!
+                    log.debug("%s is currently being deleted!" % vmss_vm.name)
                     continue
                 # According to Microsoft, the OS type is...
                 os_type = vmss_vm.storage_profile.os_disk.os_type
@@ -593,7 +594,7 @@ class Azure(Machinery):
         Delete machine from database if it does not exist in the VMSS.
         @param vmss_name: the name of the VMSS to be queried
         """
-        log.debug("Deleting machines from database if they do not exist in the VMSS.")
+        log.debug("Deleting machines from database if they do not exist in the VMSS %s." % vmss_name)
         # Get all VMs in the VMSS
         paged_vmss_vms = Azure._azure_api_call(
             self.options.az_with_vmss.group,
@@ -936,7 +937,7 @@ class Azure(Machinery):
 
                         # We don't want to be stuck in this for longer than the timeout specified
                         if time.time() - start_time > AZURE_TIMEOUT:
-                            log.debug("Breaking out of the while loop within the scale down section")
+                            log.debug("Breaking out of the while loop within the scale down section for %s." % vmss_name)
                             break
                         # Get the updated number of relevant machines required
                         relevant_task_queue = self._get_number_of_relevant_tasks(tag)
@@ -1018,7 +1019,7 @@ class Azure(Machinery):
             if platform:
                 is_platform_scaling[platform] = False
             log.error(repr(exc))
-            log.debug("Scaling %s has completed with errors." % vmss_name)
+            log.debug("Scaling %s has completed with errors %s." % (vmss_name, repr(exc)))
 
     @staticmethod
     def _handle_poller_result(lro_poller_object):
@@ -1092,6 +1093,7 @@ class Azure(Machinery):
         global current_vmss_operations
         global vms_currently_being_reimaged
         global reimage_vm_list
+        global delete_vm_list
         while True:
             time.sleep(5)
 
@@ -1152,19 +1154,25 @@ class Azure(Machinery):
                 )
             except Exception as exc:
                 log.error(repr(exc))
-                invalid_param = False
                 # If InvalidParameter: 'The provided instanceId x is not an active Virtual Machine Scale Set VM instanceId.
                 # This means that the machine has been deleted
-                # TODO: parse out the instance ID(s) in this error so we know which instances don't exist
+                instance_ids_that_have_been_deleted = []
                 if "InvalidParameter" in repr(exc):
-                    invalid_param = True
+                    # Parse out the instance ID(s) in this error so we know which instances don't exist
+                    instance_ids_that_have_been_deleted = [substring for substring in repr(exc) if substring.isdigit()]
                 current_vmss_operations -= 1
-                for instance_id in instance_ids:
-                    if invalid_param:
-                        log.warning("Machine %s may not exist anymore. Deleting from DB." % ("%s_%s" % (vmss_to_reimage, instance_id)))
-                        self._delete_machine_from_db("%s_%s" % (vmss_to_reimage, instance_id))
+
+                for instance_id in instance_ids_that_have_been_deleted:
+                    log.warning("Machine %s does not exist anymore. Deleting from database." % ("%s_%s" % (vmss_to_reimage, instance_id)))
+                    self._delete_machine_from_db("%s_%s" % (vmss_to_reimage, instance_id))
                     vms_currently_being_reimaged.remove("%s_%s" % (vmss_to_reimage, instance_id))
-                continue
+                    instance_ids.remove(instance_id)
+
+                with reimage_lock:
+                    for instance_id in instance_ids:
+                        reimage_vm_list.append({"vmss": vmss_to_reimage, "id": instance_id, "time_added": time.time()})
+                        vms_currently_being_reimaged.remove("%s_%s" % (vmss_to_reimage, instance_id))
+                    continue
 
             # We wait because we want the machine to be fresh before another task is assigned to it
             while not async_reimage_some_machines.done():
@@ -1173,7 +1181,10 @@ class Azure(Machinery):
                     # That sucks, now we have to delete each one
                     for instance_id in instance_ids:
                         self._delete_machine_from_db("%s_%s" % (vmss_to_reimage, instance_id))
-                        delete_vm_list.append({"vmss": vmss_to_reimage, "id": instance_id, "time_added": time.time()})
+                        with vms_currently_being_deleted_lock:
+                            vms_currently_being_deleted.append("%s_%s" % (vmss_to_reimage, instance_id))
+                        with delete_lock:
+                            delete_vm_list.append({"vmss": vmss_to_reimage, "id": instance_id, "time_added": time.time()})
                     break
                 time.sleep(2)
 
