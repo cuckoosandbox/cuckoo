@@ -1156,14 +1156,24 @@ class Azure(Machinery):
                 log.error(repr(exc))
                 # If InvalidParameter: 'The provided instanceId x is not an active Virtual Machine Scale Set VM instanceId.
                 # This means that the machine has been deleted
-                instance_ids_that_have_been_deleted = []
-                if "InvalidParameter" in repr(exc):
+                # If BadRequest: The VM x creation in Virtual Machine Scale Set <vmss name>> with ephemeral disk is not complete. Please trigger a restart if required'
+                # This means Azure has failed us
+                instance_ids_that_should_not_be_reimaged_again = []
+                if "InvalidParameter" in repr(exc) or "BadRequest" in repr(exc):
                     # Parse out the instance ID(s) in this error so we know which instances don't exist
-                    instance_ids_that_have_been_deleted = [substring for substring in repr(exc) if substring.isdigit()]
+                    instance_ids_that_should_not_be_reimaged_again = [substring for substring in repr(exc).split() if substring.isdigit()]
                 current_vmss_operations -= 1
 
-                for instance_id in instance_ids_that_have_been_deleted:
-                    log.warning("Machine %s does not exist anymore. Deleting from database." % ("%s_%s" % (vmss_to_reimage, instance_id)))
+                for instance_id in instance_ids_that_should_not_be_reimaged_again:
+                    if "InvalidParameter" in repr(exc):
+                        log.warning("Machine %s does not exist anymore. Deleting from database." % ("%s_%s" % (vmss_to_reimage, instance_id)))
+                    elif "BadRequest" in repr(exc):
+                        log.warning("Machine %s cannot start due to ephemeral disk issues with Azure. Deleting from database and Azure." % ("%s_%s" % (vmss_to_reimage, instance_id)))
+                        with vms_currently_being_deleted_lock:
+                            vms_currently_being_deleted.append("%s_%s" % (vmss_to_reimage, instance_id))
+                        with delete_lock:
+                            delete_vm_list.append({"vmss": vmss_to_reimage, "id": instance_id, "time_added": time.time()})
+
                     self._delete_machine_from_db("%s_%s" % (vmss_to_reimage, instance_id))
                     vms_currently_being_reimaged.remove("%s_%s" % (vmss_to_reimage, instance_id))
                     instance_ids.remove(instance_id)
