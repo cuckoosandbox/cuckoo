@@ -94,6 +94,7 @@ class Machine(Base):
                         backref="machine")
     options = Column(JsonTypeList255(), nullable=True)
     interface = Column(String(255), nullable=True)
+    vmid = Column(Integer(), nullable=True)
     snapshot = Column(String(255), nullable=True)
     locked = Column(Boolean(), nullable=False, default=False)
     locked_changed_on = Column(DateTime(timezone=False), nullable=True)
@@ -150,7 +151,7 @@ class Machine(Base):
                 return
         return True
 
-    def __init__(self, name, label, ip, platform, options, interface,
+    def __init__(self, name, label, ip, platform, options, interface, vmid,
                  snapshot, resultserver_ip, resultserver_port):
         self.name = name
         self.label = label
@@ -158,6 +159,7 @@ class Machine(Base):
         self.platform = platform
         self.options = options
         self.interface = interface
+        self.vmid = vmid
         self.snapshot = snapshot
         self.resultserver_ip = resultserver_ip
         self.resultserver_port = resultserver_port
@@ -582,7 +584,7 @@ class Database(object):
             session.close()
 
     @classlock
-    def add_machine(self, name, label, ip, platform, options, tags, interface,
+    def add_machine(self, name, label, ip, platform, options, tags, interface, vmid,
                     snapshot, resultserver_ip, resultserver_port):
         """Add a guest machine.
         @param name: machine id
@@ -607,6 +609,7 @@ class Database(object):
                           platform=platform,
                           options=options,
                           interface=interface,
+                          vmid=vmid,
                           snapshot=snapshot,
                           resultserver_ip=resultserver_ip,
                           resultserver_port=resultserver_port)
