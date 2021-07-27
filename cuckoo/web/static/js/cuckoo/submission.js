@@ -2308,9 +2308,11 @@ var SubmissionTaskTable = function () {
 			// humanize the date formats, or any other kind of data
 			data = data.map(function (item) {
 				item.date_added = moment(item.added_on).format('DD/MM/YYYY');
+				item.pri = item.priority.toString();
 				item.time_added = moment(item.added_on).format('HH:mm');
 				item.is_ready = item.status == 'reported';
 				item.is_running = item.status == 'running';
+				item.guest = item.guest.label ;
 				item.remote_control = item.options.hasOwnProperty('remotecontrol');
 				item.show_rc_toggle = item.remote_control && item.is_running;
 				return item;

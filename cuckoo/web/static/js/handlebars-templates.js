@@ -472,6 +472,8 @@ this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template
     + ((stack1 = helpers['if'].call(depth0,(depth0 != null ? depth0.is_ready : depth0),{"name":"if","hash":{},"fn":this.program(2, data, 0),"inverse":this.noop,"data":data})) != null ? stack1 : "")
     + "\">\n		<td>"
     + alias3(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"id","hash":{},"data":data}) : helper)))
+    + "</td>\n		<td>\n			"
+    + alias3(((helper = (helper = helpers.pri || (depth0 != null ? depth0.pri : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"pri","hash":{},"data":data}) : helper)))
     + "</td>\n		<td>\n			<i class=\"fa fa-calendar-o\"></i> "
     + alias3(((helper = (helper = helpers.date_added || (depth0 != null ? depth0.date_added : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"date_added","hash":{},"data":data}) : helper)))
     + "\n			<i class=\"fa fa-clock-o\"></i> "
@@ -480,6 +482,8 @@ this["HANDLEBARS_TEMPLATES"]["submission-task-table-body"] = Handlebars.template
     + alias3(((helper = (helper = helpers.target || (depth0 != null ? depth0.target : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"target","hash":{},"data":data}) : helper)))
     + "</td>\n		<td>"
     + alias3(((helper = (helper = helpers['package'] || (depth0 != null ? depth0['package'] : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"package","hash":{},"data":data}) : helper)))
+    + "</td>\n		<td>"
+    + alias3(((helper = (helper = helpers.guest || (depth0 != null ? depth0.guest : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"guest","hash":{},"data":data}) : helper)))
     + "</td>\n		<td class=\"postsubmit-status-display\">\n			<div>\n				<div><span class=\"status status-"
     + alias3(((helper = (helper = helpers.status || (depth0 != null ? depth0.status : depth0)) != null ? helper : alias1),(typeof helper === alias2 ? helper.call(depth0,{"name":"status","hash":{},"data":data}) : helper)))
     + "\"></span> "
