@@ -108,11 +108,11 @@ memory.conf
 ===========
 
 The Volatility tool offers a large set of plugins for memory dump analysis.
-Some of them are quite slow. The ``$CWD/conf/volatility.conf`` file let's you
+Some of them are quite slow. The ``$CWD/conf/memory.conf`` file let's you
 enable or disable plugins of your choice. To use Volatility you have to follow
 two steps:
 
- * Enable ``volatility`` in ``$CWD/conf/processing.conf``
+ * Enable ``memory`` in ``$CWD/conf/processing.conf``
  * Enable ``memory_dump`` in ``$CWD/conf/cuckoo.conf``
 
 In ``$CWD/conf/memory.conf``'s basic section you can configure the Volatility
