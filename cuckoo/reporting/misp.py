@@ -173,11 +173,19 @@ class MISP(Report):
         analysis = self.options.get("analysis") or 0
         tag = self.options.get("tag") or "Cuckoo"
 
+        # Event title cleanup
+        if results.get("target", {}).get("category") == "file":
+            f = results.get("target", {}).get("file", {}).get("name", "")
+            inf="Cuckoo File #%d: %s" % (self.task["id"], f)
+        elif results.get("target", {}).get("category") == "url":
+            u = results.get("target", {}).get("url", "")
+            inf="Cuckoo URL #%d: %s" % (self.task["id"], u)
+
         event = self.misp.new_event(
             distribution=distribution,
             threat_level_id=threat_level,
             analysis=analysis,
-            info="Cuckoo Sandbox analysis #%d" % self.task["id"]
+            info=inf,
         )
 
         # Add a specific tag to flag Cuckoo's event
