@@ -26,7 +26,7 @@ class ExportApi:
         size = ExportController.estimate_size(task_id=task_id,
                                               taken_dirs=taken_dirs,
                                               taken_files=taken_files)
-
+        
         return JsonResponse(size, safe=False)
 
     @api_post
@@ -48,3 +48,14 @@ class ExportApi:
             return json_error_response(message=str(e))
 
         return JsonResponse({"dirs": dirs, "files": files}, safe=False)
+
+    @api_post
+    def misp_export(request, body):
+        task_id = body.get('task_id', None)
+
+        if not task_id:
+            return json_error_response("invalid task_id")
+
+        response = ExportController.misp_export(task_id=task_id)
+
+        return JsonResponse(response, safe=False)

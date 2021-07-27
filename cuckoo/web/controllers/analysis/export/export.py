@@ -13,6 +13,10 @@ from cuckoo.common.utils import json_default
 from cuckoo.web.controllers.analysis.analysis import AnalysisController
 from cuckoo.web.utils import get_directory_size
 
+from cuckoo.reporting.misp import MISP
+from cuckoo.common.config import config2
+from cuckoo.misc import cwd
+
 class ExportController:
     """Class for creating task exports"""
     @staticmethod
@@ -115,3 +119,29 @@ class ExportController:
                 files.append(filename)
 
         return dirs, files
+
+
+
+    @staticmethod
+    def misp_export(task_id, report=None):
+        """
+        Uploads the report to the MISP instance using the reporting module.
+        :param task_id: task id
+        :param report: additional report dict
+        """
+
+        report_path = cwd("reports", "report.json", analysis=task_id)
+        task_path = cwd("", "task.json", analysis=task_id)
+
+        j = open(report_path)
+        results = json.load(j)
+
+        t = open(task_path)
+        task = json.load(t)
+
+        m = MISP()
+        options = config2("reporting", 'misp')
+        m.set_task(task)
+        m.set_options(options)
+
+        m.run(results)
