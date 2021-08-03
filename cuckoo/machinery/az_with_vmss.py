@@ -452,7 +452,9 @@ class Azure(Machinery):
             elif tags:
                 for tag in tags:
                     # If VMSS is in the "wait" state, then WAIT
-                    vmss_name = next(name for name, vals in self.required_vmsss.items() if vals["tag"] == tag)
+                    vmss_name = next((name for name, vals in self.required_vmsss.items() if vals["tag"] == tag), None)
+                    if vmss_name is None:
+                        return 0
                     if machine_pools[vmss_name]["wait"]:
                         log.debug("Machinery is not ready yet...")
                         return 0
