@@ -10,6 +10,8 @@ import requests
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooOperationalError
 from cuckoo.common.files import Files
+from cuckoo.common.objects import Archive
+
 
 log = logging.getLogger(__name__)
 
@@ -79,7 +81,8 @@ class Irma(Processing):
                 self.url, "/api/v1.1/scans/%s" % init.get("id")
             )
             result = self._request_json(url)
-            time.sleep(1)
+            time.sleep(5)
+        return result.get("results")[0].get("result_id")
 
     def _get_results(self, sha256):
         # Fetch list of scan IDs.
@@ -96,6 +99,12 @@ class Irma(Processing):
             urlparse.urljoin(self.url, "/api/v1.1/results/%s" % result_id)
         )
 
+    def _get_resultsbyid(self, result_id):
+        # Fetch list of result ID.
+        return self._request_json(
+            urlparse.urljoin(self.url, "/api/v1.1/results/%s" % result_id)
+        )
+
     def run(self):
         """Run IRMA processing
         @return: full IRMA report.
@@ -103,7 +112,7 @@ class Irma(Processing):
         self.key = "irma"
 
         """ Fall off if we don't deal with files """
-        if self.results.get("info", {}).get("category") != "file":
+        if self.results.get("info", {}).get("category") not in ["file", "archive"]:
             log.debug("IRMA supports only file scanning !")
             return {}
 
@@ -112,7 +121,18 @@ class Irma(Processing):
         self.scan = int(self.options.get("scan", 0))
         self.force = int(self.options.get("force", 0))
 
-        sha256 = Files.sha256_file(self.file_path)
+        if self.results.get("info", {}).get("category") == "file":
+            sha256 = Files.sha256_file(self.file_path)
+            file_path = self.file_path
+        else:
+            a = Archive(self.file_path)
+            if self.task["options"].get("filename",None):
+                file = a.get_file(self.task["options"]["filename"])
+                sha256 = Files.sha256_file(file.file_path)
+                file_path = file.file_path
+            else:
+                sha256 = Files.sha256_file(self.file_path)
+                file_path = self.file_path
 
         results = self._get_results(sha256)
 
@@ -120,8 +140,13 @@ class Irma(Processing):
             return {}
         elif self.force or (not results and self.scan):
             log.info("File scan requested: %s", sha256)
-            self._scan_file(self.file_path, self.force)
-            results = self._get_results(sha256) or {}
+            result_id = self._scan_file(file_path, self.force)
+            log.debug("File result_id: %s", result_id)
+            results = self._get_resultsbyid(result_id) or {}
+
+        if not results.get("probe_results",None):
+            log.debug(str(results))
+            return {}
 
         # FIXME! could use a proper fix here
         # that probably needs changes on IRMA side aswell
@@ -129,8 +154,8 @@ class Irma(Processing):
         # related to  https://github.com/elastic/elasticsearch/issues/15377
         # entropy value is sometimes 0 and sometimes like  0.10191042566270775
         # other issue is that results type changes between string and object :/
-        
-        for idx, result in enumerate(results["probe_results"]):
+
+        for idx, result in enumerate(results.get("probe_results")):
             if result["name"] == "PE Static Analyzer":
                 log.debug("Ignoring PE results at index {0}".format(idx))
                 results["probe_results"][idx]["results"] = "... scrapped ..."

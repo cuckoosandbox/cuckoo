@@ -8,6 +8,7 @@ import re
 
 from cuckoo.common.abstracts import Processing
 from cuckoo.common.exceptions import CuckooProcessingError
+from cuckoo.common.objects import Archive
 
 class Strings(Processing):
     """Extract strings from analyzed file."""
@@ -22,22 +23,30 @@ class Strings(Processing):
         self.key = "strings"
         strings = []
 
-        if self.task["category"] == "file":
+        if self.task["category"] in ["file", "archive"]:
             if not os.path.exists(self.file_path):
                 raise CuckooProcessingError(
                     "Sample file doesn't exist: \"%s\"" % self.file_path
                 )
-
-            try:
-                data = open(self.file_path, "rb").read(self.MAX_FILESIZE)
-            except (IOError, OSError) as e:
-                raise CuckooProcessingError("Error opening file %s" % e)
+            if self.task["category"] == "archive" and self.task["options"].get("filename",None):
+                a = Archive(self.file_path)
+                file = a.get_file(self.task["options"]["filename"])
+                try:
+                    data = open(file.file_path, "rb").read(self.MAX_FILESIZE)
+                except (IOError, OSError) as e:
+                    raise CuckooProcessingError("Error opening file inside archive %s" % e)
+            else:
+                try:
+                    data = open(self.file_path, "rb").read(self.MAX_FILESIZE)
+                except (IOError, OSError) as e:
+                    raise CuckooProcessingError("Error opening file %s" % e)
 
             strings = []
             for s in re.findall(b"[\x1f-\x7e]{6,}", data):
                 strings.append(s.decode("utf-8"))
             for s in re.findall(b"(?:[\x1f-\x7e][\x00]){6,}", data):
                 strings.append(s.decode("utf-16le"))
+
 
         # Now limit the amount & length of the strings.
         strings = strings[:self.MAX_STRINGCNT]
