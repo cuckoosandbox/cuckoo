@@ -66,6 +66,9 @@ class AnalysisManager(threading.Thread):
         self.unrouted_network = False
         self.stopped_aux = False
         self.rs_port = config("cuckoo:resultserver:port")
+        self.allowed_input_ports = []
+        self.restrict_forwarded_ports = config("routing:internet:restrict_forwarded_ports")
+        self.allowed_forwarded_ports = []
 
     def init(self):
         """Initialize the analysis."""
@@ -281,6 +284,23 @@ class AnalysisManager(threading.Thread):
             self.interface = None
             self.rt_table = None
 
+        # Parse allowed INPUT ports
+        for port_str in config("routing:internet:allowed_input_ports"):
+            # String format => type:num (example: tcp:80)
+            port_cfg = port_str.split(':', 1)
+            self.allowed_input_ports.append( (port_cfg[0], port_cfg[1]) )
+
+        # Add MITMproxy port to the allowed input ones if it is running
+        if "mitm_port" in self.task.options:
+            mitm_port = str(self.task.options.get("mitm_port"))
+            self.allowed_input_ports.append( ("tcp", mitm_port) )
+
+        # Forwarded ports restrictions
+        if self.restrict_forwarded_ports:
+            for port_str in config("routing:internet:allowed_forwarded_ports"):
+                port_cfg = port_str.split(':', 1)
+                self.allowed_forwarded_ports.append( (port_cfg[0], port_cfg[1]) )
+
         # Check if the network interface is still available. If a VPN dies for
         # some reason, its tunX interface will no longer be available.
         if self.interface and not rooter("nic_available", self.interface):
@@ -306,6 +326,11 @@ class AnalysisManager(threading.Thread):
                 str(self.rs_port)
             )
 
+        if self.route == "internet":
+            rooter(
+                "input_enable", self.machine.ip, self.allowed_input_ports
+            )
+
         if self.route == "inetsim":
             machinery = config("cuckoo:cuckoo:machinery")
             rooter(
@@ -327,7 +352,8 @@ class AnalysisManager(threading.Thread):
         if self.interface:
             rooter(
                 "forward_enable", self.machine.interface,
-                self.interface, self.machine.ip
+                self.interface, self.machine.ip,
+                self.restrict_forwarded_ports, self.allowed_forwarded_ports
             )
 
         if self.rt_table:
@@ -343,7 +369,8 @@ class AnalysisManager(threading.Thread):
         if self.interface:
             rooter(
                 "forward_disable", self.machine.interface,
-                self.interface, self.machine.ip
+                self.interface, self.machine.ip,
+                self.restrict_forwarded_ports, self.allowed_forwarded_ports
             )
 
         if self.rt_table:
@@ -356,6 +383,11 @@ class AnalysisManager(threading.Thread):
                 "drop_disable", self.machine.ip,
                 config("cuckoo:resultserver:ip"),
                 str(self.rs_port)
+            )
+
+        if self.route == "internet":
+            rooter(
+                "input_disable", self.machine.ip, self.allowed_input_ports
             )
 
         if self.route == "inetsim":
@@ -914,6 +946,13 @@ class Scheduler(object):
                          "machinery or define a network interface for each "
                          "VM.", machine.name)
                 continue
+
+            # TODO: Ports forwarding filtering and input ports filtering isn't
+            #       performed here. To manage this cleaning, we must manage
+            #       differently rules in rooter because the configuration may
+            #       change between two cuckoo's starts. Thus, performing this
+            #       cleaning would require a stateful rooter, knowing which
+            #       rule is associated to which machine.
 
             # Drop forwarding rule to each VPN.
             if config("routing:vpn:enabled"):

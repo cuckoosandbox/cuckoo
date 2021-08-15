@@ -84,6 +84,9 @@ class MITM(Auxiliary):
             "%s:%d" % (self.machine.resultserver_ip, port)
         )
 
+        # Register listening port in oprtion, to create iptables rules
+        self.task.options["mitm_port"] = port
+
         log.info("Started mitm interception with PID %d (ip=%s, port=%d).",
                  self.proc.pid, self.machine.resultserver_ip, self.port)
 

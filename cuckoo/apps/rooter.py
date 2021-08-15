@@ -178,7 +178,68 @@ def dns_forward(action, vm_ip, dns_ip, dns_port="53"):
         "--to-destination", "%s:%s" % (dns_ip, dns_port)
     )
 
-def forward_enable(src, dst, ipaddr):
+def forward_toggle(action, src, dst, ipaddr, restricted_forward, allowed_ports):
+    """Toggle forwarding a specific IP address from one interface into
+    another."""
+    # Forwarded ports are restricted
+    if restricted_forward:
+        # If a TCP rule exists (=> RELATED/ESTABLISHED allowed)
+        tcp_rule = False
+
+        # Forwarding rules
+        for (port_type, port_num) in allowed_ports:
+            # UDP packets: no states
+            if port_type == "udp":
+                run_iptables(
+                    action, "FORWARD", "-i", src, "-o", dst,
+                    "-p", port_type, "--dport", "%s" % port_num,
+                    "--source", ipaddr, "-j", "ACCEPT"
+                )
+        
+                run_iptables(
+                    action, "FORWARD", "-i", dst, "-o", src,
+                    "-p", port_type, "--sport", "%s" % port_num,
+                    "--destination", ipaddr, "-j", "ACCEPT"
+                )
+
+            # TCP packets: NEW state only (RELATED and ESTABLISHED are in a global rule)
+            else:
+                tcp_rule = True
+
+                run_iptables(
+                    action, "FORWARD", "-i", src, "-o", dst,
+                    "-p", "tcp", "--dport", "%s" % port_num,
+                    "-m", "state", "--state", "NEW",
+                    "--source", ipaddr, "-j", "ACCEPT"
+                )
+
+        # There is a TCP rule => RELATED/ESTABLISHED needed
+        if tcp_rule:
+            run_iptables(
+                action, "FORWARD", "-i", src, "-o", dst,
+                "-m", "state", "--state", "RELATED,ESTABLISHED",
+                "--source", ipaddr, "-j", "ACCEPT"
+            )
+
+            run_iptables(
+                action, "FORWARD", "-i", dst, "-o", src,
+                "-m", "state", "--state", "RELATED,ESTABLISHED",
+                "--destination", ipaddr, "-j", "ACCEPT"
+            )
+
+    # No restrictions for forwarding
+    else:
+        run_iptables(
+            action, "FORWARD", "-i", src, "-o", dst,
+            "--source", ipaddr, "-j", "ACCEPT"
+        )
+    
+        run_iptables(
+            action, "FORWARD", "-i", dst, "-o", src,
+            "--destination", ipaddr, "-j", "ACCEPT"
+        )
+
+def forward_enable(src, dst, ipaddr, restricted_forward=False, allowed_ports=[]):
     """Enable forwarding a specific IP address from one interface into
     another."""
     # Delete libvirt's default FORWARD REJECT rules. e.g.:
@@ -187,28 +248,12 @@ def forward_enable(src, dst, ipaddr):
     run_iptables("-D", "FORWARD", "-i", src, "-j", "REJECT")
     run_iptables("-D", "FORWARD", "-o", src, "-j", "REJECT")
 
-    run_iptables(
-        "-A", "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT"
-    )
+    forward_toggle("-A", src, dst, ipaddr, restricted_forward, allowed_ports)
 
-    run_iptables(
-        "-A", "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT"
-    )
-
-def forward_disable(src, dst, ipaddr):
+def forward_disable(src, dst, ipaddr, restricted_forward=False, allowed_ports=[]):
     """Disable forwarding of a specific IP address from one interface into
     another."""
-    run_iptables(
-        "-D", "FORWARD", "-i", src, "-o", dst,
-        "--source", ipaddr, "-j", "ACCEPT"
-    )
-
-    run_iptables(
-        "-D", "FORWARD", "-i", dst, "-o", src,
-        "--destination", ipaddr, "-j", "ACCEPT"
-    )
+    forward_toggle("-D", src, dst, ipaddr, restricted_forward, allowed_ports)
 
 def srcroute_enable(rt_table, ipaddr):
     """Enable routing policy for specified source IP address."""
@@ -352,7 +397,7 @@ def drop_toggle(action, vm_ip, resultserver_ip, resultserver_port, agent_port):
     )
 
     run_iptables(action, "INPUT", "--source", vm_ip, "-j", "DROP")
-    run_iptables(action, "OUTPUT", "--source", vm_ip, "-j", "DROP")
+    run_iptables(action, "OUTPUT", "--destination", vm_ip, "-j", "DROP")
 
 def drop_enable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     """Enable complete dropping of all non-Cuckoo traffic by default."""
@@ -364,6 +409,32 @@ def drop_disable(vm_ip, resultserver_ip, resultserver_port, agent_port=8000):
     """Disable complete dropping of all non-Cuckoo traffic by default."""
     return drop_toggle(
         "-D", vm_ip, resultserver_ip, resultserver_port, agent_port
+    )
+
+def input_toggle(action, vm_ip, allowed_input_ports):
+    """Toggle iptables to allow some input traffic."""
+    for (port_type, port_num) in allowed_input_ports:
+        run_iptables(
+            action, "INPUT", "--source", vm_ip, "-p", port_type,
+            "--dport", "%s" % port_num,
+            "-j", "ACCEPT"
+        )
+        run_iptables(
+            action, "OUTPUT", "--destination", vm_ip, "-p", port_type,
+            "--sport", "%s" % port_num,
+            "-j", "ACCEPT"
+        )
+
+def input_enable(vm_ip, allowed_input_ports):
+    """Enable input traffic."""
+    return input_toggle(
+        "-I", vm_ip, allowed_input_ports
+    )
+
+def input_disable(vm_ip, allowed_input_ports):
+    """Disable input traffic."""
+    return input_toggle(
+        "-D", vm_ip, allowed_input_ports
     )
 
 handlers = {
@@ -390,6 +461,8 @@ handlers = {
     "tor_disable": tor_disable,
     "drop_enable": drop_enable,
     "drop_disable": drop_disable,
+    "input_enable": input_enable,
+    "input_disable": input_disable,
 }
 
 def cuckoo_rooter(socket_path, group, service, iptables, ip):
@@ -496,15 +569,20 @@ def cuckoo_rooter(socket_path, group, service, iptables, ip):
             log.info("Invalid keyword arguments: %r", kwargs)
             continue
 
-        for arg in args + kwargs.keys() + kwargs.values():
+        for arg in kwargs.keys():
             if not isinstance(arg, basestring):
+                log.info("Invalid argument detected: %r", arg)
+                break
+
+        for arg in args + kwargs.values():
+            if not isinstance(arg, (basestring, tuple, list, bool)):
                 log.info("Invalid argument detected: %r", arg)
                 break
         else:
             log.info(
                 "Processing command: %s %s %s", command,
-                " ".join(args),
-                " ".join("%s=%s" % (k, v) for k, v in kwargs.items())
+                " ".join(str(arg) for arg in args),
+                " ".join("%s=%s" % (k, str(v)) for k, v in kwargs.items())
             )
 
             output = e = None
