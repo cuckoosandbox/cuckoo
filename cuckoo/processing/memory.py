@@ -987,7 +987,7 @@ class VolatilityManager(object):
         ["netscan", "vista", "win7"],
     ]
 
-    def __init__(self, memfile, osprofile):
+    def __init__(self, memfile, osprofile, machine_label=None):
         self.mask_pid = []
         self.taint_pid = set()
         self.memfile = memfile
@@ -996,6 +996,14 @@ class VolatilityManager(object):
         for pid in config("memory:mask:pid_generic"):
             if pid and pid.isdigit():
                 self.mask_pid.append(int(pid))
+
+        if machine_label:
+            for pid in config("%s:%s:mask_pids" % (
+                config("cuckoo:cuckoo:machinery"),
+                machine_label)
+            ):
+                if pid and pid.isdigit() and pid not in self.mask_pid:
+                    self.mask_pid.append(int(pid))
 
         self.vol = VolatilityAPI(self.memfile, self.osprofile)
 
@@ -1115,7 +1123,7 @@ class Memory(Processing):
         )
 
         try:
-            return VolatilityManager(self.memory_path, osprofile).run()
+            return VolatilityManager(self.memory_path, osprofile, self.machine.get("name")).run()
         except CuckooOperationalError as e:
             log.error(
                 "Error running Volatility on machine '%s': %s",
