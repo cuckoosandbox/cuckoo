@@ -412,7 +412,10 @@ class GuestManager(object):
             if isinstance(value, datetime.datetime):
                 config.append("%s = %s" % (key, value.strftime("%Y%m%dT%H:%M:%S")))
             else:
-                config.append("%s = %s" % (key, value))
+                if value == None:
+                    config.append("%s =" % key)
+                else:
+                    config.append("%s = %s" % (key, value))
 
         data = {
             "filepath": os.path.join(self.analyzer_path, "analysis.conf"),
