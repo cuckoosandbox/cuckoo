@@ -17,6 +17,8 @@ class Exe(Package):
         name, ext = os.path.splitext(path)
         if not ext:
             new_path = name + ".exe"
+            if os.path.exists(new_path):
+                os.remove(new_path)
             os.rename(path, new_path)
             path = new_path
 
