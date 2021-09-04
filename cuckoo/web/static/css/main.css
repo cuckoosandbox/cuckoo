@@ -12430,7 +12430,6 @@ pre
 [id='dashboard.views.index'] .app
 {
     padding: 0;
-    overflow: hidden;
 }
 
 .content
@@ -17674,14 +17673,13 @@ body.night .app-error__message
 #recent_analysis table#recent td:nth-child(5)
 {
     width: 130px;
-
     text-align: right;
 }
 
 #recent_analysis table#recent .badge
 {
     font-weight: normal;
-
+    border-radius: 0px;
     padding: 4px 8px;
 }
 
@@ -19502,7 +19500,7 @@ body.night .flex-tabs__tab--right .btn:not(.active):hover
     display: flex;
         flex-direction: column;
 
-    width: 100vw;
+    width: 100%;
     height: calc(100vh - 50px);
 
     -ms-flex-direction: column;
@@ -32362,5 +32360,3 @@ body.night .cuckoo-errors .errors > li
 {
     border-color: #434343;
 }
-
-/*# sourceMappingURL=main.css.map */

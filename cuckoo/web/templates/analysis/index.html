@@ -3,7 +3,6 @@
 {% block content %}
 
     <div id="recent_analysis">
-
         <div class="nav_container" style="margin-bottom:30px;">
             <div></div>
             <div id="item"><a href="#" data-filter="cat_files">Files</a></div>
@@ -15,26 +14,17 @@
             <!--<div id="item"><a href="#" data-filter="pack_pdf">PDF</a></div>
             <div id="item"><a href="#" data-filter="pack_office">Office</a></div>-->
         </div>
+        <div>
 
-        <div class="row">
-            <div class="col-md-12">
-                <style>
-                    table#recent span.badge{
-                        border-radius: 0px;
-                    }
-                </style>
+            {% include "components/loader.html" %}
 
-                {% include "components/loader.html" %}
-
-                <table id="recent" class="table table-striped table-responsive" style="table-layout: fixed;">
-                    <tbody>
-                    </tbody>
-                </table>
-
-                <div id="no_more_results" class="container-fluid center">
-                    <span style="color: #a5a5a5;"></span>
-                </div>
-
+            <table id="recent" class="table table-striped table-responsive" style="table-layout: fixed;">
+                <tbody>
+                </tbody>
+            </table>
+    
+            <div id="no_more_results" class="container-fluid center">
+                <span style="color: #a5a5a5;"></span>
             </div>
         </div>
     </div>
