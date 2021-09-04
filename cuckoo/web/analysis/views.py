@@ -247,7 +247,7 @@ moloch_mapper = {
     "src_port": "port == %s",
     "dst_ip": "ip == %s",
     "dst_port": "port == %s",
-    "sid": 'tags == "sid:%s"',
+    "sid": 'suricata.signatureId == %s',
 }
 
 @require_safe
