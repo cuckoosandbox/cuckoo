@@ -156,6 +156,20 @@ class MongoDB(Report):
 
         report["dropped"] = new_dropped
 
+        # Do the same for the buffers
+        new_buffer = []
+        if "buffer" in report:
+            for old_buffer in report["buffer"]:
+                new_buf = dict(old_buffer)
+                buf = File(old_buffer["path"])
+                if buf.valid():
+                    buf_id = self.store_file(buf, filename=old_buffer["name"])
+                    new_buf["object_id"] = buf_id
+
+                new_buffer.append(new_buf)
+
+        report["buffer"] = new_buffer
+
         new_extracted = []
         if "extracted" in report:
             for extracted in report["extracted"]:
