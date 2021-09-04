@@ -175,6 +175,7 @@ class Files(Storage):
             if not buf:
                 break
             h.update(buf)
+        f.close()
         return h.hexdigest()
 
     @staticmethod

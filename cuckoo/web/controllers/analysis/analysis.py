@@ -9,6 +9,9 @@ from django.http import Http404
 from cuckoo.common.mongo import mongo
 from cuckoo.core.database import Database
 
+import requests
+from json import load
+
 db = Database()
 
 class AnalysisController:
@@ -51,3 +54,8 @@ class AnalysisController:
             "domainlookups": domainlookups,
             "iplookups": iplookups,
         }
+
+    @staticmethod
+    def ipInfo(attr):
+        data = requests.get(url = 'https://ipinfo.io/' + attr + '/json').json()
+        return data['city'] + ', ' + data['region'] + ', ' + data['country'] + ' (' + data['loc'] + ')'
