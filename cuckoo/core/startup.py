@@ -23,7 +23,7 @@ from cuckoo.common.files import temppath
 from cuckoo.common.objects import File
 from cuckoo.common.utils import cmp_version
 from cuckoo.core.database import (
-    Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING
+    Database, TASK_RUNNING, TASK_FAILED_ANALYSIS, TASK_PENDING, TASK_COMPLETED
 )
 from cuckoo.core.extract import ExtractManager
 from cuckoo.core.feedback import CuckooFeedbackObject
@@ -258,6 +258,11 @@ def init_tasks():
     log.debug("Checking for pending service tasks..")
     for task in db.list_tasks(status=TASK_PENDING, category="service"):
         db.set_status(task.id, TASK_FAILED_ANALYSIS)
+
+    log.debug("Checking for completed tasks..")
+    for task in db.list_tasks(status=TASK_COMPLETED):
+        db.set_processingNone(task.id)
+
 
 def init_modules():
     """Initialize plugins."""

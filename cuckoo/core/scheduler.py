@@ -164,7 +164,7 @@ class AnalysisManager(threading.Thread):
             # such case, or the analysis task will fail completely.
             if not machinery.availables():
                 machine_lock.release()
-                time.sleep(1)
+                time.sleep(3)
                 continue
 
             # If the user specified a specific machine ID, a platform to be
@@ -178,7 +178,7 @@ class AnalysisManager(threading.Thread):
             if not machine:
                 machine_lock.release()
                 log.debug("Task #%d: no machine available yet", self.task.id)
-                time.sleep(1)
+                time.sleep(3)
             else:
                 log.info(
                     "Task #%d: acquired machine %s (label=%s)",

@@ -332,7 +332,7 @@ def process_tasks(instance, maxcount, timeout):
 
             # Wait a small while before trying to fetch a new task.
             if task_id is None:
-                time.sleep(1)
+                time.sleep(3)
                 continue
 
             task = db.view_task(task_id)
