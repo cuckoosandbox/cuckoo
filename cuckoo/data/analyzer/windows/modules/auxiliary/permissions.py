@@ -23,12 +23,12 @@ class Permissions(Auxiliary):
             # First add a non-inherited permission for Admin Read+Execute
             # icacls <location> /grant:r "BUILTIN\Administrators:(OI)(CI)(RX)" "BUILTIN\\Administrators:(RX)" /t /c /q
             modify_admin_params = ["icacls", location, "/grant:r", "BUILTIN\\Administrators:(OI)(CI)(RX)", "BUILTIN\\Administrators:(RX)", "/t", "/c", "/q"]
-            call(modify_admin_params, startupinfo=self.startupinfo)
+            call(modify_admin_params, startupinfo=self.startupinfo, timeout=15)
 
             # Then remove all inherited permissions so that only SYSTEM has Write access
             # icacls <location> /inheritancelevel:r /t /c /q
             inheritance_params = ["icacls", location, "/inheritancelevel:r", "/t", "/c", "/q"]
-            call(inheritance_params, startupinfo=self.startupinfo)
+            call(inheritance_params, startupinfo=self.startupinfo, timeout=15)
 
     def __init__(self, options={}, analyzer=None):
         Auxiliary.__init__(self, options, analyzer)
