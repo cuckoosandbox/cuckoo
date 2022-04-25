@@ -197,7 +197,7 @@ class Azure(Machinery):
             pass
         else:
             log.debug("Monitoring the machine pools...")
-            for vmss, vals in self.required_vmsss.items():
+            for _, vals in self.required_vmsss.items():
                 threading.Thread(target=self._thr_scale_machine_pool, args=(vals["tag"],)).start()
 
         # Check the machine pools every 5 minutes
@@ -378,6 +378,21 @@ class Azure(Machinery):
             Azure.WINDOWS_PLATFORM: False,
             Azure.LINUX_PLATFORM: False
         }
+
+        # Let's get the number of CPUs associated with the SKU (instance_type)
+        resource_skus = Azure._azure_api_call(
+            self.options.az_with_vmss.region_name,
+            operation=self.compute_client.resource_skus.list
+        )
+        resource_details = next((item for item in resource_skus if item.name == self.options.az_with_vmss.instance_type), None)
+        if resource_details:
+            for capability in resource_details.capabilities:
+                if capability.name == "vCPUs":
+                    self.instance_type_cpus = int(capability.value)
+                    break
+        else:
+            # TODO: Justify why 4 is a good default value
+            self.instance_type_cpus = 4
 
         # Initialize the batch reimage threads. We want at most 4 batch reimaging threads
         # so that if no VMSS scaling or batch deleting is taking place (aka we are receiving constant throughput of
@@ -889,9 +904,33 @@ class Azure(Machinery):
 
             number_of_machines = len(self.db.list_machines())
             projected_total_machines = number_of_machines - number_of_relevant_machines + number_of_relevant_machines_required
+
             if projected_total_machines > self.options.az_with_vmss.total_machines_limit:
                 non_relevant_machines = number_of_machines - number_of_relevant_machines
                 number_of_relevant_machines_required = self.options.az_with_vmss.total_machines_limit - non_relevant_machines
+
+            # Let's confirm that this number is actually achievable
+            usages = Azure._azure_api_call(
+                self.options.az_with_vmss.region_name,
+                operation=self.compute_client.usage.list
+            )
+            usage_to_look_for = None
+            if self.options.az_with_vmss.spot_instances:
+                usage_to_look_for = "lowPriorityCores"
+            else:
+                # TODO: If not using spot instances, somehow figure out the usages key to determine a scaling limit for
+                pass
+
+            if usage_to_look_for:
+                usage = next((item for item in usages if item.name.value == usage_to_look_for), None)
+
+                if usage:
+                    number_of_new_cpus_required = self.instance_type_cpus * (number_of_relevant_machines_required - number_of_machines)
+                    # Leaving at least one space in the usage quota for a spot VM, let's not push it!
+                    number_of_new_cpus_available = int(usage.limit) - usage.current_value - self.instance_type_cpus
+                    if number_of_new_cpus_required > number_of_new_cpus_available:
+                        number_of_relevant_machines_required = number_of_new_cpus_required / self.instance_type_cpus
+                        log.debug("Quota could be exceeded with projected number of machines. Setting new limit to %s" % number_of_relevant_machines_required)
 
             if machine_pools[vmss_name]["size"] == number_of_relevant_machines_required:
                 # Check that VMs in DB actually exist in the VMSS. There is a possibility that
