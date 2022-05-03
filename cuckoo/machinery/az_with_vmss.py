@@ -926,10 +926,10 @@ class Azure(Machinery):
 
                 if usage:
                     number_of_new_cpus_required = self.instance_type_cpus * (number_of_relevant_machines_required - number_of_machines)
-                    # Leaving at least one space in the usage quota for a spot VM, let's not push it!
-                    number_of_new_cpus_available = int(usage.limit) - usage.current_value - self.instance_type_cpus
+                    # Leaving at least 5 spaces in the usage quota for a spot VM, let's not push it!
+                    number_of_new_cpus_available = int(usage.limit) - usage.current_value - (self.instance_type_cpus*5)
                     if number_of_new_cpus_required > number_of_new_cpus_available:
-                        number_of_relevant_machines_required = number_of_new_cpus_required / self.instance_type_cpus
+                        number_of_relevant_machines_required = number_of_new_cpus_available / self.instance_type_cpus
                         log.debug("Quota could be exceeded with projected number of machines. Setting new limit to %s" % number_of_relevant_machines_required)
 
             if machine_pools[vmss_name]["size"] == number_of_relevant_machines_required:
