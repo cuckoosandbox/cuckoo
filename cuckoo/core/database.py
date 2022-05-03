@@ -19,6 +19,7 @@ from cuckoo.common.objects import File, URL, Dictionary
 from cuckoo.common.utils import Singleton, classlock, json_encode, parse_bool
 from cuckoo.misc import cwd, format_command
 
+from psycopg2.errors import UniqueViolation
 from sqlalchemy import create_engine, Column, not_, func
 from sqlalchemy import Integer, String, Boolean, DateTime, Enum
 from sqlalchemy import ForeignKey, Text, Index, Table, TypeDecorator
@@ -1063,7 +1064,7 @@ class Database(object):
 
             try:
                 session.commit()
-            except IntegrityError:
+            except (IntegrityError, UniqueViolation):
                 session.rollback()
                 try:
                     sample = session.query(Sample).filter_by(md5=obj.get_md5()).first()

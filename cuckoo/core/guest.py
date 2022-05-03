@@ -341,7 +341,7 @@ class GuestManager(object):
 
     def wait_available(self):
         """Wait until the Virtual Machine is available for usage."""
-        end = time.time() + self.timeout
+        end = time.time() + config("cuckoo:timeouts:vm_state")
 
         while db.guest_get_status(self.task_id) == "starting" and self.do_run:
             try:
@@ -351,7 +351,7 @@ class GuestManager(object):
                 log.debug("%s: not ready yet", self.vmid)
             except socket.error:
                 log.debug("%s: not ready yet", self.vmid)
-                time.sleep(1)
+            time.sleep(10)
 
             if time.time() > end:
                 raise CuckooGuestCriticalTimeout(
@@ -485,7 +485,16 @@ class GuestManager(object):
         # Pin the Agent to our IP address so that it is not accessible by
         # other Virtual Machines etc.
         if "pinning" in features:
-            self.get("/pinning")
+            strikes = 5
+            for strike in range(strikes):
+                try:
+                    self.get("/pinning")
+                    break
+                except Exception:
+                    if strike == strikes-1:
+                        raise
+                    log.warning("Attempt #%s to pin machine %s %s" % (strike+1, self.vmid, self.ipaddr))
+                    time.sleep(30)
 
         # Obtain the environment variables.
         self.query_environ()
@@ -560,7 +569,7 @@ class GuestManager(object):
                 # wait for things to recover
                 log.warning(
                     "Virtual Machine /status failed. This can indicate the "
-                    "guest losing network connectivity"
+                    "guest losing network connectivity with %s" % self.vmid
                 )
                 continue
             except Exception as e:
